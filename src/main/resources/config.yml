@@ -1,0 +1,11 @@
+language: en-us
+commandAliases:
+  - "fpm"
+  - "fp"
+randomNameLength: 10
+countFakePlayersOnMOTD: true
+#It may cause many exceptions
+#If you find any exceptions, please report them on GitHub
+specialFeatures:
+  firePlayerJoinEvent: false
+  firePlayerQuitEvent: false
