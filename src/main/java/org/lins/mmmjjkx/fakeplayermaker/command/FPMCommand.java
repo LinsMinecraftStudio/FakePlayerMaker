@@ -10,11 +10,15 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
+import org.lins.mmmjjkx.fakeplayermaker.WorldNotFoundException;
+import org.lins.mmmjjkx.fakeplayermaker.stress.AreaStressTester;
+import org.lins.mmmjjkx.fakeplayermaker.stress.StressTestSaver;
 import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.utils.ObjectConverter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class FPMCommand extends PolymerCommand {
     public FPMCommand(@NotNull String name, List<String> aliases) {
@@ -34,10 +38,11 @@ public class FPMCommand extends PolymerCommand {
     @Override
     public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
         if (args.length == 1) {
-            return copyPartialMatches(args[0], List.of("add","reload","removeAll","remove"));
+            return copyPartialMatches(args[0], List.of("add","reload","removeAll","remove","stress-area","stress"));
         } else if (args.length == 2) {
             return switch (args[0]) {
                 case "remove","teleport","tp" -> copyPartialMatches(args[1], NMSFakePlayerMaker.fakePlayerMap.keySet());
+                case "stress-area","stress" -> copyPartialMatches(args[1], List.of("start","stop"));
                 default -> new ArrayList<>();
             };
         }
@@ -139,6 +144,40 @@ public class FPMCommand extends PolymerCommand {
                         }
                         sendMessage(commandSender,  "PlayerNotFound");
                         yield false;
+                    }
+                    case "stress-area" -> {
+                        Optional<AreaStressTester> tester = FakePlayerMaker.stressTestSaver.getStressTesterArea(strings[2]);
+                        if (strings[1].equals("start")) {
+                            if (tester.isEmpty()) {
+                                sendMessage(commandSender, "Stress.NotFound");
+                                yield false;
+                            }
+                            AreaStressTester stressTester = tester.get();
+                            try {
+                                stressTester.start();
+                            } catch (WorldNotFoundException e) {
+                                sendMessage(commandSender, "Stress.AreaWorldNotFound");
+                                yield false;
+                            } catch (IllegalStateException e) {
+                                sendMessage(commandSender, "Stress.StartFast");
+                                yield false;
+                            }
+                            yield true;
+                        } else if (strings[1].equals("stop")) {
+                            if (tester.isEmpty()) {
+                                sendMessage(commandSender, "Stress.NotFound");
+                                yield false;
+                            }
+                            AreaStressTester stressTester = tester.get();
+                            if (!stressTester.isStarted()) {
+                                sendMessage(commandSender,"Stress.NotStarted");
+                            }
+                            stressTester.stop();
+                            yield true;
+                        } else {
+                            Polymer.messageHandler.sendMessage(commandSender, "Command.ArgError");
+                            yield false;
+                        }
                     }
                     default -> {
                         Polymer.messageHandler.sendMessage(commandSender, "Command.ArgError");

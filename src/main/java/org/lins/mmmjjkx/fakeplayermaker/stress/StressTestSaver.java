@@ -17,10 +17,11 @@ import java.util.logging.Logger;
 
 public class StressTestSaver extends AbstractFeatureManager {
     private YamlConfiguration configuration;
-    private final Map<String, AreaStressTester> testerMap = new HashMap<>();
+    private final Map<String, AreaStressTester> areaTesterMap = new HashMap<>();
     public StressTestSaver() {
         super(FakePlayerMaker.INSTANCE);
         configuration = handleConfig("stresses.yml");
+        loadStressTesters();
     }
 
     private void loadStressTesters(){
@@ -51,16 +52,18 @@ public class StressTestSaver extends AbstractFeatureManager {
                         """);
                 amount = 100;
             }
-            testerMap.put(key, new AreaStressTester(new CuboidRegion(
+            areaTesterMap.put(key, new AreaStressTester(new CuboidRegion(
                     BukkitAdapter.adapt(loc1.getWorld()),
                     BukkitAdapter.asBlockVector(loc1), BukkitAdapter.asBlockVector(loc2)
             ), amount));
         }
     }
 
-    public Optional<AreaStressTester> getStressTester(String name) {
-        return Optional.ofNullable(testerMap.get(name));
+    public Optional<AreaStressTester> getStressTesterArea(String name) {
+        return Optional.ofNullable(areaTesterMap.get(name));
     }
+
+
 
     @Override
     public void reload() {

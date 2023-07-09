@@ -76,4 +76,8 @@ public class AreaStressTester {
         }
         tempPlayers.clear();
     }
+
+    public boolean isStarted() {
+        return !tempPlayers.isEmpty();
+    }
 }
