@@ -2,6 +2,7 @@ package org.lins.mmmjjkx.fakeplayermaker.utils;
 
 import com.mojang.authlib.GameProfile;
 import io.github.linsminecraftstudio.polymer.objects.plugin.AbstractFeatureManager;
+import io.github.linsminecraftstudio.polymer.utils.ListUtil;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -10,6 +11,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,22 +32,14 @@ public class FakePlayerSaver extends AbstractFeatureManager {
         NMSFakePlayerMaker.reloadMap(getFakePlayers());
     }
 
-    public void addFakePlayer(ServerPlayer player) {
-        ConfigurationSection section = configuration.createSection(player.getName().getString());
+    public void syncPlayerInfo(ServerPlayer player) {
+        ConfigurationSection section = getOrElseCreate(player.getName().getString());
         section.set("uuid", player.getUUID().toString());
         section.set("location", ObjectConverter.toLocationString(player.getBukkitEntity().getLocation()));
+        section.set("skin", ListUtil.getIf(player.gameProfile.getProperties().get("textures"),
+                p -> p.getName().equals("textures")));
         try {configuration.save(cfgFile);
         } catch (IOException e) {throw new RuntimeException(e);}
-    }
-
-    public void syncPlayerInfo(ServerPlayer player) {
-        ConfigurationSection section = configuration.getConfigurationSection(player.getName().getString());
-        if (section != null) {
-            section.set("uuid", player.getUUID().toString());
-            section.set("location", ObjectConverter.toLocationString(player.getBukkitEntity().getLocation()));
-            try {configuration.save(cfgFile);
-            } catch (IOException e) {throw new RuntimeException(e);}
-        }
     }
 
     public void removeFakePlayer(String name) {
@@ -62,5 +56,14 @@ public class FakePlayerSaver extends AbstractFeatureManager {
             players.add(player);
         }
         return players;
+    }
+
+    @Nonnull
+    private ConfigurationSection getOrElseCreate(String path){
+        ConfigurationSection section = configuration.getConfigurationSection(path);
+        if (section == null) {
+            section = configuration.createSection(path);
+        }
+        return section;
     }
 }

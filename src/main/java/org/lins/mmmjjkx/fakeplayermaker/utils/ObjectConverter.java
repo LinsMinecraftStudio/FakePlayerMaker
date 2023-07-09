@@ -22,6 +22,9 @@ public class ObjectConverter {
         return null;
     }
     public static String toLocationString(Location location){
-        return location.getWorld().getName()+","+location.getX()+","+location.getY()+","+location.getZ()+","+location.getYaw()+","+location.getPitch();
+        return String.join(",", location.getWorld().getName(),
+                String.valueOf(location.getX()), String.valueOf(location.getY()),
+                String.valueOf(location.getZ()), String.valueOf(location.getYaw()),
+                String.valueOf(location.getPitch()));
     }
 }

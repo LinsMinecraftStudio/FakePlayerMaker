@@ -1,44 +1,36 @@
 package org.lins.mmmjjkx.fakeplayermaker;
 
 import io.github.linsminecraftstudio.polymer.command.PolymerCommand;
-import io.github.linsminecraftstudio.polymer.objects.plugin.PolymerMessageHandler;
 import io.github.linsminecraftstudio.polymer.objects.plugin.PolymerPlugin;
-import org.bukkit.Bukkit;
+import io.github.linsminecraftstudio.polymer.objects.plugin.SimpleSettingsManager;
+import io.github.linsminecraftstudio.polymer.objects.plugin.message.PolymerMessageHandler;
+import org.bukkit.Location;
 import org.lins.mmmjjkx.fakeplayermaker.command.FPMCommand;
-import org.lins.mmmjjkx.fakeplayermaker.listeners.PlayerListener;
-import org.lins.mmmjjkx.fakeplayermaker.objects.SpecialFeatures;
 import org.lins.mmmjjkx.fakeplayermaker.utils.FakePlayerSaver;
 
 import java.util.List;
 
-public final class FakePlayerMaker extends PolymerPlugin {
+public final class FakePlayerMaker extends PolymerPlugin{
     public static PolymerMessageHandler messageHandler;
-    public static SpecialFeatures specialFeatures;
     public static FakePlayerSaver fakePlayerSaver;
-    public static int randomNameLength;
-    public static boolean countFakePlayersOnMOTD;
     public static FakePlayerMaker INSTANCE;
+    public static SimpleSettingsManager settings;
+    public static int randomNameLength;
+    public static Location defaultLocation;
 
     @Override
-    public void onPluginEnable() {
+    public void onEnable() {
         // Plugin startup logic
         INSTANCE = this;
         completeDefaultConfig();
         completeLangFile("en-us","zh-cn");
-        specialFeatures = new SpecialFeatures(
-                getConfig().getBoolean("specialFeatures.firePlayerJoinEvent"),
-                getConfig().getBoolean("specialFeatures.firePlayerQuitEvent")
-        );
         fakePlayerSaver = new FakePlayerSaver();
-        randomNameLength = getConfig().getInt("randomNameLength");
-        countFakePlayersOnMOTD = getConfig().getBoolean("countFakePlayersOnMOTD");
+        settings = new SimpleSettingsManager(getConfig());
+        randomNameLength = settings.getInt("randomNameLength");
+        defaultLocation = settings.getLocation("defaultSpawnLocation");
         messageHandler = new PolymerMessageHandler(this);
-        Bukkit.getPluginManager().registerEvents(new PlayerListener(), this);
-    }
 
-    @Override
-    public void onPluginDisable() {
-        // Plugin shutdown logic
+        fakePlayerSaver.reload();
     }
 
     @Override

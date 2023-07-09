@@ -1,5 +1,7 @@
 package org.lins.mmmjjkx.fakeplayermaker.command;
 
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
 import io.github.linsminecraftstudio.polymer.Polymer;
 import io.github.linsminecraftstudio.polymer.command.PolymerCommand;
 import net.minecraft.server.level.ServerPlayer;
@@ -69,7 +71,7 @@ public class FPMCommand extends PolymerCommand {
                         yield true;
                     }
                     default -> {
-                        sendMessage(commandSender, "ArgError");
+                        Polymer.messageHandler.sendMessage(commandSender, "Command.ArgError");
                         yield false;
                     }
                 };
@@ -98,7 +100,7 @@ public class FPMCommand extends PolymerCommand {
                             sendMessage(commandSender, "RemoveSuccess");
                             yield true;
                         } else {
-                            sendMessage(commandSender, "PlayerNotFound");
+                            sendMessage(commandSender, "Command.PlayerNotFound");
                             yield false;
                         }
                     }
@@ -114,9 +116,29 @@ public class FPMCommand extends PolymerCommand {
                             sendMessage(commandSender, "TeleportSuccess");
                             yield true;
                         } else {
-                            sendMessage(commandSender, "PlayerNotFound");
+                            sendMessage(commandSender, "Command.PlayerNotFound");
                             yield false;
                         }
+                    }
+                    default -> {
+                        Polymer.messageHandler.sendMessage(commandSender, "Command.ArgError");
+                        yield false;
+                    }
+                };
+            } else if (strings.length == 3) {
+                return switch (strings[0]) {
+                    case "skin" -> {
+                        String name = strings[1];
+                        ServerPlayer player = NMSFakePlayerMaker.fakePlayerMap.get(name);
+                        if (player != null) {
+                            GameProfile profile = player.getGameProfile();
+                            profile.getProperties().removeAll("textures");
+                            profile.getProperties().put("textures", new Property("textures", strings[2]));
+                            player.gameProfile = profile;
+                            yield true;
+                        }
+                        sendMessage(commandSender,  "PlayerNotFound");
+                        yield false;
                     }
                     default -> {
                         Polymer.messageHandler.sendMessage(commandSender, "Command.ArgError");

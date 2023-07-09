@@ -3,9 +3,12 @@ commandAliases:
   - "fpm"
   - "fp"
 randomNameLength: 10
-countFakePlayersOnMOTD: true
-#It may cause many exceptions
-#If you find any exceptions, please report them on GitHub
-specialFeatures:
-  firePlayerJoinEvent: false
-  firePlayerQuitEvent: false
+defaultSpawnLocation:
+  world: "world"
+  x: 0
+  y: 70
+  z: 0
+  pitch: 0
+  yaw: 0
+#Please install the WorldEdit or FastAsyncWorldEdit plugin before starting!
+areaStressTesters: false
