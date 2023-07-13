@@ -63,7 +63,13 @@ public class StressTestSaver extends AbstractFeatureManager {
         return Optional.ofNullable(areaTesterMap.get(name));
     }
 
+    public void newTester(String name, Location pos1, Location pos2){
+        newTester(name, pos1, pos2, 100);
+    }
 
+    public void newTester(String name, Location pos1, Location pos2, int amount){
+
+    }
 
     @Override
     public void reload() {

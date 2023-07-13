@@ -2,17 +2,25 @@ package org.lins.mmmjjkx.fakeplayermaker.command;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
+import com.sk89q.worldedit.IncompleteRegionException;
+import com.sk89q.worldedit.LocalSession;
+import com.sk89q.worldedit.WorldEdit;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.regions.CuboidRegion;
+import com.sk89q.worldedit.regions.Region;
+import com.sk89q.worldedit.session.SessionManager;
 import io.github.linsminecraftstudio.polymer.Polymer;
 import io.github.linsminecraftstudio.polymer.command.PolymerCommand;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.WorldNotFoundException;
 import org.lins.mmmjjkx.fakeplayermaker.stress.AreaStressTester;
-import org.lins.mmmjjkx.fakeplayermaker.stress.StressTestSaver;
 import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.utils.ObjectConverter;
 
@@ -147,37 +155,71 @@ public class FPMCommand extends PolymerCommand {
                     }
                     case "stress-area" -> {
                         Optional<AreaStressTester> tester = FakePlayerMaker.stressTestSaver.getStressTesterArea(strings[2]);
-                        if (strings[1].equals("start")) {
-                            if (tester.isEmpty()) {
-                                sendMessage(commandSender, "Stress.NotFound");
+                        switch (strings[1]) {
+                            case "start" -> {
+                                if (tester.isEmpty()) {
+                                    sendMessage(commandSender, "Stress.NotFound");
+                                    yield false;
+                                }
+                                AreaStressTester stressTester = tester.get();
+                                try {
+                                    stressTester.start();
+                                } catch (WorldNotFoundException e) {
+                                    sendMessage(commandSender, "Stress.AreaWorldNotFound");
+                                    yield false;
+                                } catch (IllegalStateException e) {
+                                    sendMessage(commandSender, "Stress.StartFast");
+                                    yield false;
+                                }
+                                yield true;
+                            }
+                            case "stop" -> {
+                                if (tester.isEmpty()) {
+                                    sendMessage(commandSender, "Stress.NotFound");
+                                    yield false;
+                                }
+                                AreaStressTester stressTester = tester.get();
+                                if (!stressTester.isStarted()) {
+                                    sendMessage(commandSender, "Stress.NotStarted");
+                                    yield false;
+                                }
+                                stressTester.stop();
+                                yield true;
+                            }
+                            case "create" -> {
+                                Player p = toPlayer(commandSender);
+                                if (p != null) {
+                                    com.sk89q.worldedit.entity.Player wep = BukkitAdapter.adapt(p);
+                                    SessionManager manager = WorldEdit.getInstance().getSessionManager();
+                                    LocalSession session = manager.get(wep);
+                                    Region region;
+                                    try {
+                                        region = session.getSelection();
+                                    } catch (IncompleteRegionException e) {
+                                        sendMessage(commandSender, "Stress.MakeRegion");
+                                        yield false;
+                                    }
+                                    CuboidRegion cr = region.getBoundingBox();
+                                    if (cr.getWorld() == null) {
+                                        sendMessage(commandSender, "WorldNotFound");
+                                        yield false;
+                                    }
+                                    World bkWorld = BukkitAdapter.adapt(cr.getWorld());
+                                    BlockVector3 bv3p1 = cr.getPos1();
+                                    BlockVector3 bv3p2 = cr.getPos2();
+                                    Location pos1 = new Location(bkWorld, bv3p1.getX(), bv3p1.getY(), bv3p1.getZ());
+                                    Location pos2 = new Location(bkWorld, bv3p2.getX(), bv3p2.getY(), bv3p2.getZ());
+                                    FakePlayerMaker.stressTestSaver.newTester(strings[2], pos1, pos2);
+                                    sendMessage(commandSender, "Stress.TesterCreated");
+                                    yield true;
+                                }
+                            }
+                            default -> {
+                                Polymer.messageHandler.sendMessage(commandSender, "Command.ArgError");
                                 yield false;
                             }
-                            AreaStressTester stressTester = tester.get();
-                            try {
-                                stressTester.start();
-                            } catch (WorldNotFoundException e) {
-                                sendMessage(commandSender, "Stress.AreaWorldNotFound");
-                                yield false;
-                            } catch (IllegalStateException e) {
-                                sendMessage(commandSender, "Stress.StartFast");
-                                yield false;
-                            }
-                            yield true;
-                        } else if (strings[1].equals("stop")) {
-                            if (tester.isEmpty()) {
-                                sendMessage(commandSender, "Stress.NotFound");
-                                yield false;
-                            }
-                            AreaStressTester stressTester = tester.get();
-                            if (!stressTester.isStarted()) {
-                                sendMessage(commandSender,"Stress.NotStarted");
-                            }
-                            stressTester.stop();
-                            yield true;
-                        } else {
-                            Polymer.messageHandler.sendMessage(commandSender, "Command.ArgError");
-                            yield false;
                         }
+                        yield false;
                     }
                     default -> {
                         Polymer.messageHandler.sendMessage(commandSender, "Command.ArgError");

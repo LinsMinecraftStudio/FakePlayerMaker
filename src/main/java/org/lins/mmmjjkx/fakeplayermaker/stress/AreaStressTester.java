@@ -34,12 +34,12 @@ public class AreaStressTester {
 
     public void start() throws WorldNotFoundException, IllegalStateException{
         if (spawnRegion.getWorld() == null) {
-            throw new WorldNotFoundException("The world is not found!");
+            throw new WorldNotFoundException();
         }
 
         long currentTimestamp = System.currentTimeMillis();
         if (currentTimestamp - lastStartTimestamp < (5 * 1000L)){
-            throw new IllegalStateException("Cooldown period not elapsed.");
+            throw new IllegalStateException();
         }
 
         World world = BukkitAdapter.adapt(spawnRegion.getWorld());
