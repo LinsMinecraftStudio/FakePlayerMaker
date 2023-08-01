@@ -1,4 +1,0 @@
-name: FakePlayerMaker
-version: '${project.version}'
-main: org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker
-api-version: 1.19

@@ -4,6 +4,7 @@ import io.github.linsminecraftstudio.polymer.command.PolymerCommand;
 import io.github.linsminecraftstudio.polymer.objects.plugin.PolymerPlugin;
 import io.github.linsminecraftstudio.polymer.objects.plugin.SimpleSettingsManager;
 import io.github.linsminecraftstudio.polymer.objects.plugin.message.PolymerMessageHandler;
+import io.github.linsminecraftstudio.polymer.utils.Metrics;
 import org.bukkit.Location;
 import org.lins.mmmjjkx.fakeplayermaker.command.FPMCommand;
 import org.lins.mmmjjkx.fakeplayermaker.stress.StressTestSaver;
@@ -27,6 +28,7 @@ public final class FakePlayerMaker extends PolymerPlugin{
         completeLangFile("en-us","zh-cn");
         fakePlayerSaver = new FakePlayerSaver();
         stressTestSaver = new StressTestSaver();
+        new Metrics(this, 19435);
         settings = new SimpleSettingsManager(getConfig());
         randomNameLength = settings.getInt("randomNameLength");
         defaultLocation = settings.getLocation("defaultSpawnLocation");
