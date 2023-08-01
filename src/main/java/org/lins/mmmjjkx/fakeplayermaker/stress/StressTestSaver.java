@@ -117,6 +117,13 @@ public class StressTestSaver extends AbstractFeatureManager {
         } catch (IOException e) {throw new RuntimeException(e);}
     }
 
+    public void stopAll(){
+        areaTesterMap.values().forEach(AreaStressTester::stop);
+        randomWorldStressTesterMap.values().forEach(RandomWorldStressTester::stop);
+        areaTesterMap.clear();
+        randomWorldStressTesterMap.clear();
+    }
+
     @Override
     public void reload() {
         configuration = handleConfig("stresses.yml");

@@ -19,6 +19,7 @@ import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getHandl
 
 public class RandomWorldStressTester implements IStressTester{
     private final Map<String, ServerPlayer> tempPlayers = new HashMap<>();
+    private final MinecraftServer server = MinecraftServer.getServer();
     private int amount;
     private long lastStartTimestamp;
     private final boolean isAmountPerWorld;
@@ -38,7 +39,6 @@ public class RandomWorldStressTester implements IStressTester{
 
         Random random = new Random();
         List<World> worlds = Bukkit.getWorlds();
-        MinecraftServer server = MinecraftServer.getServer();
         PlayerList playerList = server.getPlayerList();
 
         if (isAmountPerWorld) {
@@ -46,16 +46,7 @@ public class RandomWorldStressTester implements IStressTester{
             for (World world: Bukkit.getWorlds()) {
                 ServerLevel level = (ServerLevel) getHandle(getCraftClass("CraftWorld"), world);
                 Location location = generate(world);
-                for (int i = 0; i < amount; i++) {
-                    String finalName = randomNamePrefix + (i+1);
-                    UUID uuid = Bukkit.getOfflinePlayer(finalName).getUniqueId();
-
-                    ServerPlayer player = new ServerPlayer(server, level, new GameProfile(uuid, finalName));
-                    playerList.placeNewPlayer(player.connection.connection, player);
-                    player.getBukkitEntity().teleport(location);
-
-                    tempPlayers.put(finalName, player);
-                }
+                placePlayers(server, playerList, randomNamePrefix, level, location, amount);
             }
         } else {
             for (int i = 0; i < worlds.size(); i++) {
@@ -65,16 +56,7 @@ public class RandomWorldStressTester implements IStressTester{
                 Location location = generate(world);
                 int placeAmount = random.nextInt(amount);
                 if (amount == 0) return;
-                for (int j = 0; j < placeAmount; j++){
-                    String finalName = randomNamePrefix + (j+1);
-                    UUID uuid = Bukkit.getOfflinePlayer(finalName).getUniqueId();
-
-                    ServerPlayer player = new ServerPlayer(server, level, new GameProfile(uuid, finalName));
-                    playerList.placeNewPlayer(player.connection.connection, player);
-                    player.getBukkitEntity().teleport(location);
-
-                    tempPlayers.put(finalName, player);
-                }
+                placePlayers(server, playerList, randomNamePrefix, level, location, placeAmount);
                 amount -= placeAmount;
             }
         }
@@ -82,11 +64,22 @@ public class RandomWorldStressTester implements IStressTester{
         lastStartTimestamp = currentTimestamp;
     }
 
+    private void placePlayers(MinecraftServer server, PlayerList playerList, String randomNamePrefix, ServerLevel level, Location location, int amount) {
+        for (int i = 0; i < amount; i++) {
+            String finalName = randomNamePrefix + (i+1);
+            UUID uuid = Bukkit.getOfflinePlayer(finalName).getUniqueId();
+
+            ServerPlayer player = new ServerPlayer(server, level, new GameProfile(uuid, finalName));
+            playerList.placeNewPlayer(player.connection.connection, player);
+            player.getBukkitEntity().teleport(location);
+
+            tempPlayers.put(finalName, player);
+        }
+    }
+
     @Override
     public void stop() {
-        for (ServerPlayer player : tempPlayers.values()) {
-            MinecraftServer.getServer().getPlayerList().remove(player);
-        }
+        tempPlayers.values().forEach(server.getPlayerList()::remove);
         tempPlayers.clear();
     }
 

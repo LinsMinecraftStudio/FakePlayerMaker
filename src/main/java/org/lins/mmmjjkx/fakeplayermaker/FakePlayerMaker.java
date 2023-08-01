@@ -36,7 +36,9 @@ public final class FakePlayerMaker extends PolymerPlugin{
     }
 
     @Override
-    public void onPlDisable() {}
+    public void onPlDisable() {
+        stressTestSaver.stopAll();
+    }
 
     @Override
     public List<PolymerCommand> registerCommands() {

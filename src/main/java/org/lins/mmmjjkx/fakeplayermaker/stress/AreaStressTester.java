@@ -24,6 +24,7 @@ public class AreaStressTester implements IStressTester{
     private final Map<String, ServerPlayer> tempPlayers = new HashMap<>();
     private final CuboidRegion spawnRegion;
     private final int amount;
+    private final MinecraftServer server = MinecraftServer.getServer();
     private long lastStartTimestamp;
 
     public AreaStressTester(CuboidRegion spawnRegion, int amount) {
@@ -42,13 +43,11 @@ public class AreaStressTester implements IStressTester{
         if (currentTimestamp - lastStartTimestamp < (5 * 1000L)){
             throw new IllegalStateException();
         }
-
         World world = BukkitAdapter.adapt(spawnRegion.getWorld());
         int y = spawnRegion.getMinimumY();
         List<BlockVector2> list = StreamSupport.stream(spawnRegion.getBoundingBox().asFlatRegion().spliterator(), false).toList();
         Random random = new Random();
         String randomNamePrefix = NMSFakePlayerMaker.getRandomName(FakePlayerMaker.randomNameLength);
-        MinecraftServer server = MinecraftServer.getServer();
         ServerLevel level = (ServerLevel) getHandle(getCraftClass("CraftWorld"), world);
 
         for (int i = 0; i < amount; i++) {
@@ -67,9 +66,7 @@ public class AreaStressTester implements IStressTester{
 
     @Override
     public void stop() {
-        for (ServerPlayer player : tempPlayers.values()) {
-            MinecraftServer.getServer().getPlayerList().remove(player);
-        }
+        tempPlayers.values().forEach(server.getPlayerList()::remove);
         tempPlayers.clear();
     }
 
