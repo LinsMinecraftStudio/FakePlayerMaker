@@ -20,7 +20,7 @@ import java.util.stream.StreamSupport;
 import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getCraftClass;
 import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getHandle;
 
-public class AreaStressTester {
+public class AreaStressTester implements IStressTester{
     private final Map<String, ServerPlayer> tempPlayers = new HashMap<>();
     private final CuboidRegion spawnRegion;
     private final int amount;
@@ -32,6 +32,7 @@ public class AreaStressTester {
         this.lastStartTimestamp = 0;
     }
 
+    @Override
     public void start() throws WorldNotFoundException, IllegalStateException{
         if (spawnRegion.getWorld() == null) {
             throw new WorldNotFoundException();
@@ -45,7 +46,6 @@ public class AreaStressTester {
         World world = BukkitAdapter.adapt(spawnRegion.getWorld());
         int y = spawnRegion.getMinimumY();
         List<BlockVector2> list = StreamSupport.stream(spawnRegion.getBoundingBox().asFlatRegion().spliterator(), false).toList();
-        List<ServerPlayer> tempList = new ArrayList<>(amount);
         Random random = new Random();
         String randomNamePrefix = NMSFakePlayerMaker.getRandomName(FakePlayerMaker.randomNameLength);
         MinecraftServer server = MinecraftServer.getServer();
@@ -59,17 +59,13 @@ public class AreaStressTester {
             ServerPlayer player = new ServerPlayer(server, level, new GameProfile(uuid, finalName));
             player.getBukkitEntity().teleport(new Location(world, flatLocation.getX(), y, flatLocation.getZ()));
 
-            tempList.add(player);
-        }
-
-        for (ServerPlayer player : tempList) {
             tempPlayers.put(player.getName().getString(), player);
             server.getPlayerList().placeNewPlayer(player.connection.connection, player);
         }
-
         lastStartTimestamp = currentTimestamp;
     }
 
+    @Override
     public void stop() {
         for (ServerPlayer player : tempPlayers.values()) {
             MinecraftServer.getServer().getPlayerList().remove(player);
@@ -77,7 +73,8 @@ public class AreaStressTester {
         tempPlayers.clear();
     }
 
-    public boolean isStarted() {
-        return !tempPlayers.isEmpty();
+    @Override
+    public Map<String, ServerPlayer> getTempPlayers() {
+        return tempPlayers;
     }
 }

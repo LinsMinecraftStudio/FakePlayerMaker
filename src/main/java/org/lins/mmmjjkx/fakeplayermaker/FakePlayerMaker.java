@@ -21,21 +21,22 @@ public final class FakePlayerMaker extends PolymerPlugin{
     public static StressTestSaver stressTestSaver;
 
     @Override
-    public void onEnable() {
+    public void onPlEnable() {
         // Plugin startup logic
         INSTANCE = this;
-        completeDefaultConfig();
         completeLangFile("en-us","zh-cn");
         fakePlayerSaver = new FakePlayerSaver();
         stressTestSaver = new StressTestSaver();
         settings = new SimpleSettingsManager(getConfig());
         randomNameLength = settings.getInt("randomNameLength");
         defaultLocation = settings.getLocation("defaultSpawnLocation");
-        messageHandler = new PolymerMessageHandler(this);
 
         fakePlayerSaver.reload();
         stressTestSaver.reload();
     }
+
+    @Override
+    public void onPlDisable() {}
 
     @Override
     public List<PolymerCommand> registerCommands() {
@@ -44,6 +45,6 @@ public final class FakePlayerMaker extends PolymerPlugin{
 
     @Override
     public String requireVersion() {
-        return "1.3.2";
+        return "1.3.3";
     }
 }

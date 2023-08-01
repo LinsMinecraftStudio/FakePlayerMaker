@@ -11,4 +11,5 @@ defaultSpawnLocation:
   pitch: 0
   yaw: 0
 #Please install the WorldEdit or FastAsyncWorldEdit plugin before starting!
+#Recommend creating an open area to create a stress test.
 areaStressTesters: false

@@ -3,6 +3,7 @@ package org.lins.mmmjjkx.fakeplayermaker.utils;
 import com.mojang.authlib.GameProfile;
 import io.github.linsminecraftstudio.polymer.objects.plugin.AbstractFeatureManager;
 import io.github.linsminecraftstudio.polymer.utils.ListUtil;
+import io.github.linsminecraftstudio.polymer.utils.ObjectConverter;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
