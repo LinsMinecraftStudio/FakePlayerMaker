@@ -49,7 +49,7 @@ public class FPMCommand extends PolymerCommand {
     @Override
     public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
         if (args.length == 1) {
-            return copyPartialMatches(args[0], List.of("add","reload","removeAll","remove","stress-area","stress"));
+            return copyPartialMatches(args[0], List.of("add","reload","removeAll","remove", "stress"));
         } else if (args.length == 2) {
             return switch (args[0]) {
                 case "remove","teleport","tp" -> copyPartialMatches(args[1], NMSFakePlayerMaker.fakePlayerMap.keySet());
@@ -143,7 +143,7 @@ public class FPMCommand extends PolymerCommand {
                         yield false;
                     }
                 };
-            } else if (strings.length == 3) {
+            } /*else if (strings.length == 3) {
                 if (strings[0].equals("skin")) {
                     String name = strings[1];
                     ServerPlayer player = NMSFakePlayerMaker.fakePlayerMap.get(name);
@@ -160,7 +160,7 @@ public class FPMCommand extends PolymerCommand {
                     Polymer.messageHandler.sendMessage(commandSender, "Command.ArgError");
                     return false;
                 }
-            } else if (strings.length==4 & strings[0].equals("stress")) {
+            }*/ else if (strings.length==4 & strings[0].equals("stress")) {
                 return switch (strings[1]) {
                     case "area" -> {
                         Optional<AreaStressTester> tester = FakePlayerMaker.stressTestSaver.getStressTesterArea(strings[3]);

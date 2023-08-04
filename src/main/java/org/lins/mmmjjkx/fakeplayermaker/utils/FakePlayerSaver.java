@@ -45,7 +45,10 @@ public class FakePlayerSaver extends AbstractFeatureManager {
 
     public void removeFakePlayer(String name) {
         configuration.set(name, null);
+        try {configuration.save(cfgFile);
+        } catch (IOException e) {throw new RuntimeException(e);}
     }
+
     public List<ServerPlayer> getFakePlayers() {
         List<ServerPlayer> players = new ArrayList<>();
         for (String sectionName : configuration.getKeys(false)) {
@@ -64,6 +67,8 @@ public class FakePlayerSaver extends AbstractFeatureManager {
         ConfigurationSection section = configuration.getConfigurationSection(path);
         if (section == null) {
             section = configuration.createSection(path);
+            try {configuration.save(cfgFile);
+            } catch (IOException e) {throw new RuntimeException(e);}
         }
         return section;
     }
