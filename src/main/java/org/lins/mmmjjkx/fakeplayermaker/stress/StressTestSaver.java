@@ -64,7 +64,7 @@ public class StressTestSaver extends AbstractFeatureManager {
                         BukkitAdapter.asBlockVector(loc1), BukkitAdapter.asBlockVector(loc2)
                 ), amount));
             } else if (type.equals("randomworld")) {
-                boolean b = section.getBoolean("isAmountPerWorld", false);
+                boolean b = section.getBoolean("amountPerWorld", false);
                 randomWorldStressTesterMap.put(key, new RandomWorldStressTester(b, amount));
             } else {
                 logger.log(Level.WARNING, """
@@ -83,6 +83,7 @@ public class StressTestSaver extends AbstractFeatureManager {
         return Optional.ofNullable(randomWorldStressTesterMap.get(name));
     }
 
+    @SuppressWarnings("unused")
     public void newRandomWorldTester(String name) {
         newRandomWorldTester(name, 100);
     }
@@ -94,14 +95,14 @@ public class StressTestSaver extends AbstractFeatureManager {
     public void newRandomWorldTester(String name, int amount, boolean isAmountPerWorld) {
         ConfigurationSection section = configuration.createSection(name);
         section.set("type", "randomworld");
-        section.set("isAmountPerWorld", isAmountPerWorld);
+        section.set("amountPerWorld", isAmountPerWorld);
         section.set("amount",amount);
         randomWorldStressTesterMap.put(name,new RandomWorldStressTester(false, amount));
         try {configuration.save(new File(FakePlayerMaker.INSTANCE.getDataFolder(), "stresses.yml"));
         } catch (IOException e) {throw new RuntimeException(e);}
     }
 
-
+    @SuppressWarnings("unused")
     public void newAreaTester(String name, Location pos1, Location pos2){
         newAreaTester(name, pos1, pos2, 100);
     }

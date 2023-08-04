@@ -42,6 +42,7 @@ public class AreaStressTester implements IStressTester{
         if (currentTimestamp - lastStartTimestamp < (5 * 1000L)){
             throw new IllegalStateException();
         }
+
         World world = BukkitAdapter.adapt(spawnRegion.getWorld());
         int y = spawnRegion.getMinimumY();
         List<BlockVector3> list = spawnRegion.getChunkCubes().stream().toList();
