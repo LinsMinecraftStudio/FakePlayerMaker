@@ -2,7 +2,7 @@ package org.lins.mmmjjkx.fakeplayermaker.stress;
 
 import com.mojang.authlib.GameProfile;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
-import com.sk89q.worldedit.math.BlockVector2;
+import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -15,7 +15,6 @@ import org.lins.mmmjjkx.fakeplayermaker.WorldNotFoundException;
 import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 
 import java.util.*;
-import java.util.stream.StreamSupport;
 
 import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getCraftClass;
 import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getHandle;
@@ -45,7 +44,7 @@ public class AreaStressTester implements IStressTester{
         }
         World world = BukkitAdapter.adapt(spawnRegion.getWorld());
         int y = spawnRegion.getMinimumY();
-        List<BlockVector2> list = StreamSupport.stream(spawnRegion.getBoundingBox().asFlatRegion().spliterator(), false).toList();
+        List<BlockVector3> list = spawnRegion.getChunkCubes().stream().toList();
         Random random = new Random();
         String randomNamePrefix = NMSFakePlayerMaker.getRandomName(FakePlayerMaker.randomNameLength);
         ServerLevel level = (ServerLevel) getHandle(getCraftClass("CraftWorld"), world);
@@ -53,7 +52,7 @@ public class AreaStressTester implements IStressTester{
         for (int i = 0; i < amount; i++) {
             String finalName = randomNamePrefix + (i + 1);
             UUID uuid = Bukkit.getOfflinePlayer(finalName).getUniqueId();
-            BlockVector2 flatLocation = list.get(random.nextInt(amount));
+            BlockVector3 flatLocation = list.get(random.nextInt(amount));
 
             ServerPlayer player = new ServerPlayer(server, level, new GameProfile(uuid, finalName));
             player.getBukkitEntity().teleport(new Location(world, flatLocation.getX(), y, flatLocation.getZ()));

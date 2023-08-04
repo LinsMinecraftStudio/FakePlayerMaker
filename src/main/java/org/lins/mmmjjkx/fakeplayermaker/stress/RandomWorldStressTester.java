@@ -46,7 +46,7 @@ public class RandomWorldStressTester implements IStressTester{
             for (World world: Bukkit.getWorlds()) {
                 ServerLevel level = (ServerLevel) getHandle(getCraftClass("CraftWorld"), world);
                 Location location = generate(world);
-                placePlayers(server, playerList, randomNamePrefix, level, location, amount);
+                placePlayer(server, playerList, randomNamePrefix, level, location, amount);
             }
         } else {
             for (int i = 0; i < worlds.size(); i++) {
@@ -56,7 +56,7 @@ public class RandomWorldStressTester implements IStressTester{
                 Location location = generate(world);
                 int placeAmount = random.nextInt(amount);
                 if (amount == 0) return;
-                placePlayers(server, playerList, randomNamePrefix, level, location, placeAmount);
+                placePlayer(server, playerList, randomNamePrefix, level, location, placeAmount);
                 amount -= placeAmount;
             }
         }
@@ -64,7 +64,7 @@ public class RandomWorldStressTester implements IStressTester{
         lastStartTimestamp = currentTimestamp;
     }
 
-    private void placePlayers(MinecraftServer server, PlayerList playerList, String randomNamePrefix, ServerLevel level, Location location, int amount) {
+    private void placePlayer(MinecraftServer server, PlayerList playerList, String randomNamePrefix, ServerLevel level, Location location, int amount) {
         for (int i = 0; i < amount; i++) {
             String finalName = randomNamePrefix + (i+1);
             UUID uuid = Bukkit.getOfflinePlayer(finalName).getUniqueId();
