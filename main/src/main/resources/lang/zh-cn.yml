@@ -1,0 +1,13 @@
+SpecifyLocation: "&4请描述一个位置！位置格式：x,y,z"
+ReloadSuccess: "&a已成功重载插件！"
+RemoveAllSuccess: "&a已移除所有假人！"
+TeleportSuccess: "&a已传送至一个假人。"
+CreateSuccess: "&a已创建一个新假人。"
+PlayerNotFound: "&4那个假人不存在。。。"
+Stress:
+  AreaWorldNotFound: "&4无法找到此压测器的压测区域所属的世界。"
+  NotFound: "&4那个压测器不存在。。。"
+  NotStarted: "&4此压测器还没有被开启！"
+  StartFast: "&4你开启这个压测器太快了！"
+  TesterCreated: "&a已成功创建压测器，请前往stresses.yml修改相关设置！"
+  SelectRegion: "&4您必须选择一个区域！"

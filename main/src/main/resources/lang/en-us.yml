@@ -1,0 +1,13 @@
+SpecifyLocation: "&4Please specify a location!"
+ReloadSuccess: "&aReloaded plugin successfully."
+RemoveAllSuccess: "&aRemoved all fake players."
+TeleportSuccess: "&aTeleported to a fake player."
+CreateSuccess: "&aCreated a new fake player."
+PlayerNotFound: "&4That fake player is not found..."
+Stress:
+  AreaWorldNotFound: "&4Unable to find the world to which the stress area of this area stress tester belongs."
+  NotFound: "&4That stress tester is not found..."
+  StartFast: "&4You can't start the stress too fast!"
+  NotStarted: "&4The stress tester is not started."
+  TesterCreated: "&aThe stress tester has been created successfully, please go to stresses.yml to modify the relevant settings!"
+  SelectRegion: "&4You must select a region!"
