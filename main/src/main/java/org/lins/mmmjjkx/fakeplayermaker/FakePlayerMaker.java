@@ -5,7 +5,6 @@ import io.github.linsminecraftstudio.polymer.objects.plugin.PolymerPlugin;
 import io.github.linsminecraftstudio.polymer.objects.plugin.SimpleSettingsManager;
 import io.github.linsminecraftstudio.polymer.objects.plugin.message.PolymerMessageHandler;
 import io.github.linsminecraftstudio.polymer.utils.Metrics;
-import org.bukkit.Location;
 import org.lins.mmmjjkx.fakeplayermaker.command.FPMCommand;
 import org.lins.mmmjjkx.fakeplayermaker.stress.StressTestSaver;
 import org.lins.mmmjjkx.fakeplayermaker.utils.FakePlayerSaver;
@@ -18,7 +17,6 @@ public final class FakePlayerMaker extends PolymerPlugin{
     public static FakePlayerMaker INSTANCE;
     public static SimpleSettingsManager settings;
     public static int randomNameLength;
-    public static Location defaultLocation;
     public static StressTestSaver stressTestSaver;
 
     @Override
@@ -31,7 +29,6 @@ public final class FakePlayerMaker extends PolymerPlugin{
         new Metrics(this, 19435);
         settings = new SimpleSettingsManager(getConfig());
         randomNameLength = settings.getInt("randomNameLength");
-        defaultLocation = settings.getLocation("defaultSpawnLocation");
 
         fakePlayerSaver.reload();
         stressTestSaver.reload();
@@ -49,6 +46,6 @@ public final class FakePlayerMaker extends PolymerPlugin{
 
     @Override
     public String requireVersion() {
-        return "1.3.3";
+        return "1.3.4";
     }
 }

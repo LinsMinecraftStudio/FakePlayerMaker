@@ -8,7 +8,7 @@ import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.session.SessionManager;
-import org.lins.mmmjjkx.fakeplayermaker.stress.IStressTester;
+import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTester;
 import org.lins.mmmjjkx.fakeplayermaker.WorldNotFoundException;
 import io.github.linsminecraftstudio.polymer.Polymer;
 import io.github.linsminecraftstudio.polymer.command.PolymerCommand;
@@ -71,7 +71,7 @@ public class FPMCommand extends PolymerCommand {
                             sendMessage(commandSender, "SpecifyLocation");
                             yield false;
                         }
-                        NMSFakePlayerMaker.spawnFakePlayer(p.getLocation(), null);
+                        NMSFakePlayerMaker.spawnFakePlayer(p.getLocation(), null, commandSender);
                         sendMessage(commandSender, "CreateSuccess");
                         yield true;
                     }
@@ -82,7 +82,7 @@ public class FPMCommand extends PolymerCommand {
                         yield true;
                     }
                     case "removeAll" -> {
-                        NMSFakePlayerMaker.removeAllFakePlayers();
+                        NMSFakePlayerMaker.removeAllFakePlayers(commandSender);
                         sendMessage(commandSender, "RemoveAllSuccess");
                         yield true;
                     }
@@ -99,20 +99,20 @@ public class FPMCommand extends PolymerCommand {
                         if (p == null) {
                             Location location = ObjectConverter.toLocation(name);
                             if (location != null) {
-                                NMSFakePlayerMaker.spawnFakePlayer(location, name);
+                                NMSFakePlayerMaker.spawnFakePlayer(location, name, commandSender);
                                 sendMessage(commandSender, "CreateSuccess");
                                 yield true;
                             }
                             sendMessage(commandSender, "SpecifyLocation");
                             yield false;
                         }
-                        NMSFakePlayerMaker.spawnFakePlayer(p.getLocation(), name);
+                        NMSFakePlayerMaker.spawnFakePlayer(p.getLocation(), name, commandSender);
                         sendMessage(commandSender, "CreateSuccess");
                         yield true;
                     }
                     case "remove" -> {
                         if (NMSFakePlayerMaker.fakePlayerMap.containsKey(name)) {
-                            NMSFakePlayerMaker.removeFakePlayer(name);
+                            NMSFakePlayerMaker.removeFakePlayer(name, commandSender);
                             sendMessage(commandSender, "RemoveSuccess");
                             yield true;
                         } else {
@@ -170,7 +170,7 @@ public class FPMCommand extends PolymerCommand {
                                 }
                                 AreaStressTester stressTester = tester.get();
                                 try {
-                                    stressTester.start();
+                                    stressTester.run();
                                 } catch (WorldNotFoundException e) {
                                     sendMessage(commandSender, "Stress.AreaWorldNotFound");
                                     yield false;
@@ -214,7 +214,7 @@ public class FPMCommand extends PolymerCommand {
                                 }
                                 RandomWorldStressTester stressTester = tester.get();
                                 try {
-                                    stressTester.start();
+                                    stressTester.run();
                                 } catch (IllegalStateException e) {
                                     sendMessage(commandSender, "Stress.StartFast");
                                     yield false;
@@ -317,7 +317,7 @@ public class FPMCommand extends PolymerCommand {
             Location pos2 = new Location(bkWorld, bv3p2.getX(), bv3p2.getY(), bv3p2.getZ());
             FakePlayerMaker.stressTestSaver.newAreaTester(strings[2], pos1, pos2, amount);
             sendMessage(commandSender, "Stress.TesterCreated");
-            return false;
+            return true;
         }
         return false;
     }

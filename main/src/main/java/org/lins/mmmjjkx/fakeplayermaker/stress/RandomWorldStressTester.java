@@ -1,6 +1,9 @@
 package org.lins.mmmjjkx.fakeplayermaker.stress;
 
 import com.mojang.authlib.GameProfile;
+import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStartEvent;
+import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStopEvent;
+import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTester;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -23,19 +26,23 @@ public class RandomWorldStressTester implements IStressTester {
     private int amount;
     private long lastStartTimestamp;
     private final boolean isAmountPerWorld;
+    private final List<String> ignores;
 
-    public RandomWorldStressTester(boolean isAmountPerWorld,int amount) {
+    public RandomWorldStressTester(boolean isAmountPerWorld,int amount,List<String> ignoreWorlds) {
         this.amount = amount;
         this.lastStartTimestamp = 0;
         this.isAmountPerWorld = isAmountPerWorld;
+        this.ignores = ignoreWorlds;
     }
 
     @Override
-    public void start() throws IllegalStateException{
+    public void run() throws IllegalStateException{
         long currentTimestamp = System.currentTimeMillis();
         if (currentTimestamp - lastStartTimestamp < (5 * 1000L)){
             throw new IllegalStateException();
         }
+
+        new StressTesterStartEvent(this).callEvent();
 
         Random random = new Random();
         List<World> worlds = Bukkit.getWorlds();
@@ -44,6 +51,9 @@ public class RandomWorldStressTester implements IStressTester {
         if (isAmountPerWorld) {
             String randomNamePrefix = NMSFakePlayerMaker.getRandomName(FakePlayerMaker.randomNameLength);
             for (World world: Bukkit.getWorlds()) {
+                if (ignores.contains(world.getName())) {
+                    continue;
+                }
                 ServerLevel level = (ServerLevel) getHandle(getCraftClass("CraftWorld"), world);
                 Location location = generate(world);
                 placePlayer(server, playerList, randomNamePrefix, level, location, amount);
@@ -52,6 +62,9 @@ public class RandomWorldStressTester implements IStressTester {
             for (int i = 0; i < worlds.size(); i++) {
                 String randomNamePrefix = NMSFakePlayerMaker.getRandomName(FakePlayerMaker.randomNameLength);
                 World world = worlds.get(random.nextInt(worlds.size()));
+                if (ignores.contains(world.getName())) {
+                    continue;
+                }
                 ServerLevel level = (ServerLevel) getHandle(getCraftClass("CraftWorld"), world);
                 Location location = generate(world);
                 int placeAmount = random.nextInt(amount);
@@ -79,6 +92,7 @@ public class RandomWorldStressTester implements IStressTester {
 
     @Override
     public void stop() {
+        new StressTesterStopEvent(this).callEvent();
         tempPlayers.values().forEach(server.getPlayerList()::remove);
         tempPlayers.clear();
     }

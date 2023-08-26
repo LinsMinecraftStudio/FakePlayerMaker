@@ -96,7 +96,7 @@
 		<dependency>
 			<groupId>io.github.linsminecraftstudio</groupId>
 			<artifactId>Polymer</artifactId>
-			<version>1.3.3-SNAPSHOT</version>
+			<version>1.3.4-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -116,6 +116,11 @@
 			<artifactId>paper-api</artifactId>
 			<version>1.20.1-R0.1-SNAPSHOT</version>
 			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.github.linsminecraftstudio</groupId>
+			<artifactId>FakePlayerMakerAPI</artifactId>
+			<version>1.0-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 </project>

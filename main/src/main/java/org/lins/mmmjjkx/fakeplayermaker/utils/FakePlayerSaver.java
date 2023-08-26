@@ -1,7 +1,7 @@
 package org.lins.mmmjjkx.fakeplayermaker.utils;
 
 import com.mojang.authlib.GameProfile;
-import io.github.linsminecraftstudio.polymer.objects.plugin.AbstractFeatureManager;
+import io.github.linsminecraftstudio.polymer.objects.plugin.AbstractFileStorage;
 import io.github.linsminecraftstudio.polymer.utils.ListUtil;
 import io.github.linsminecraftstudio.polymer.utils.ObjectConverter;
 import net.minecraft.server.MinecraftServer;
@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class FakePlayerSaver extends AbstractFeatureManager {
+public class FakePlayerSaver extends AbstractFileStorage {
     private YamlConfiguration configuration;
     private final File cfgFile = new File(FakePlayerMaker.INSTANCE.getDataFolder(), "fakePlayers.yml");
     public FakePlayerSaver(){

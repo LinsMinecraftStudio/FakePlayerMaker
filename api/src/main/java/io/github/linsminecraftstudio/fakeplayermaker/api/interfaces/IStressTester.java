@@ -1,10 +1,10 @@
-package org.lins.mmmjjkx.fakeplayermaker.stress;
+package io.github.linsminecraftstudio.fakeplayermaker.api.interfaces;
 
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.Map;
 
-public interface IStressTester {
+public interface IStressTester extends Runnable{
     Map<String, ServerPlayer> getTempPlayers();
     default boolean isStarted(){
         return !getTempPlayers().isEmpty();
@@ -14,7 +14,7 @@ public interface IStressTester {
      * Start the stress tester
      * @throws IllegalStateException
      */
-    void start() throws IllegalStateException;
+    void run() throws IllegalStateException;
 
     /**
      * Stop the stress tester

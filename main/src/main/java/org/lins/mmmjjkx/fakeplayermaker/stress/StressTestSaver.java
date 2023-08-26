@@ -2,7 +2,7 @@ package org.lins.mmmjjkx.fakeplayermaker.stress;
 
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.regions.CuboidRegion;
-import io.github.linsminecraftstudio.polymer.objects.plugin.AbstractFeatureManager;
+import io.github.linsminecraftstudio.polymer.objects.plugin.AbstractFileStorage;
 import io.github.linsminecraftstudio.polymer.utils.ObjectConverter;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
@@ -11,13 +11,11 @@ import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class StressTestSaver extends AbstractFeatureManager {
+public class StressTestSaver extends AbstractFileStorage {
     private YamlConfiguration configuration;
     private final Map<String, AreaStressTester> areaTesterMap = new HashMap<>();
     private final Map<String, RandomWorldStressTester> randomWorldStressTesterMap = new HashMap<>();
@@ -50,6 +48,9 @@ public class StressTestSaver extends AbstractFeatureManager {
             }
 
             if (type.equals("area")) {
+                if (!FakePlayerMaker.settings.getBoolean("areaStressTester")) {
+                    continue;
+                }
                 Location loc1 = ObjectConverter.toLocation(section.getString("pos1", ""));
                 Location loc2 = ObjectConverter.toLocation(section.getString("pos2", ""));
                 if (loc1 == null || loc2 == null) {
@@ -65,7 +66,7 @@ public class StressTestSaver extends AbstractFeatureManager {
                 ), amount));
             } else if (type.equals("randomworld")) {
                 boolean b = section.getBoolean("amountPerWorld", false);
-                randomWorldStressTesterMap.put(key, new RandomWorldStressTester(b, amount));
+                randomWorldStressTesterMap.put(key, new RandomWorldStressTester(b, amount, section.getStringList("ignoreWorlds")));
             } else {
                 logger.log(Level.WARNING, """
                         Failed to load stress tester {} from configuration,
@@ -83,31 +84,29 @@ public class StressTestSaver extends AbstractFeatureManager {
         return Optional.ofNullable(randomWorldStressTesterMap.get(name));
     }
 
-    @SuppressWarnings("unused")
-    public void newRandomWorldTester(String name) {
-        newRandomWorldTester(name, 100);
-    }
-
     public void newRandomWorldTester(String name, int amount) {
         newRandomWorldTester(name, amount, false);
     }
 
     public void newRandomWorldTester(String name, int amount, boolean isAmountPerWorld) {
+        newRandomWorldTester(name, amount, isAmountPerWorld, new ArrayList<>());
+    }
+
+    public void newRandomWorldTester(String name, int amount, boolean isAmountPerWorld, List<String> ignoreWorlds) {
         ConfigurationSection section = configuration.createSection(name);
         section.set("type", "randomworld");
         section.set("amountPerWorld", isAmountPerWorld);
         section.set("amount",amount);
-        randomWorldStressTesterMap.put(name,new RandomWorldStressTester(false, amount));
+        section.set("ignoreWorlds", ignoreWorlds);
+        randomWorldStressTesterMap.put(name,new RandomWorldStressTester(false, amount, ignoreWorlds));
         try {configuration.save(new File(FakePlayerMaker.INSTANCE.getDataFolder(), "stresses.yml"));
         } catch (IOException e) {throw new RuntimeException(e);}
     }
 
-    @SuppressWarnings("unused")
-    public void newAreaTester(String name, Location pos1, Location pos2){
-        newAreaTester(name, pos1, pos2, 100);
-    }
-
     public void newAreaTester(String name, Location pos1, Location pos2, int amount){
+        if (!FakePlayerMaker.settings.getBoolean("areaStressTester")) {
+            return;
+        }
         ConfigurationSection section = configuration.createSection(name);
         section.set("type", "area");
         section.set("pos1",ObjectConverter.toLocationString(pos1));
@@ -119,9 +118,11 @@ public class StressTestSaver extends AbstractFeatureManager {
     }
 
     public void stopAll(){
-        areaTesterMap.values().forEach(AreaStressTester::stop);
+        if (FakePlayerMaker.settings.getBoolean("areaStressTester")) {
+            areaTesterMap.values().forEach(AreaStressTester::stop);
+            areaTesterMap.clear();
+        }
         randomWorldStressTesterMap.values().forEach(RandomWorldStressTester::stop);
-        areaTesterMap.clear();
         randomWorldStressTesterMap.clear();
     }
 

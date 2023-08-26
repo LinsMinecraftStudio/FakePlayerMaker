@@ -4,6 +4,9 @@ import com.mojang.authlib.GameProfile;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
+import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStartEvent;
+import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStopEvent;
+import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTester;
 import org.lins.mmmjjkx.fakeplayermaker.WorldNotFoundException;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -33,7 +36,11 @@ public class AreaStressTester implements IStressTester {
     }
 
     @Override
-    public void start() throws WorldNotFoundException, IllegalStateException{
+    public void run() throws WorldNotFoundException, IllegalStateException{
+        if (!FakePlayerMaker.settings.getBoolean("areaStressTester")){
+            return;
+        }
+
         if (spawnRegion.getWorld() == null) {
             throw new WorldNotFoundException();
         }
@@ -42,6 +49,8 @@ public class AreaStressTester implements IStressTester {
         if (currentTimestamp - lastStartTimestamp < (5 * 1000L)){
             throw new IllegalStateException();
         }
+
+        new StressTesterStartEvent(this).callEvent();
 
         World world = BukkitAdapter.adapt(spawnRegion.getWorld());
         int y = spawnRegion.getMinimumY();
@@ -66,6 +75,7 @@ public class AreaStressTester implements IStressTester {
 
     @Override
     public void stop() {
+        new StressTesterStopEvent(this).callEvent();
         tempPlayers.values().forEach(server.getPlayerList()::remove);
         tempPlayers.clear();
     }

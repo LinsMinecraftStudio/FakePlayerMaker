@@ -1,11 +1,16 @@
 package org.lins.mmmjjkx.fakeplayermaker.utils;
 
 import com.mojang.authlib.GameProfile;
+import io.github.linsminecraftstudio.fakeplayermaker.api.events.FakePlayerCreateEvent;
+import io.github.linsminecraftstudio.fakeplayermaker.api.events.FakePlayerRemoveEvent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 
 import java.util.HashMap;
@@ -26,33 +31,43 @@ public class NMSFakePlayerMaker {
         }
     }
 
-    public static void spawnFakePlayer(Location loc, String name){
+    public static void spawnFakePlayer(Location loc, String name,@Nullable CommandSender sender){
         if (name == null || name.isBlank()) {
             name = getRandomName(FakePlayerMaker.randomNameLength);
         }
 
         MinecraftServer server = MinecraftServer.getServer();
+        Location realLoc = loc != null ? loc : FakePlayerMaker.settings.getLocation("defaultSpawnLocation");
 
-        Location realLoc = loc != null ? loc : FakePlayerMaker.defaultLocation;
+        if (realLoc == null) {
+            FakePlayerMaker.INSTANCE.getLogger().warning("Failed to create a fake player, the default spawn location is null");
+            return;
+        }
 
         ServerPlayer player = new ServerPlayer(server, (ServerLevel) getHandle(getCraftClass("CraftWorld"), realLoc.getWorld()), new GameProfile(Bukkit.getOfflinePlayer(name).getUniqueId(), name));
+        Player craftPlayer = (Player) player.getBukkitEntity();
+        new FakePlayerCreateEvent(craftPlayer, sender);
+
         player.getBukkitEntity().teleport(realLoc);
 
         fakePlayerMap.put(name, player);
         saver.syncPlayerInfo(player);
         MinecraftServer.getServer().getPlayerList().placeNewPlayer(player.connection.connection, player);
     }
-    public static void removeFakePlayer(String name){
+
+    public static void removeFakePlayer(String name,@Nullable CommandSender sender){
         ServerPlayer player = fakePlayerMap.get(name);
         if (player != null) {
+            new FakePlayerRemoveEvent(player.getBukkitEntity(), sender).callEvent();
             fakePlayerMap.remove(name);
             saver.removeFakePlayer(name);
             MinecraftServer.getServer().getPlayerList().remove(player);
         }
     }
-    public static void removeAllFakePlayers(){
+
+    public static void removeAllFakePlayers(@Nullable CommandSender sender){
         for (String name : fakePlayerMap.keySet()) {
-            removeFakePlayer(name);
+            removeFakePlayer(name, sender);
         }
         fakePlayerMap.clear();
     }
