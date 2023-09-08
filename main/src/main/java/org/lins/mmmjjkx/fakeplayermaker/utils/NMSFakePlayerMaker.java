@@ -45,20 +45,21 @@ public class NMSFakePlayerMaker {
         }
 
         ServerPlayer player = new ServerPlayer(server, (ServerLevel) getHandle(getCraftClass("CraftWorld"), realLoc.getWorld()), new GameProfile(Bukkit.getOfflinePlayer(name).getUniqueId(), name));
-        Player craftPlayer = (Player) player.getBukkitEntity();
-        new FakePlayerCreateEvent(craftPlayer, sender);
 
         player.getBukkitEntity().teleport(realLoc);
 
         fakePlayerMap.put(name, player);
         saver.syncPlayerInfo(player);
+
+        new FakePlayerCreateEvent(player.getBukkitEntity(), sender);
+
         MinecraftServer.getServer().getPlayerList().placeNewPlayer(player.connection.connection, player);
     }
 
     public static void removeFakePlayer(String name,@Nullable CommandSender sender){
         ServerPlayer player = fakePlayerMap.get(name);
         if (player != null) {
-            new FakePlayerRemoveEvent(player.getBukkitEntity(), sender).callEvent();
+            new FakePlayerRemoveEvent(player.getName().getString(), sender).callEvent();
             fakePlayerMap.remove(name);
             saver.removeFakePlayer(name);
             MinecraftServer.getServer().getPlayerList().remove(player);
