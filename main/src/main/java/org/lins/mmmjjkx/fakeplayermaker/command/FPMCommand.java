@@ -62,7 +62,7 @@ public class FPMCommand extends PolymerCommand {
 
     @Override
     public boolean execute(@NotNull CommandSender commandSender, @NotNull String s, @NotNull String[] strings) {
-        if (hasPermission(commandSender)) {
+        if (hasCustomPermission(commandSender,"command")) {
             if (strings.length == 1) {
                 return switch (strings[0]) {
                     case "add" -> {
@@ -158,8 +158,8 @@ public class FPMCommand extends PolymerCommand {
                     Polymer.messageHandler.sendMessage(commandSender, "Command.ArgError");
                     return false;
                 }
-            }*/ else if (strings.length==4 & strings[0].equals("stress")) {
-                return switch (strings[1]) {
+            }*/ else if (strings.length==4 && strings[0].equals("stress")) {
+                return hasCustomPermission(commandSender, "command.stress") && switch (strings[1]) {
                     case "area" -> {
                         Optional<AreaStressTester> tester = FakePlayerMaker.stressTestSaver.getStressTesterArea(strings[3]);
                         switch (strings[2]) {
@@ -252,9 +252,9 @@ public class FPMCommand extends PolymerCommand {
                         yield false;
                     }
                 };
-            } else if (strings.length==5 & strings[0].equals("stress")){
+            } else if (strings.length==5 && strings[0].equals("stress")){
                 int amount = toInteger(commandSender, strings[4], 5);
-                return switch (strings[1]) {
+                return hasCustomPermission(commandSender, "command.stress") && switch (strings[1]) {
                     case "area" -> {
                         if (strings[2].equals("create")){
                             if (amount != -100) {

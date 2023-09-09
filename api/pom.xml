@@ -22,6 +22,13 @@
 		<version>1.0</version>
 	</parent>
 
+	<pluginRepositories>
+		<pluginRepository>
+			<id>bytecode.space</id>
+			<url>https://repo.bytecode.space/repository/maven-public/</url>
+		</pluginRepository>
+	</pluginRepositories>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -58,6 +65,19 @@
 						<phase>generate-sources</phase>
 						<goals>
 							<goal>delombok</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>ca.bkaw</groupId>
+				<artifactId>paper-nms-maven-plugin</artifactId>
+				<version>1.4.2</version>
+				<executions>
+					<execution>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>remap</goal>
 						</goals>
 					</execution>
 				</executions>

@@ -7,6 +7,9 @@ import com.sk89q.worldedit.regions.CuboidRegion;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStartEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStopEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTester;
+import io.netty.channel.embedded.EmbeddedChannel;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.PacketFlow;
 import org.lins.mmmjjkx.fakeplayermaker.WorldNotFoundException;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -17,6 +20,7 @@ import org.bukkit.World;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 
+import java.net.InetSocketAddress;
 import java.util.*;
 
 import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getCraftClass;
@@ -68,7 +72,9 @@ public class AreaStressTester implements IStressTester {
             player.getBukkitEntity().teleport(new Location(world, flatLocation.getX(), y, flatLocation.getZ()));
 
             tempPlayers.put(player.getName().getString(), player);
-            server.getPlayerList().placeNewPlayer(player.connection.connection, player);
+            Connection connection = new Connection(PacketFlow.SERVERBOUND);
+            connection.channel = new EmbeddedChannel();
+            server.getPlayerList().placeNewPlayer(connection, player);
         }
         lastStartTimestamp = currentTimestamp;
     }

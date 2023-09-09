@@ -4,6 +4,9 @@ import com.mojang.authlib.GameProfile;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStartEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStopEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTester;
+import io.netty.channel.embedded.EmbeddedChannel;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -15,6 +18,7 @@ import org.bukkit.World;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 
+import java.net.InetSocketAddress;
 import java.util.*;
 
 import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getCraftClass;
@@ -83,7 +87,10 @@ public class RandomWorldStressTester implements IStressTester {
             UUID uuid = Bukkit.getOfflinePlayer(finalName).getUniqueId();
 
             ServerPlayer player = new ServerPlayer(server, level, new GameProfile(uuid, finalName));
-            playerList.placeNewPlayer(player.connection.connection, player);
+            Connection connection = new Connection(PacketFlow.SERVERBOUND);
+            connection.channel = new EmbeddedChannel();
+
+            playerList.placeNewPlayer(connection, player);
             player.getBukkitEntity().teleport(location);
 
             tempPlayers.put(finalName, player);

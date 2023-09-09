@@ -1,6 +1,7 @@
 package org.lins.mmmjjkx.fakeplayermaker.utils;
 
 import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
 import io.github.linsminecraftstudio.polymer.objects.plugin.AbstractFileStorage;
 import io.github.linsminecraftstudio.polymer.utils.ListUtil;
 import io.github.linsminecraftstudio.polymer.utils.ObjectConverter;
@@ -15,9 +16,10 @@ import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+
+import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getCraftClass;
+import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getHandle;
 
 public class FakePlayerSaver extends AbstractFileStorage {
     private YamlConfiguration configuration;
@@ -37,8 +39,8 @@ public class FakePlayerSaver extends AbstractFileStorage {
         ConfigurationSection section = getOrElseCreate(player.getName().getString());
         section.set("uuid", player.getUUID().toString());
         section.set("location", ObjectConverter.toLocationString(player.getBukkitEntity().getLocation()));
-        section.set("skin", ListUtil.getIf(player.gameProfile.getProperties().get("textures"),
-                p -> p.getName().equals("textures")));
+        Optional<Property> prop = ListUtil.getIf(player.gameProfile.getProperties().get("textures"), p -> p.getName().equals("textures"));
+        prop.ifPresent(property -> section.set("skin", property.getValue()));
         try {configuration.save(cfgFile);
         } catch (IOException e) {throw new RuntimeException(e);}
     }
@@ -55,7 +57,7 @@ public class FakePlayerSaver extends AbstractFileStorage {
             ConfigurationSection section = configuration.getConfigurationSection(sectionName);
             if (section == null) continue;
             UUID uuid = UUID.fromString(section.getString("uuid", Bukkit.getOfflinePlayer(sectionName).getUniqueId().toString()));
-            ServerLevel level = (ServerLevel) Bukkit.getWorlds().get(0);
+            ServerLevel level = (ServerLevel) getHandle(getCraftClass("CraftWorld"), Bukkit.getWorlds().get(0));
             ServerPlayer player = new ServerPlayer(MinecraftServer.getServer(), level, new GameProfile(uuid, sectionName));
             players.add(player);
         }

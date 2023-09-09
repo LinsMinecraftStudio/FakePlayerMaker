@@ -23,11 +23,11 @@ public final class FakePlayerMaker extends PolymerPlugin{
     public void onPlEnable() {
         // Plugin startup logic
         INSTANCE = this;
+        settings = new SimpleSettingsManager(getConfig());
         completeLangFile("en-us","zh-cn");
         fakePlayerSaver = new FakePlayerSaver();
         stressTestSaver = new StressTestSaver();
         new Metrics(this, 19435);
-        settings = new SimpleSettingsManager(getConfig());
         randomNameLength = settings.getInt("randomNameLength");
 
         fakePlayerSaver.reload();

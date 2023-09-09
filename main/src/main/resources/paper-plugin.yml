@@ -4,8 +4,12 @@ main: org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker
 api-version: "1.20"
 website: https://github.com/LinsMinecraftStudio/FakePlayerMaker
 bootstrapper: org.lins.mmmjjkx.fakeplayermaker.paper.FPMBootStrap
-loader: org.lins.mmmjjkx.fakeplayermake.paper.FPMLoader
+loader: org.lins.mmmjjkx.fakeplayermaker.paper.FPMLoader
+has-open-classloader: true
 dependencies:
   - name: Polymer
     required: true
     bootstrap: false
+permissions:
+  fakeplayermaker.command:
+    description: allows you to use /fakeplayermaker command
