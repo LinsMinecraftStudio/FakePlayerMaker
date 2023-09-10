@@ -24,6 +24,7 @@ import org.lins.mmmjjkx.fakeplayermaker.stress.AreaStressTester;
 import org.lins.mmmjjkx.fakeplayermaker.stress.RandomWorldStressTester;
 import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -40,17 +41,17 @@ public class FPMCommand extends PolymerCommand {
     }
 
     @Override
-    public void sendMessage(CommandSender sender, String message, Object... args) {
+    protected void sendMessage(CommandSender sender, String message, Object... args) {
         FakePlayerMaker.messageHandler.sendMessage(sender, message, args);
     }
 
     @Override
     public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
         if (args.length == 1) {
-            return copyPartialMatches(args[0], List.of("add","reload","removeAll","remove", "stress"));
+            return copyPartialMatches(args[0], List.of("add","reload","removeAll","remove", "stress","join"));
         } else if (args.length == 2) {
             return switch (args[0]) {
-                case "remove","teleport","tp" -> copyPartialMatches(args[1], NMSFakePlayerMaker.fakePlayerMap.keySet());
+                case "remove","teleport","tp","join" -> copyPartialMatches(args[1], NMSFakePlayerMaker.fakePlayerMap.keySet());
                 case "stress" -> copyPartialMatches(args[1], List.of("area","randomworld"));
                 default -> new ArrayList<>();
             };
@@ -76,7 +77,7 @@ public class FPMCommand extends PolymerCommand {
                         yield true;
                     }
                     case "reload" -> {
-                        pluginInstance.reloadConfig();
+                        FakePlayerMaker.settings.saveAndReload(new File(FakePlayerMaker.INSTANCE.getDataFolder(),"config.yml"));
                         FakePlayerMaker.fakePlayerSaver.reload();
                         sendMessage(commandSender, "ReloadSuccess");
                         yield true;
@@ -136,6 +137,14 @@ public class FPMCommand extends PolymerCommand {
                             yield false;
                         }
                     }
+                    case "join" -> {
+                        if (NMSFakePlayerMaker.fakePlayerMap.containsKey(name)) {
+                            NMSFakePlayerMaker.joinFakePlayer(name);
+                            yield true;
+                        }
+                        sendMessage(commandSender, "Command.PlayerNotFound");
+                        yield false;
+                    }
                     default -> {
                         Polymer.messageHandler.sendMessage(commandSender, "Command.ArgError");
                         yield false;
@@ -164,6 +173,10 @@ public class FPMCommand extends PolymerCommand {
                         Optional<AreaStressTester> tester = FakePlayerMaker.stressTestSaver.getStressTesterArea(strings[3]);
                         switch (strings[2]) {
                             case "start" -> {
+                                if (!FakePlayerMaker.settings.getBoolean("areaStressTesters")) {
+                                    sendMessage(commandSender, "Stress.AreaNotEnabled");
+                                    yield false;
+                                }
                                 if (tester.isEmpty()) {
                                     sendMessage(commandSender, "Stress.NotFound");
                                     yield false;
@@ -181,6 +194,10 @@ public class FPMCommand extends PolymerCommand {
                                 yield true;
                             }
                             case "stop" -> {
+                                if (!FakePlayerMaker.settings.getBoolean("areaStressTesters")) {
+                                    sendMessage(commandSender, "Stress.AreaNotEnabled");
+                                    yield false;
+                                }
                                 if (tester.isEmpty()) {
                                     sendMessage(commandSender, "Stress.NotFound");
                                     yield false;
@@ -295,6 +312,11 @@ public class FPMCommand extends PolymerCommand {
     private boolean handleAreaCreate(@NotNull CommandSender commandSender, @NotNull String[] strings, int amount) {
         Player p = toPlayer(commandSender);
         if (p != null) {
+            if (!FakePlayerMaker.settings.getBoolean("areaStressTesters")) {
+                sendMessage(commandSender, "Stress.AreaNotEnabled");
+                return false;
+            }
+
             com.sk89q.worldedit.entity.Player wep = BukkitAdapter.adapt(p);
             SessionManager manager = WorldEdit.getInstance().getSessionManager();
             LocalSession session = manager.get(wep);

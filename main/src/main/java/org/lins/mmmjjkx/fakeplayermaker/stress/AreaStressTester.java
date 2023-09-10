@@ -4,27 +4,26 @@ import com.mojang.authlib.GameProfile;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
+import io.github.linsminecraftstudio.fakeplayermaker.api.events.FakePlayerCreateEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStartEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStopEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTester;
-import io.netty.channel.embedded.EmbeddedChannel;
-import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.PacketFlow;
-import org.lins.mmmjjkx.fakeplayermaker.WorldNotFoundException;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
+import org.lins.mmmjjkx.fakeplayermaker.WorldNotFoundException;
+import org.lins.mmmjjkx.fakeplayermaker.objects.EmptyConnection;
+import org.lins.mmmjjkx.fakeplayermaker.objects.EmptyGamePackListener;
+import org.lins.mmmjjkx.fakeplayermaker.objects.EmptyLoginPacketListener;
 import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 
-import java.net.InetSocketAddress;
 import java.util.*;
 
-import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getCraftClass;
-import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getHandle;
+import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.*;
 
 public class AreaStressTester implements IStressTester {
     private final Map<String, ServerPlayer> tempPlayers = new HashMap<>();
@@ -65,16 +64,28 @@ public class AreaStressTester implements IStressTester {
 
         for (int i = 0; i < amount; i++) {
             String finalName = randomNamePrefix + (i + 1);
-            UUID uuid = Bukkit.getOfflinePlayer(finalName).getUniqueId();
+            UUID uuid = UUID.randomUUID();
             BlockVector3 flatLocation = list.get(random.nextInt(amount));
 
             ServerPlayer player = new ServerPlayer(server, level, new GameProfile(uuid, finalName));
-            player.getBukkitEntity().teleport(new Location(world, flatLocation.getX(), y, flatLocation.getZ()));
 
             tempPlayers.put(player.getName().getString(), player);
-            Connection connection = new Connection(PacketFlow.SERVERBOUND);
-            connection.channel = new EmbeddedChannel();
+
+            var connection = new EmptyConnection(PacketFlow.CLIENTBOUND);
+            var listener = new EmptyGamePackListener(server, connection, player);
+            var listener2 = new EmptyLoginPacketListener(server, connection);
+
+            listener.teleport(new Location(world, flatLocation.getX(), y, flatLocation.getZ()));
+
+            new FakePlayerCreateEvent(player.getBukkitEntity(), null).callEvent();
+            simulateLogin(player);
+
+            connection.setListener(listener);
+
             server.getPlayerList().placeNewPlayer(connection, player);
+            player.connection = listener;
+
+            connection.setListener(listener2);
         }
         lastStartTimestamp = currentTimestamp;
     }

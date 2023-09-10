@@ -1,2 +1,3 @@
 exampleTester:
   type: area
+  amount: 100

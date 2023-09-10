@@ -11,3 +11,4 @@ Stress:
   StartFast: "&4你开启这个压测器太快了！"
   TesterCreated: "&a已成功创建压测器，请前往stresses.yml修改相关设置！"
   SelectRegion: "&4您必须选择一个区域！"
+  AreaNotEnabled: "&4你应该在config.yml里启用 'areaStressTesters' ！"

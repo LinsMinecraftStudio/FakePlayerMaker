@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>FakePlayerMaker</artifactId>
-	<version>1.1.1</version>
+	<version>1.1.2</version>
 	<packaging>jar</packaging>
 
 	<name>FakePlayerMaker</name>
@@ -76,7 +76,37 @@
 		</resources>
 	</build>
 
+	<repositories>
+		<repository>
+			<id>dmulloy2-repo</id>
+			<url>https://repo.dmulloy2.net/repository/public/</url>
+		</repository>
+		<repository>
+			<id>codemc-repo</id>
+			<url>https://repo.codemc.org/repository/maven-public/</url>
+		</repository>
+	</repositories>
+
 	<dependencies>
+		<dependency>
+			<groupId>com.comphenix.protocol</groupId>
+			<artifactId>ProtocolLib</artifactId>
+			<version>4.8.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.github.nulli0n</groupId>
+			<artifactId>NexEngine-spigot</artifactId>
+			<version>v2.2.11</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/lib/NexEngine.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>fr.xephi</groupId>
+			<artifactId>authme</artifactId>
+			<version>5.6.0-SNAPSHOT</version>
+			<scope>provided</scope>
+		</dependency>
 		<dependency>
 			<groupId>com.sk89q.worldedit</groupId>
 			<artifactId>worldedit-bukkit</artifactId>
@@ -106,5 +136,7 @@
 			<artifactId>FakePlayerMakerAPI</artifactId>
 			<version>1.0-SNAPSHOT</version>
 		</dependency>
+
+		<!-- Unregister handlers-->
 	</dependencies>
 </project>

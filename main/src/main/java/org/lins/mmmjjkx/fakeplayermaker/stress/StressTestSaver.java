@@ -40,10 +40,7 @@ public class StressTestSaver extends AbstractFileStorage {
 
             int amount = section.getInt("amount");
             if (amount == 0) {
-                logger.log(Level.WARNING, """
-                        Stress tester {} hasn't set the amount,
-                        default set to 100.
-                        """, key);
+                logger.log(Level.WARNING, "Stress tester "+ key +" hasn't set the amount, default set to 100.");
                 amount = 100;
             }
 

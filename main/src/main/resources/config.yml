@@ -1,7 +1,5 @@
 language: en-us
-commandAliases:
-  - "fpm"
-  - "fp"
+namePrefix: "fake_"
 randomNameLength: 10
 defaultSpawnLocation:
   world: "world"
@@ -10,6 +8,9 @@ defaultSpawnLocation:
   z: 0
   pitch: 0
   yaw: 0
+#If you have installed AuthmeReloaded in your server, please set it to true.
+#It will make your fake players can pass login or register.
+authme-compatibility: false
 #Please install the WorldEdit or FastAsyncWorldEdit plugin before turn it on!
 #Recommended creating an open area to create a stress tester.
 areaStressTesters: false

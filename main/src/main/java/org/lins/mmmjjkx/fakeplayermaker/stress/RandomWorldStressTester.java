@@ -1,11 +1,10 @@
 package org.lins.mmmjjkx.fakeplayermaker.stress;
 
 import com.mojang.authlib.GameProfile;
+import io.github.linsminecraftstudio.fakeplayermaker.api.events.FakePlayerCreateEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStartEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStopEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTester;
-import io.netty.channel.embedded.EmbeddedChannel;
-import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -16,13 +15,14 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
+import org.lins.mmmjjkx.fakeplayermaker.objects.EmptyConnection;
+import org.lins.mmmjjkx.fakeplayermaker.objects.EmptyGamePackListener;
+import org.lins.mmmjjkx.fakeplayermaker.objects.EmptyLoginPacketListener;
 import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 
-import java.net.InetSocketAddress;
 import java.util.*;
 
-import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getCraftClass;
-import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getHandle;
+import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.*;
 
 public class RandomWorldStressTester implements IStressTester {
     private final Map<String, ServerPlayer> tempPlayers = new HashMap<>();
@@ -60,7 +60,7 @@ public class RandomWorldStressTester implements IStressTester {
                 }
                 ServerLevel level = (ServerLevel) getHandle(getCraftClass("CraftWorld"), world);
                 Location location = generate(world);
-                placePlayer(server, playerList, randomNamePrefix, level, location, amount);
+                placePlayer(server, randomNamePrefix, level, location, amount);
             }
         } else {
             for (int i = 0; i < worlds.size(); i++) {
@@ -73,7 +73,7 @@ public class RandomWorldStressTester implements IStressTester {
                 Location location = generate(world);
                 int placeAmount = random.nextInt(amount);
                 if (amount == 0) return;
-                placePlayer(server, playerList, randomNamePrefix, level, location, placeAmount);
+                placePlayer(server, randomNamePrefix, level, location, placeAmount);
                 amount -= placeAmount;
             }
         }
@@ -81,17 +81,28 @@ public class RandomWorldStressTester implements IStressTester {
         lastStartTimestamp = currentTimestamp;
     }
 
-    private void placePlayer(MinecraftServer server, PlayerList playerList, String randomNamePrefix, ServerLevel level, Location location, int amount) {
+    private void placePlayer(MinecraftServer server, String randomNamePrefix, ServerLevel level, Location location, int amount) {
         for (int i = 0; i < amount; i++) {
             String finalName = randomNamePrefix + (i+1);
             UUID uuid = Bukkit.getOfflinePlayer(finalName).getUniqueId();
 
             ServerPlayer player = new ServerPlayer(server, level, new GameProfile(uuid, finalName));
-            Connection connection = new Connection(PacketFlow.SERVERBOUND);
-            connection.channel = new EmbeddedChannel();
 
-            playerList.placeNewPlayer(connection, player);
-            player.getBukkitEntity().teleport(location);
+            var connection = new EmptyConnection(PacketFlow.CLIENTBOUND);
+            var listener = new EmptyGamePackListener(server, connection, player);
+            var listener2 = new EmptyLoginPacketListener(server, connection);
+
+            listener.teleport(location);
+
+            new FakePlayerCreateEvent(player.getBukkitEntity(), null).callEvent();
+            simulateLogin(player);
+
+            connection.setListener(listener);
+
+            server.getPlayerList().placeNewPlayer(connection, player);
+            player.connection = listener;
+
+            connection.setListener(listener2);
 
             tempPlayers.put(finalName, player);
         }

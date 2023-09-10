@@ -9,6 +9,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
@@ -57,8 +58,11 @@ public class FakePlayerSaver extends AbstractFileStorage {
             ConfigurationSection section = configuration.getConfigurationSection(sectionName);
             if (section == null) continue;
             UUID uuid = UUID.fromString(section.getString("uuid", Bukkit.getOfflinePlayer(sectionName).getUniqueId().toString()));
-            ServerLevel level = (ServerLevel) getHandle(getCraftClass("CraftWorld"), Bukkit.getWorlds().get(0));
+            Location location = ObjectConverter.toLocation(section.getString("location", ""));
+            if (location == null) continue;
+            ServerLevel level = (ServerLevel) getHandle(getCraftClass("CraftWorld"), location.getWorld());
             ServerPlayer player = new ServerPlayer(MinecraftServer.getServer(), level, new GameProfile(uuid, sectionName));
+            player.teleportTo(level, location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
             players.add(player);
         }
         return players;
