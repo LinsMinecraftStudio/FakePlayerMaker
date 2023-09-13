@@ -9,7 +9,6 @@ import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.players.PlayerList;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -50,7 +49,6 @@ public class RandomWorldStressTester implements IStressTester {
 
         Random random = new Random();
         List<World> worlds = Bukkit.getWorlds();
-        PlayerList playerList = server.getPlayerList();
 
         if (isAmountPerWorld) {
             String randomNamePrefix = NMSFakePlayerMaker.getRandomName(FakePlayerMaker.randomNameLength);

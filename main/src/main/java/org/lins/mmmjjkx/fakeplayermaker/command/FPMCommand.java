@@ -1,25 +1,16 @@
 package org.lins.mmmjjkx.fakeplayermaker.command;
 
-import com.sk89q.worldedit.IncompleteRegionException;
-import com.sk89q.worldedit.LocalSession;
-import com.sk89q.worldedit.WorldEdit;
-import com.sk89q.worldedit.bukkit.BukkitAdapter;
-import com.sk89q.worldedit.math.BlockVector3;
-import com.sk89q.worldedit.regions.CuboidRegion;
-import com.sk89q.worldedit.regions.Region;
-import com.sk89q.worldedit.session.SessionManager;
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTester;
-import org.lins.mmmjjkx.fakeplayermaker.WorldNotFoundException;
 import io.github.linsminecraftstudio.polymer.Polymer;
 import io.github.linsminecraftstudio.polymer.command.PolymerCommand;
 import io.github.linsminecraftstudio.polymer.utils.ObjectConverter;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
+import org.lins.mmmjjkx.fakeplayermaker.WorldNotFoundException;
 import org.lins.mmmjjkx.fakeplayermaker.stress.AreaStressTester;
 import org.lins.mmmjjkx.fakeplayermaker.stress.RandomWorldStressTester;
 import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
@@ -30,9 +21,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static org.lins.mmmjjkx.fakeplayermaker.utils.WEHook.handleAreaCreate;
+
 public class FPMCommand extends PolymerCommand {
-    public FPMCommand(@NotNull String name, List<String> aliases) {
-        super(name, aliases);
+    public FPMCommand(@NotNull String name) {
+        super(name);
     }
 
     @Override
@@ -46,7 +39,7 @@ public class FPMCommand extends PolymerCommand {
     }
 
     @Override
-    public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
+    public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) {
         if (args.length == 1) {
             return copyPartialMatches(args[0], List.of("add","reload","removeAll","remove", "stress","join"));
         } else if (args.length == 2) {
@@ -55,8 +48,14 @@ public class FPMCommand extends PolymerCommand {
                 case "stress" -> copyPartialMatches(args[1], List.of("area","randomworld"));
                 default -> new ArrayList<>();
             };
-        } else if (args.length==3 & args[0].equals("stress")) {
+        } else if (args.length==3 && args[0].equalsIgnoreCase("stress")) {
             return List.of("start","stop","players","create");
+        } else if (args.length == 4 && args[0].equals("stress")) {
+            if (args[1].equalsIgnoreCase("area")) {
+                return copyPartialMatches(args[3], FakePlayerMaker.stressTestSaver.getAreaTesterNames());
+            } else if (args[1].equalsIgnoreCase("randomworld")){
+                return copyPartialMatches(args[3], FakePlayerMaker.stressTestSaver.getRWTesterNames());
+            }
         }
         return new ArrayList<>();
     }
@@ -117,7 +116,7 @@ public class FPMCommand extends PolymerCommand {
                             sendMessage(commandSender, "RemoveSuccess");
                             yield true;
                         } else {
-                            sendMessage(commandSender, "Command.PlayerNotFound");
+                            sendMessage(commandSender, "PlayerNotFound");
                             yield false;
                         }
                     }
@@ -133,7 +132,7 @@ public class FPMCommand extends PolymerCommand {
                             sendMessage(commandSender, "TeleportSuccess");
                             yield true;
                         } else {
-                            sendMessage(commandSender, "Command.PlayerNotFound");
+                            sendMessage(commandSender, "PlayerNotFound");
                             yield false;
                         }
                     }
@@ -142,7 +141,7 @@ public class FPMCommand extends PolymerCommand {
                             NMSFakePlayerMaker.joinFakePlayer(name);
                             yield true;
                         }
-                        sendMessage(commandSender, "Command.PlayerNotFound");
+                        sendMessage(commandSender, "PlayerNotFound");
                         yield false;
                     }
                     default -> {
@@ -301,45 +300,6 @@ public class FPMCommand extends PolymerCommand {
                 Polymer.messageHandler.sendMessage(commandSender, "Command.ArgError");
                 return false;
             }
-        }
-        return false;
-    }
-
-    private boolean handleAreaCreate(@NotNull CommandSender sender, @NotNull String[] strings) {
-        return handleAreaCreate(sender, strings, 100);
-    }
-
-    private boolean handleAreaCreate(@NotNull CommandSender commandSender, @NotNull String[] strings, int amount) {
-        Player p = toPlayer(commandSender);
-        if (p != null) {
-            if (!FakePlayerMaker.settings.getBoolean("areaStressTesters")) {
-                sendMessage(commandSender, "Stress.AreaNotEnabled");
-                return false;
-            }
-
-            com.sk89q.worldedit.entity.Player wep = BukkitAdapter.adapt(p);
-            SessionManager manager = WorldEdit.getInstance().getSessionManager();
-            LocalSession session = manager.get(wep);
-            Region region;
-            try {
-                region = session.getSelection();
-            } catch (IncompleteRegionException e) {
-                sendMessage(commandSender, "Stress.SelectRegion");
-                return false;
-            }
-            CuboidRegion cr = region.getBoundingBox();
-            if (cr.getWorld() == null) {
-                sendMessage(commandSender, "Stress.AreaWorldNotFound");
-                return false;
-            }
-            World bkWorld = BukkitAdapter.adapt(cr.getWorld());
-            BlockVector3 bv3p1 = cr.getPos1();
-            BlockVector3 bv3p2 = cr.getPos2();
-            Location pos1 = new Location(bkWorld, bv3p1.getX(), bv3p1.getY(), bv3p1.getZ());
-            Location pos2 = new Location(bkWorld, bv3p2.getX(), bv3p2.getY(), bv3p2.getZ());
-            FakePlayerMaker.stressTestSaver.newAreaTester(strings[2], pos1, pos2, amount);
-            sendMessage(commandSender, "Stress.TesterCreated");
-            return true;
         }
         return false;
     }

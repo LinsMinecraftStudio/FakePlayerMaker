@@ -4,6 +4,7 @@ RemoveAllSuccess: "&aRemoved all fake players."
 TeleportSuccess: "&aTeleported to a fake player."
 CreateSuccess: "&aCreated a new fake player."
 PlayerNotFound: "&4That fake player is not found..."
+RemoveSuccess: "&aRemoved the fake player."
 Stress:
   AreaWorldNotFound: "&4Unable to find the world to which the stress area of this area stress tester belongs."
   NotFound: "&4That stress tester is not found..."

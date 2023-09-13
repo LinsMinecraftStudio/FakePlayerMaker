@@ -1,6 +1,10 @@
 language: en-us
 namePrefix: "fake_"
 randomNameLength: 10
+player:
+  invulnerable: false
+  canPickupItems: false
+  collision: false
 defaultSpawnLocation:
   world: "world"
   x: 0

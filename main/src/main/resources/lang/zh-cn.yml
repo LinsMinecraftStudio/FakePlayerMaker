@@ -4,6 +4,7 @@ RemoveAllSuccess: "&a已移除所有假人！"
 TeleportSuccess: "&a已传送至一个假人。"
 CreateSuccess: "&a已创建一个新假人。"
 PlayerNotFound: "&4那个假人不存在。。。"
+RemoveSuccess: "&a已移除这个假人。"
 Stress:
   AreaWorldNotFound: "&4无法找到此压测器的压测区域所属的世界。"
   NotFound: "&4那个压测器不存在。。。"

@@ -2,10 +2,7 @@ package org.lins.mmmjjkx.fakeplayermaker.objects;
 
 import io.netty.channel.*;
 import net.minecraft.network.Connection;
-import net.minecraft.network.PacketSendListener;
-import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketFlow;
-import org.jetbrains.annotations.NotNull;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -22,20 +19,6 @@ public class EmptyConnection extends Connection {
     public boolean isConnected() {
         return true;
     }
-
-    @Override
-    public void send(@NotNull Packet<?> packet, PacketSendListener listener) {
-    }
-
-    @Override
-    public void send(@NotNull Packet<?> packet) {
-    }
-
-    @Override
-    public void handleDisconnection() {
-        super.handleDisconnection();
-    }
-
 
     private static class EmptyChannel extends AbstractChannel {
 
@@ -75,7 +58,7 @@ public class EmptyConnection extends Connection {
 
         @Override
         public boolean isActive() {
-            return false;
+            return true;
         }
 
         @Override
@@ -90,7 +73,7 @@ public class EmptyConnection extends Connection {
 
         @Override
         protected SocketAddress localAddress0() {
-            return new InetSocketAddress(InetAddress.getLoopbackAddress().getHostName(), 25565);
+            return new InetSocketAddress(InetAddress.getLoopbackAddress().getHostName(), 60000);
         }
 
         @Override
@@ -110,7 +93,7 @@ public class EmptyConnection extends Connection {
 
         @Override
         protected SocketAddress remoteAddress0() {
-            return new InetSocketAddress(InetAddress.getLoopbackAddress().getHostName(), 25565);
+            return new InetSocketAddress(InetAddress.getLoopbackAddress().getHostName(), 60000);
         }
 
         @Override

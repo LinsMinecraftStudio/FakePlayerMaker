@@ -9,6 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.lins.mmmjjkx.fakeplayermaker.command.FPMCommand;
+import org.lins.mmmjjkx.fakeplayermaker.listeners.InteractListener;
 import org.lins.mmmjjkx.fakeplayermaker.stress.StressTestSaver;
 import org.lins.mmmjjkx.fakeplayermaker.utils.FakePlayerSaver;
 
@@ -25,10 +26,11 @@ public final class FakePlayerMaker extends PolymerPlugin{
     @Override
     public void onPlEnable() {
         // Plugin startup logic
+        suggestSpark();
         INSTANCE = this;
         settings = new SimpleSettingsManager(getConfig());
-        messageHandler = new PolymerMessageHandler(this);
         completeLangFile("en-us","zh-cn");
+        messageHandler = new PolymerMessageHandler(this);
         fakePlayerSaver = new FakePlayerSaver();
         stressTestSaver = new StressTestSaver();
         new Metrics(this, 19435);
@@ -36,6 +38,8 @@ public final class FakePlayerMaker extends PolymerPlugin{
 
         fakePlayerSaver.reload();
         stressTestSaver.reload();
+
+        getServer().getPluginManager().registerEvents(new InteractListener(), this);
     }
 
     @Override
@@ -45,7 +49,7 @@ public final class FakePlayerMaker extends PolymerPlugin{
 
     @Override
     public List<PolymerCommand> registerCommands() {
-        return List.of(new FPMCommand("fakeplayermaker", getConfig().getStringList("commandAliases")));
+        return List.of(new FPMCommand("fakeplayermaker"));
     }
 
     @Override

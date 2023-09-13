@@ -195,5 +195,9 @@
 			<groupId>ca.bkaw</groupId>
 			<artifactId>paper-nms</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>io.github.linsminecraftstudio</groupId>
+			<artifactId>Polymer</artifactId>
+		</dependency>
 	</dependencies>
 </project>

@@ -89,12 +89,6 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.comphenix.protocol</groupId>
-			<artifactId>ProtocolLib</artifactId>
-			<version>4.8.0</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
 			<groupId>com.github.nulli0n</groupId>
 			<artifactId>NexEngine-spigot</artifactId>
 			<version>v2.2.11</version>
@@ -138,5 +132,11 @@
 		</dependency>
 
 		<!-- Unregister handlers-->
+		<dependency>
+			<groupId>com.comphenix.protocol</groupId>
+			<artifactId>ProtocolLib</artifactId>
+			<version>4.8.0</version>
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 </project>

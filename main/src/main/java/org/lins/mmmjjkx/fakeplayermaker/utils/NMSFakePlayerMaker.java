@@ -7,6 +7,8 @@ import fr.xephi.authme.AuthMe;
 import fr.xephi.authme.api.v3.AuthMeApi;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.FakePlayerCreateEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.FakePlayerRemoveEvent;
+import io.github.linsminecraftstudio.polymer.objects.plugin.SimpleSettingsManager;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -14,6 +16,7 @@ import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -25,13 +28,16 @@ import org.lins.mmmjjkx.fakeplayermaker.objects.EmptyLoginPacketListener;
 import su.nexmedia.engine.NexPlugin;
 
 import java.net.InetAddress;
+import java.security.SecureRandom;
 import java.util.*;
+import java.util.logging.Level;
 
 public class NMSFakePlayerMaker {
     public static Map<String, ServerPlayer> fakePlayerMap = new HashMap<>();
     private static final FakePlayerSaver saver = FakePlayerMaker.fakePlayerSaver;
     private static final MinecraftServer server = MinecraftServer.getServer();
     private static final InetAddress fakeAddress = InetAddress.getLoopbackAddress();
+    private static final SimpleSettingsManager settings = FakePlayerMaker.settings;
 
     static void reloadMap(List<ServerPlayer> players){
         new BukkitRunnable() {
@@ -50,6 +56,13 @@ public class NMSFakePlayerMaker {
                     var listener2 = new EmptyLoginPacketListener(server, connection);
                     connection.setListener(listener);
                     server.getPlayerList().placeNewPlayer(connection, player);
+
+                    player.setInvulnerable(settings.getBoolean("player.invulnerable"));
+
+                    Player bukkitPlayer = player.getBukkitEntity();
+                    bukkitPlayer.setCanPickupItems(settings.getBoolean("player.canPickupItems"));
+                    bukkitPlayer.setCollidable(settings.getBoolean("player.collision"));
+
                     connection.setListener(listener2);
 
                     if (FakePlayerMaker.isAuthmeOn()) {
@@ -57,9 +70,6 @@ public class NMSFakePlayerMaker {
                     }
 
                     preventListen();
-
-                    player.horizontalCollision = true;
-                    player.verticalCollision = true;
                 }
             }
         }.runTaskLater(FakePlayerMaker.INSTANCE, 10);
@@ -78,7 +88,11 @@ public class NMSFakePlayerMaker {
             return;
         }
 
-        ServerPlayer player = new ServerPlayer(server, (ServerLevel) getHandle(getCraftClass("CraftWorld"), realLoc.getWorld()), new GameProfile(UUID.randomUUID(), name));
+        if (!Strings.isNullOrEmpty(FakePlayerMaker.settings.getString("namePrefix"))) {
+            name = FakePlayerMaker.settings.getString("namePrefix") + name;
+        }
+
+        ServerPlayer player = new ServerPlayer(server, (ServerLevel) getHandle(getCraftClass("CraftWorld"), realLoc.getWorld()), new GameProfile(UUIDUtil.createOfflinePlayerUUID(name), name));
         var connection = new EmptyConnection(PacketFlow.CLIENTBOUND);
         var listener = new EmptyGamePackListener(server, connection, player);
         var listener2 = new EmptyLoginPacketListener(server, connection);
@@ -98,14 +112,24 @@ public class NMSFakePlayerMaker {
 
         server.getPlayerList().placeNewPlayer(connection, player);
         player.connection = listener;
+        player.setShiftKeyDown(false);
 
         preventListen();
 
         connection.setListener(listener2);
 
         if (FakePlayerMaker.isAuthmeOn()) {
+            if (!AuthMeApi.getInstance().isRegistered(player.getName().getString())) {
+                AuthMeApi.getInstance().forceRegister(player.getBukkitEntity(), getRandomName(10).replace(FakePlayerMaker.settings.getString("namePrefix"), ""));
+            }
             AuthMeApi.getInstance().forceLogin(player.getBukkitEntity());
         }
+
+        player.setInvulnerable(settings.getBoolean("player.invulnerable"));
+
+        Player bukkitPlayer = player.getBukkitEntity();
+        bukkitPlayer.setCanPickupItems(settings.getBoolean("player.canPickupItems"));
+        bukkitPlayer.setCollidable(settings.getBoolean("player.collision"));
 
         preventListen();
     }
@@ -127,25 +151,25 @@ public class NMSFakePlayerMaker {
             new FakePlayerRemoveEvent(player.getName().getString(), sender).callEvent();
             fakePlayerMap.remove(name);
             saver.removeFakePlayer(name);
-            MinecraftServer.getServer().getPlayerList().remove(player);
+            server.getPlayerList().remove(player);
         }
     }
 
-    public static void removeAllFakePlayers(@Nullable CommandSender sender){
-        for (String name : fakePlayerMap.keySet()) {
+    public static void removeAllFakePlayers(@Nullable CommandSender sender) {
+        Iterator<String> iterator = fakePlayerMap.keySet().iterator();
+        while (iterator.hasNext()) {
+            String name = iterator.next();
             removeFakePlayer(name, sender);
+            iterator.remove();
         }
-        fakePlayerMap.clear();
     }
+
     public static String getRandomName(int length) {
         char[] characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".toCharArray();
         StringBuilder builder = new StringBuilder(length);
-        Random random = new Random();
+        SecureRandom random = new SecureRandom();
         for (int i = 0; i < length; i++) {
             builder.append(characters[random.nextInt(length)]);
-        }
-        if (!Strings.isNullOrEmpty(FakePlayerMaker.settings.getString("namePrefix"))) {
-            builder.insert(0, FakePlayerMaker.settings.getString("namePrefix"));
         }
         return builder.toString();
     }
@@ -157,7 +181,9 @@ public class NMSFakePlayerMaker {
         try {
             c = Class.forName(className);
         } catch(Exception e) {
-            e.printStackTrace();
+            FakePlayerMaker.INSTANCE.getLogger().log(Level.WARNING, "Could not find CraftBukkit class for " + name + " .\n" +
+                    "Maybe your server minecraft version is not compatible with the plugin or an error occurred while executing the remap task, " +
+                    "you should open a issue in our github repo!(Please confirm that you are using an official plugin)", e);
         }
         return c;
     }
