@@ -48,8 +48,6 @@ public class NMSFakePlayerMaker {
                         server.getPlayerList().remove(player);
                     }
 
-                    simulateLogin(player);
-
                     fakePlayerMap.put(player.getName().getString(), player);
                     var connection = new EmptyConnection(PacketFlow.CLIENTBOUND);
                     var listener = new EmptyGamePackListener(server, connection, player);
@@ -62,6 +60,8 @@ public class NMSFakePlayerMaker {
                     Player bukkitPlayer = player.getBukkitEntity();
                     bukkitPlayer.setCanPickupItems(settings.getBoolean("player.canPickupItems"));
                     bukkitPlayer.setCollidable(settings.getBoolean("player.collision"));
+
+                    simulateLogin(player);
 
                     connection.setListener(listener2);
 
@@ -97,20 +97,21 @@ public class NMSFakePlayerMaker {
         var listener = new EmptyGamePackListener(server, connection, player);
         var listener2 = new EmptyLoginPacketListener(server, connection);
 
-        listener.teleport(realLoc);
-
         fakePlayerMap.put(name, player);
         saver.syncPlayerInfo(player);
 
         new FakePlayerCreateEvent(player.getBukkitEntity(), sender).callEvent();
         playerJoin(server, player, connection, listener, listener2);
+
+        listener.teleport(realLoc);
     }
 
     private static void playerJoin(MinecraftServer server, ServerPlayer player, EmptyConnection connection, EmptyGamePackListener listener, EmptyLoginPacketListener listener2) {
-        simulateLogin(player);
         connection.setListener(listener);
 
         server.getPlayerList().placeNewPlayer(connection, player);
+
+        simulateLogin(player);
         player.connection = listener;
         player.setShiftKeyDown(false);
 

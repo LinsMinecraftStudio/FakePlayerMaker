@@ -22,8 +22,9 @@ public class EmptyConnection extends Connection {
 
     private static class EmptyChannel extends AbstractChannel {
 
-        protected EmptyChannel() {
+        public EmptyChannel() {
             super(null);
+            this.pipeline().addLast("encoder", new EmptyEncoder());
         }
 
         private final ChannelConfig config = new DefaultChannelConfig(this);
