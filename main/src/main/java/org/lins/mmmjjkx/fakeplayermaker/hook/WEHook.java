@@ -1,4 +1,4 @@
-package org.lins.mmmjjkx.fakeplayermaker.utils;
+package org.lins.mmmjjkx.fakeplayermaker.hook;
 
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;

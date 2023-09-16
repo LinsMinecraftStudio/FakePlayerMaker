@@ -18,8 +18,6 @@
 	<modules>
 		<module>main</module>
 		<module>api</module>
-		<!--Addons-->
-		<module>addons/OwnableFakePlayer</module>
 	</modules>
 
 	<build>

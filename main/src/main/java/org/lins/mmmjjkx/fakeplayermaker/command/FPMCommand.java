@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.lins.mmmjjkx.fakeplayermaker.utils.WEHook.handleAreaCreate;
+import static org.lins.mmmjjkx.fakeplayermaker.hook.WEHook.handleAreaCreate;
 
 public class FPMCommand extends PolymerCommand {
     public FPMCommand(@NotNull String name) {

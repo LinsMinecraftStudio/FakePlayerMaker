@@ -24,21 +24,15 @@ public class EmptyConnection extends Connection {
 
         public EmptyChannel() {
             super(null);
-            this.pipeline().addLast("encoder", new EmptyEncoder());
+            this.pipeline().addFirst("encoder", new EmptyEncoder());
+            this.pipeline().addFirst("decoder", new EmptyDecoder());
         }
 
         private final ChannelConfig config = new DefaultChannelConfig(this);
 
-        private final static EventLoop EVENT_LOOP = new DefaultEventLoop();
-
         @Override
         public ChannelConfig config() {
-            config.setAutoRead(true);
             return config;
-        }
-
-        @Override
-        protected void doBeginRead() {
         }
 
         @Override
@@ -47,6 +41,10 @@ public class EmptyConnection extends Connection {
 
         @Override
         protected void doClose() {
+        }
+
+        @Override
+        protected void doBeginRead() {
         }
 
         @Override
@@ -95,11 +93,6 @@ public class EmptyConnection extends Connection {
         @Override
         protected SocketAddress remoteAddress0() {
             return new InetSocketAddress(InetAddress.getLoopbackAddress().getHostName(), 60000);
-        }
-
-        @Override
-        public EventLoop eventLoop() {
-            return EVENT_LOOP;
         }
     }
 }

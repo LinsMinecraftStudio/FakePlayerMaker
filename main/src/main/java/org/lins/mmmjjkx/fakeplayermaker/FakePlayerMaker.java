@@ -65,4 +65,8 @@ public final class FakePlayerMaker extends PolymerPlugin{
         JavaPlugin plugin = JavaPlugin.getPlugin(clazz);
         HandlerList.unregisterAll(plugin);
     }
+
+    public static boolean isProtocolLibLoaded() {
+        return Bukkit.getPluginManager().isPluginEnabled("ProtocolLib");
+    }
 }
