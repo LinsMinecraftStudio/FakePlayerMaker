@@ -66,6 +66,11 @@ public class AreaStressTester implements IStressTester {
             UUID uuid = UUID.randomUUID();
             BlockVector3 flatLocation = list.get(random.nextInt(amount));
 
+            if (level == null) {
+                stop();
+                return;
+            }
+
             ServerPlayer player = new ServerPlayer(server, level, new GameProfile(uuid, finalName));
 
             tempPlayers.put(player.getName().getString(), player);

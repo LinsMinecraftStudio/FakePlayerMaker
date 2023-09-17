@@ -4,7 +4,6 @@ import com.comphenix.protocol.injector.temporary.MinimalInjector;
 import com.comphenix.protocol.injector.temporary.TemporaryPlayerFactory;
 import com.google.common.base.Strings;
 import com.mojang.authlib.GameProfile;
-import fr.xephi.authme.AuthMe;
 import fr.xephi.authme.api.v3.AuthMeApi;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.FakePlayerCreateEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.FakePlayerRemoveEvent;

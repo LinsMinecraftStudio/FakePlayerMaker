@@ -35,7 +35,6 @@ class EmptyDecoder extends ByteToMessageDecoder {
             oos = new ObjectOutputStream(bos);
             oos.writeObject(obj);
         } catch (IOException e) {
-            e.printStackTrace();
             return new byte[0];
         } finally {
             if (oos != null) {

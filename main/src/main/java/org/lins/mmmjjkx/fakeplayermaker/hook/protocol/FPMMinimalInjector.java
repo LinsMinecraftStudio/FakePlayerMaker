@@ -2,7 +2,6 @@ package org.lins.mmmjjkx.fakeplayermaker.hook.protocol;
 
 import com.comphenix.protocol.events.NetworkMarker;
 import com.comphenix.protocol.injector.temporary.MinimalInjector;
-import com.comphenix.protocol.injector.temporary.TemporaryPlayer;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.protocol.Packet;

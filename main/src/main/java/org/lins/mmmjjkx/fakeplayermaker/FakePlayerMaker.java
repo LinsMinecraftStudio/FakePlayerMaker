@@ -36,9 +36,6 @@ public class FakePlayerMaker extends PolymerPlugin{
         new Metrics(this, 19435);
         randomNameLength = settings.getInt("randomNameLength");
 
-        fakePlayerSaver.reload();
-        stressTestSaver.reload();
-
         getServer().getPluginManager().registerEvents(new InteractListener(), this);
     }
 

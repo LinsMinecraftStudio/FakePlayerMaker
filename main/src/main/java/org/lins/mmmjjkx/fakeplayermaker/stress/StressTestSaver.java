@@ -98,7 +98,6 @@ public class StressTestSaver extends AbstractFileStorage {
         randomWorldStressTesterMap.put(name,new RandomWorldStressTester(false, amount, ignoreWorlds));
         try {configuration.save(new File(FakePlayerMaker.INSTANCE.getDataFolder(), "stresses.yml"));
         } catch (IOException e) {throw new RuntimeException(e);}
-        reload();
     }
 
     public void newAreaTester(String name, Location pos1, Location pos2, int amount){
@@ -113,7 +112,6 @@ public class StressTestSaver extends AbstractFileStorage {
         areaTesterMap.put(name,new AreaStressTester(new CuboidRegion(BukkitAdapter.adapt(pos1.getWorld()),BukkitAdapter.asBlockVector(pos1),BukkitAdapter.asBlockVector(pos2)), amount));
         try {configuration.save(new File(FakePlayerMaker.INSTANCE.getDataFolder(), "stresses.yml"));
         } catch (IOException e) {throw new RuntimeException(e);}
-        reload();
     }
 
     public void stopAll(){
@@ -136,5 +134,7 @@ public class StressTestSaver extends AbstractFileStorage {
     @Override
     public void reload() {
         configuration = handleConfig("stresses.yml");
+        stopAll();
+        loadStressTesters();
     }
 }

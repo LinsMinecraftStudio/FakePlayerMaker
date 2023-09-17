@@ -78,6 +78,7 @@ public class FPMCommand extends PolymerCommand {
                     case "reload" -> {
                         FakePlayerMaker.settings.saveAndReload(new File(FakePlayerMaker.INSTANCE.getDataFolder(),"config.yml"));
                         FakePlayerMaker.fakePlayerSaver.reload();
+                        FakePlayerMaker.stressTestSaver.reload();
                         sendMessage(commandSender, "ReloadSuccess");
                         yield true;
                     }
