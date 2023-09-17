@@ -95,16 +95,10 @@ public class FPMCommand extends PolymerCommand {
                 String name = strings[1];
                 return switch (strings[0]) {
                     case "add" -> {
-                        Player p = toPlayer(commandSender);
-                        if (p == null) {
-                            Location location = ObjectConverter.toLocation(name);
-                            if (location != null) {
-                                NMSFakePlayerMaker.spawnFakePlayer(location, name, commandSender);
-                                sendMessage(commandSender, "CreateSuccess");
-                                yield true;
-                            }
-                            sendMessage(commandSender, "SpecifyLocation");
-                            yield false;
+                        if (!(commandSender instanceof Player p)) {
+                            NMSFakePlayerMaker.spawnFakePlayer(FakePlayerMaker.settings.getLocation("defaultSpawnLocation"), name, commandSender);
+                            sendMessage(commandSender, "CreateSuccess");
+                            yield true;
                         }
                         NMSFakePlayerMaker.spawnFakePlayer(p.getLocation(), name, commandSender);
                         sendMessage(commandSender, "CreateSuccess");
@@ -149,7 +143,8 @@ public class FPMCommand extends PolymerCommand {
                         yield false;
                     }
                 };
-            } /*else if (strings.length == 3) {
+            } else if (strings.length == 3) {
+                /*
                 if (strings[0].equals("skin")) {
                     String name = strings[1];
                     ServerPlayer player = NMSFakePlayerMaker.fakePlayerMap.get(name);
@@ -166,7 +161,19 @@ public class FPMCommand extends PolymerCommand {
                     Polymer.messageHandler.sendMessage(commandSender, "Command.ArgError");
                     return false;
                 }
-            }*/ else if (strings.length==4 && strings[0].equals("stress")) {
+                 */
+                if (strings[0].equals("add")) {
+                    String name = strings[1];
+                    Location location = ObjectConverter.toLocation(strings[2]);
+                    if (location == null) {
+                        sendMessage(commandSender, "SpecifyLocation");
+                        return false;
+                    }
+                    NMSFakePlayerMaker.spawnFakePlayer(location, name, commandSender);
+                    sendMessage(commandSender, "CreateSuccess");
+                    return true;
+                }
+            } else if (strings.length==4 && strings[0].equals("stress")) {
                 return hasCustomPermission(commandSender, "command.stress") && switch (strings[1]) {
                     case "area" -> {
                         Optional<AreaStressTester> tester = FakePlayerMaker.stressTestSaver.getStressTesterArea(strings[3]);

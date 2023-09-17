@@ -89,13 +89,6 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.github.nulli0n</groupId>
-			<artifactId>NexEngine-spigot</artifactId>
-			<version>v2.2.11</version>
-			<scope>system</scope>
-			<systemPath>${basedir}/lib/NexEngine.jar</systemPath>
-		</dependency>
-		<dependency>
 			<groupId>fr.xephi</groupId>
 			<artifactId>authme</artifactId>
 			<version>5.6.0-SNAPSHOT</version>
@@ -136,6 +129,21 @@
 			<groupId>com.comphenix.protocol</groupId>
 			<artifactId>ProtocolLib</artifactId>
 			<version>5.1.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.github.nulli0n</groupId>
+			<artifactId>NexEngine-spigot</artifactId>
+			<version>v2.2.11</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/lib/NexEngine.jar</systemPath>
+		</dependency>
+
+		<!-- external dependencies-->
+		<dependency>
+			<groupId>net.bytebuddy</groupId>
+			<artifactId>byte-buddy</artifactId>
+			<version>1.14.8</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>

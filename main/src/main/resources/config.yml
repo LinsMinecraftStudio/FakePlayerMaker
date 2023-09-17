@@ -12,9 +12,12 @@ defaultSpawnLocation:
   z: 0
   pitch: 0
   yaw: 0
-#If you have installed AuthmeReloaded in your server, please set it to true.
-#It will make your fake players can pass login or register.
-authme-compatibility: false
+#Run commands after join (by fake player)
+#You can put some commands about login plugin here.
+runCMDAfterJoin:
+  - "register 123723123 123723123"
+  - "login 123723123"
 #Please install the WorldEdit or FastAsyncWorldEdit plugin before turn it on!
 #Recommended creating an open area to create a stress tester.
+#STILL INCOMPLETE
 areaStressTesters: false

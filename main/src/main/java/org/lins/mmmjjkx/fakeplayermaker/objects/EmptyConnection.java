@@ -1,8 +1,14 @@
 package org.lins.mmmjjkx.fakeplayermaker.objects;
 
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.*;
+import io.netty.channel.nio.NioEventLoopGroup;
 import net.minecraft.network.Connection;
+import net.minecraft.network.PacketSendListener;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketFlow;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -20,15 +26,39 @@ public class EmptyConnection extends Connection {
         return true;
     }
 
+    @Override
+    public void send(@NotNull Packet<?> packet) {
+    }
+
+    @Override
+    public void send(@NotNull Packet<?> packet, @Nullable PacketSendListener callbacks) {
+    }
+
     private static class EmptyChannel extends AbstractChannel {
+
+        private final ChannelConfig config = new DefaultChannelConfig(this);
+        private final ChannelPipeline pipeline;
 
         public EmptyChannel() {
             super(null);
-            this.pipeline().addFirst("encoder", new EmptyEncoder());
-            this.pipeline().addFirst("decoder", new EmptyDecoder());
-        }
+            this.pipeline = newChannelPipeline();
+            this.pipeline.addFirst("encoder", new EmptyEncoder());
+            this.pipeline.addFirst("decoder", new EmptyDecoder());
 
-        private final ChannelConfig config = new DefaultChannelConfig(this);
+            EventLoopGroup eventLoopGroup = new NioEventLoopGroup();
+            ChannelFuture channelFuture = eventLoopGroup.register(this);
+            channelFuture.addListener((ChannelFutureListener) future -> {
+                if (!future.isSuccess()) {
+                    future.cause().printStackTrace();
+                }
+            });
+
+            try {
+                channelFuture.sync();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
 
         @Override
         public ChannelConfig config() {
@@ -36,11 +66,13 @@ public class EmptyConnection extends Connection {
         }
 
         @Override
-        protected void doBind(SocketAddress arg0) {
+        public boolean isOpen() {
+            return true;
         }
 
         @Override
-        protected void doClose() {
+        public boolean isActive() {
+            return false;
         }
 
         @Override
@@ -48,36 +80,39 @@ public class EmptyConnection extends Connection {
         }
 
         @Override
+        protected void doBind(SocketAddress localAddress) {
+        }
+
+        @Override
+        protected void doClose() {
+        }
+
+        @Override
         protected void doDisconnect() {
         }
 
         @Override
-        protected void doWrite(ChannelOutboundBuffer arg0) {
+        protected void doWrite(ChannelOutboundBuffer outboundBuffer) {
         }
 
         @Override
-        public boolean isActive() {
+        protected boolean isCompatible(EventLoop eventLoop) {
             return true;
-        }
-
-        @Override
-        protected boolean isCompatible(EventLoop arg0) {
-            return true;
-        }
-
-        @Override
-        public boolean isOpen() {
-            return false;
         }
 
         @Override
         protected SocketAddress localAddress0() {
-            return new InetSocketAddress(InetAddress.getLoopbackAddress().getHostName(), 60000);
+            return new InetSocketAddress(InetAddress.getLoopbackAddress(), 60000);
+        }
+
+        @Override
+        protected SocketAddress remoteAddress0() {
+            return new InetSocketAddress(InetAddress.getLoopbackAddress(), 60000);
         }
 
         @Override
         public ChannelMetadata metadata() {
-            return new ChannelMetadata(true);
+            return new ChannelMetadata(false);
         }
 
         @Override
@@ -91,8 +126,13 @@ public class EmptyConnection extends Connection {
         }
 
         @Override
-        protected SocketAddress remoteAddress0() {
-            return new InetSocketAddress(InetAddress.getLoopbackAddress().getHostName(), 60000);
+        public ChannelPipeline pipeline() {
+            return pipeline;
+        }
+
+        @Override
+        public ByteBufAllocator alloc() {
+            return config().getAllocator();
         }
     }
 }

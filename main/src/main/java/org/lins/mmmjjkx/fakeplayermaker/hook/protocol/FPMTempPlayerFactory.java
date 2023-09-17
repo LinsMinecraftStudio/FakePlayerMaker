@@ -1,11 +1,11 @@
-package org.lins.mmmjjkx.fakeplayermaker.hook;
+package org.lins.mmmjjkx.fakeplayermaker.hook.protocol;
 
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.injector.temporary.MinimalInjector;
 import com.comphenix.protocol.injector.temporary.TemporaryPlayer;
 import com.comphenix.protocol.injector.temporary.TemporaryPlayerFactory;
-import com.comphenix.protocol.utility.ByteBuddyFactory;
 import com.comphenix.protocol.utility.ChatExtensions;
+import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.ByteCodeElement;
 import net.bytebuddy.description.modifier.Visibility;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
@@ -16,12 +16,12 @@ import net.bytebuddy.implementation.MethodDelegation;
 import net.bytebuddy.implementation.bind.annotation.*;
 import net.bytebuddy.matcher.ElementMatcher;
 import net.bytebuddy.matcher.ElementMatchers;
+import net.bytebuddy.utility.nullability.AlwaysNull;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
-import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -91,7 +91,6 @@ public class FPMTempPlayerFactory {
                     return null;
                 }
 
-                // The fallback instance
                 Player updated = injector.getPlayer();
                 if (updated != obj && updated != null) {
                     return method.invoke(updated, args);
@@ -127,9 +126,9 @@ public class FPMTempPlayerFactory {
                 ElementMatchers.isDeclaredBy(Object.class).or(ElementMatchers.isDeclaredBy(TemporaryPlayer.class)));
 
         try {
-            final Constructor<?> constructor = ByteBuddyFactory.getInstance()
-                    .createSubclass(TemporaryPlayer.class, ConstructorStrategy.Default.NO_CONSTRUCTORS)
-                    .name(NMSFakePlayerMaker.class.getPackage().getName() + ".FPMTemporaryPlayerInvocationHandler")
+            final Constructor<?> constructor = new ByteBuddy()
+                    .subclass(FPMTempPlayer.class, ConstructorStrategy.Default.NO_CONSTRUCTORS)
+                    .name(FPMTempPlayerFactory.class.getPackage().getName() + ".FPMTemporaryPlayerInvocationHandler")
                     .implement(Player.class)
 
                     .defineField("server", Server.class, Visibility.PRIVATE)
@@ -137,24 +136,23 @@ public class FPMTempPlayerFactory {
                     .defineConstructor(Visibility.PUBLIC)
                     .withParameters(Server.class, String.class)
 
-                    .intercept(MethodCall.invoke(TemporaryPlayer.class.getDeclaredConstructor())
+                    .intercept(MethodCall.invoke(FPMTempPlayer.class.getDeclaredConstructor())
                             .andThen(FieldAccessor.ofField("server").setsArgumentAt(0))
                             .andThen(FieldAccessor.ofField("name").setsArgumentAt(1)))
 
                     .method(callbackFilter)
                     .intercept(implementation)
-                    .method(ElementMatchers.named("getName"))
-                    .intercept(FieldAccessor.ofField("name"))
                     .make()
-                    .load(ByteBuddyFactory.getInstance().getClassLoader(), ClassLoadingStrategy.Default.INJECTION)
+                    .load(FPMTempPlayerFactory.class.getClassLoader(), ClassLoadingStrategy.Default.INJECTION)
                     .getLoaded()
-                    .getDeclaredConstructor(Server.class);
+                    .getDeclaredConstructor(Server.class, String.class);
             return (Constructor<? extends Player>) constructor;
         } catch (NoSuchMethodException e) {
             throw new RuntimeException("Failed to find Temporary Player constructor!", e);
         }
     }
 
+    @AlwaysNull
     private static Object sendMessage(MinimalInjector injector, String message) {
         for (PacketContainer packet : ChatExtensions.createChatPackets(message)) {
             injector.sendServerPacket(packet.getHandle(), null, false);
@@ -183,6 +181,8 @@ public class FPMTempPlayerFactory {
      </ul>
      */
     public static Player createPlayer(final Server server, String name) throws InvocationTargetException, InstantiationException, IllegalAccessException {
-        return CONSTRUCTOR.newInstance(server);
+        Player p = CONSTRUCTOR.newInstance(server, name);
+        TemporaryPlayerFactory.setInjectorInPlayer(p, new FPMMinimalInjector(name));
+        return p;
     }
 }

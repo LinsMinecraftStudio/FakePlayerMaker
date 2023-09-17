@@ -7,14 +7,12 @@ import io.github.linsminecraftstudio.polymer.utils.ListUtil;
 import io.github.linsminecraftstudio.polymer.utils.ObjectConverter;
 import joptsimple.internal.Strings;
 import net.minecraft.core.UUIDUtil;
-import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 
 import javax.annotation.Nonnull;
@@ -24,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.logging.Level;
 
 import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getCraftClass;
 import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getHandle;
@@ -72,6 +71,11 @@ public class FakePlayerSaver extends AbstractFileStorage {
             GameProfile profile = new GameProfile(uuid, sectionName);
             if (!Strings.isNullOrEmpty(skin)) {
                 profile.getProperties().put("textures", new Property("textures", skin));
+            }
+            if (level == null) {
+                FakePlayerMaker.INSTANCE.getLogger().log(Level.WARNING,
+                        "Failed to create fake player for " + sectionName + ": world is null or the world not found");
+                continue;
             }
             ServerPlayer player = new ServerPlayer(MinecraftServer.getServer(), level, profile);
             player.teleportTo(level, location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());

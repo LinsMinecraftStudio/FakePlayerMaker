@@ -9,6 +9,7 @@ import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.server.network.ServerLoginPacketListenerImpl;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -16,7 +17,6 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.objects.EmptyConnection;
-import org.lins.mmmjjkx.fakeplayermaker.objects.EmptyGamePackListener;
 import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 
 import java.util.*;
@@ -87,20 +87,18 @@ public class RandomWorldStressTester implements IStressTester {
             ServerPlayer player = new ServerPlayer(server, level, new GameProfile(uuid, finalName));
 
             var connection = new EmptyConnection(PacketFlow.CLIENTBOUND);
-            var listener = new EmptyGamePackListener(server, player);
-            var listener2 = new ServerLoginPacketListenerImpl(server, connection);
+            var listener = new ServerGamePacketListenerImpl(server, connection, player);
 
             listener.teleport(location);
 
             new FakePlayerCreateEvent(player.getBukkitEntity(), null).callEvent();
-            simulateLogin(player);
 
             connection.setListener(listener);
 
             server.getPlayerList().placeNewPlayer(connection, player);
-            player.connection = listener;
+            simulateLogin(player);
 
-            connection.setListener(listener2);
+            player.connection = listener;
 
             tempPlayers.put(finalName, player);
         }

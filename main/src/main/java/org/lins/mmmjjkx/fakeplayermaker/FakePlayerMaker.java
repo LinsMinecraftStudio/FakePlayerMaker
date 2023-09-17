@@ -15,7 +15,7 @@ import org.lins.mmmjjkx.fakeplayermaker.utils.FakePlayerSaver;
 
 import java.util.List;
 
-public final class FakePlayerMaker extends PolymerPlugin{
+public class FakePlayerMaker extends PolymerPlugin{
     public static PolymerMessageHandler messageHandler;
     public static FakePlayerSaver fakePlayerSaver;
     public static FakePlayerMaker INSTANCE;
@@ -55,10 +55,6 @@ public final class FakePlayerMaker extends PolymerPlugin{
     @Override
     public String requireVersion() {
         return "1.3.4";
-    }
-
-    public static boolean isAuthmeOn() {
-        return settings.getBoolean("authme-compatibility") && Bukkit.getPluginManager().isPluginEnabled("AuthMe");
     }
 
     public static void unregisterHandlers(Class<? extends JavaPlugin> clazz) {
