@@ -2,7 +2,7 @@ package org.lins.mmmjjkx.fakeplayermaker.utils;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
-import io.github.linsminecraftstudio.polymer.objects.plugin.AbstractFileStorage;
+import io.github.linsminecraftstudio.polymer.objects.plugin.file.SingleFileStorage;
 import io.github.linsminecraftstudio.polymer.utils.ListUtil;
 import io.github.linsminecraftstudio.polymer.utils.ObjectConverter;
 import joptsimple.internal.Strings;
@@ -24,10 +24,9 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Level;
 
-import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getCraftClass;
-import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getHandle;
+import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.*;
 
-public class FakePlayerSaver extends AbstractFileStorage {
+public class FakePlayerSaver extends SingleFileStorage {
     private YamlConfiguration configuration;
     private final File cfgFile = new File(FakePlayerMaker.INSTANCE.getDataFolder(), "fakePlayers.yml");
     public FakePlayerSaver(){

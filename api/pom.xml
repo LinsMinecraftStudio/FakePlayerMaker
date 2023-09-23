@@ -6,7 +6,7 @@
 
 	<groupId>io.github.linsminecraftstudio</groupId>
 	<artifactId>FakePlayerMakerAPI</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<version>1.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>FakePlayerMakerAPI</name>
@@ -21,13 +21,6 @@
 		<artifactId>FPMContainer</artifactId>
 		<version>1.0</version>
 	</parent>
-
-	<pluginRepositories>
-		<pluginRepository>
-			<id>bytecode.space</id>
-			<url>https://repo.bytecode.space/repository/maven-public/</url>
-		</pluginRepository>
-	</pluginRepositories>
 
 	<build>
 		<plugins>
@@ -57,6 +50,11 @@
 				</executions>
 			</plugin>
 			<plugin>
+				<groupId>ca.bkaw</groupId>
+				<artifactId>paper-nms-maven-plugin</artifactId>
+				<version>1.4.2</version>
+			</plugin>
+			<plugin>
 				<groupId>org.projectlombok</groupId>
 				<artifactId>lombok-maven-plugin</artifactId>
 				<version>1.18.20.0</version>
@@ -65,19 +63,6 @@
 						<phase>generate-sources</phase>
 						<goals>
 							<goal>delombok</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>ca.bkaw</groupId>
-				<artifactId>paper-nms-maven-plugin</artifactId>
-				<version>1.4.2</version>
-				<executions>
-					<execution>
-						<phase>process-classes</phase>
-						<goals>
-							<goal>remap</goal>
 						</goals>
 					</execution>
 				</executions>

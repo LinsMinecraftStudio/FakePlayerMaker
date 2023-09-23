@@ -2,7 +2,7 @@ package org.lins.mmmjjkx.fakeplayermaker.stress;
 
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.regions.CuboidRegion;
-import io.github.linsminecraftstudio.polymer.objects.plugin.AbstractFileStorage;
+import io.github.linsminecraftstudio.polymer.objects.plugin.file.SingleFileStorage;
 import io.github.linsminecraftstudio.polymer.utils.ObjectConverter;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
@@ -15,7 +15,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class StressTestSaver extends AbstractFileStorage {
+public class StressTestSaver extends SingleFileStorage {
     private YamlConfiguration configuration;
     private final Map<String, AreaStressTester> areaTesterMap = new HashMap<>();
     private final Map<String, RandomWorldStressTester> randomWorldStressTesterMap = new HashMap<>();
@@ -45,7 +45,7 @@ public class StressTestSaver extends AbstractFileStorage {
             }
 
             if (type.equals("area")) {
-                if (!FakePlayerMaker.settings.getBoolean("areaStressTester")) {
+                if (!FakePlayerMaker.settings.getBoolean("areaStressTesters")) {
                     continue;
                 }
                 Location loc1 = ObjectConverter.toLocation(section.getString("pos1", ""));
@@ -101,9 +101,6 @@ public class StressTestSaver extends AbstractFileStorage {
     }
 
     public void newAreaTester(String name, Location pos1, Location pos2, int amount){
-        if (!FakePlayerMaker.settings.getBoolean("areaStressTester")) {
-            return;
-        }
         ConfigurationSection section = configuration.createSection(name);
         section.set("type", "area");
         section.set("pos1",ObjectConverter.toLocationString(pos1));
@@ -115,10 +112,8 @@ public class StressTestSaver extends AbstractFileStorage {
     }
 
     public void stopAll(){
-        if (FakePlayerMaker.settings.getBoolean("areaStressTester")) {
-            areaTesterMap.values().forEach(AreaStressTester::stop);
-            areaTesterMap.clear();
-        }
+        areaTesterMap.values().forEach(AreaStressTester::stop);
+        areaTesterMap.clear();
         randomWorldStressTesterMap.values().forEach(RandomWorldStressTester::stop);
         randomWorldStressTesterMap.clear();
     }

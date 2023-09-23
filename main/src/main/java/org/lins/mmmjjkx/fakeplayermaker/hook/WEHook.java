@@ -49,7 +49,7 @@ public class WEHook {
             BlockVector3 bv3p2 = cr.getPos2();
             Location pos1 = new Location(bkWorld, bv3p1.getX(), bv3p1.getY(), bv3p1.getZ());
             Location pos2 = new Location(bkWorld, bv3p2.getX(), bv3p2.getY(), bv3p2.getZ());
-            FakePlayerMaker.stressTestSaver.newAreaTester(strings[2], pos1, pos2, amount);
+            FakePlayerMaker.stressTestSaver.newAreaTester(strings[3], pos1, pos2, amount);
             sendMessage(commandSender, "Stress.TesterCreated");
             return true;
         }

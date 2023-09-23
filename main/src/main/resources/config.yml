@@ -5,6 +5,7 @@ player:
   invulnerable: false
   canPickupItems: false
   collision: false
+  respawnBack: true
 defaultSpawnLocation:
   world: "world"
   x: 0
@@ -19,5 +20,4 @@ runCMDAfterJoin:
   - "login 123723123"
 #Please install the WorldEdit or FastAsyncWorldEdit plugin before turn it on!
 #Recommended creating an open area to create a stress tester.
-#STILL INCOMPLETE
 areaStressTesters: false

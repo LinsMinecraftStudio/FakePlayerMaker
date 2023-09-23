@@ -1,10 +1,10 @@
 package org.lins.mmmjjkx.fakeplayermaker.stress;
 
 import com.mojang.authlib.GameProfile;
-import io.github.linsminecraftstudio.fakeplayermaker.api.events.FakePlayerCreateEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStartEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStopEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTester;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -14,6 +14,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.objects.EmptyConnection;
 import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
@@ -29,12 +33,14 @@ public class RandomWorldStressTester implements IStressTester {
     private long lastStartTimestamp;
     private final boolean isAmountPerWorld;
     private final List<String> ignores;
+    private final AutoRespawn listener;
 
     public RandomWorldStressTester(boolean isAmountPerWorld,int amount,List<String> ignoreWorlds) {
         this.amount = amount;
         this.lastStartTimestamp = 0;
         this.isAmountPerWorld = isAmountPerWorld;
         this.ignores = ignoreWorlds;
+        this.listener = new AutoRespawn();
     }
 
     @Override
@@ -44,33 +50,32 @@ public class RandomWorldStressTester implements IStressTester {
             throw new IllegalStateException();
         }
 
+        Bukkit.getPluginManager().registerEvents(listener, FakePlayerMaker.INSTANCE);
+
         new StressTesterStartEvent(this).callEvent();
 
         Random random = new Random();
         List<World> worlds = Bukkit.getWorlds();
 
+        String randomNamePrefix = NMSFakePlayerMaker.getRandomName(FakePlayerMaker.randomNameLength);
         if (isAmountPerWorld) {
-            String randomNamePrefix = NMSFakePlayerMaker.getRandomName(FakePlayerMaker.randomNameLength);
             for (World world: Bukkit.getWorlds()) {
                 if (ignores.contains(world.getName())) {
                     continue;
                 }
                 ServerLevel level = (ServerLevel) getHandle(getCraftClass("CraftWorld"), world);
-                Location location = generate(world);
-                placePlayer(server, randomNamePrefix, level, location, amount);
+                placePlayer(server, randomNamePrefix, level, amount);
             }
         } else {
             for (int i = 0; i < worlds.size(); i++) {
-                String randomNamePrefix = NMSFakePlayerMaker.getRandomName(FakePlayerMaker.randomNameLength);
                 World world = worlds.get(random.nextInt(worlds.size()));
                 if (ignores.contains(world.getName())) {
                     continue;
                 }
                 ServerLevel level = (ServerLevel) getHandle(getCraftClass("CraftWorld"), world);
-                Location location = generate(world);
                 int placeAmount = random.nextInt(amount);
                 if (amount == 0) return;
-                placePlayer(server, randomNamePrefix, level, location, placeAmount);
+                placePlayer(server, randomNamePrefix, level, placeAmount);
                 amount -= placeAmount;
             }
         }
@@ -78,19 +83,16 @@ public class RandomWorldStressTester implements IStressTester {
         lastStartTimestamp = currentTimestamp;
     }
 
-    private void placePlayer(MinecraftServer server, String randomNamePrefix, ServerLevel level, Location location, int amount) {
+    private void placePlayer(MinecraftServer server, String randomNamePrefix, ServerLevel level, int amount) {
         for (int i = 0; i < amount; i++) {
-            String finalName = randomNamePrefix + (i+1);
-            UUID uuid = Bukkit.getOfflinePlayer(finalName).getUniqueId();
+            String finalName = randomNamePrefix + (i +1);
+            UUID uuid = UUIDUtil.createOfflinePlayerUUID(finalName);
+            Location location = generate(level.getWorld());
 
             ServerPlayer player = new ServerPlayer(server, level, new GameProfile(uuid, finalName));
 
             var connection = new EmptyConnection(PacketFlow.CLIENTBOUND);
             var listener = new ServerGamePacketListenerImpl(server, connection, player);
-
-            listener.teleport(location);
-
-            new FakePlayerCreateEvent(player.getBukkitEntity(), null).callEvent();
 
             connection.setListener(listener);
 
@@ -98,6 +100,7 @@ public class RandomWorldStressTester implements IStressTester {
             simulateLogin(player);
 
             player.connection = listener;
+            player.teleportTo(level, location.getX(), location.getY(), location.getZ(),0,0);
 
             tempPlayers.put(finalName, player);
         }
@@ -108,6 +111,7 @@ public class RandomWorldStressTester implements IStressTester {
         new StressTesterStopEvent(this).callEvent();
         tempPlayers.values().forEach(server.getPlayerList()::remove);
         tempPlayers.clear();
+        HandlerList.unregisterAll(listener);
     }
 
     @Override
@@ -117,15 +121,27 @@ public class RandomWorldStressTester implements IStressTester {
 
     private Location generate(World world) {
         Random random = new Random();
-        Material below = null;
+        Material below = Material.AIR;
+        Material top = Material.AIR;
         Location location = null;
-        while (below == null || !(below.isSolid())) {
+        while (!below.isSolid() || top.isSolid()) {
             int x = random.nextInt(-20000, 20000);
             int z = random.nextInt(-20000, 20000);
             location = new Location(world, x, world.getHighestBlockYAt(x,z), z);
             int y = (int) (location.getY() - 1);
             below = world.getBlockAt(x, y, z).getType();
+            top = world.getBlockAt(x, y + 1, z).getType();
         }
         return location;
+    }
+
+    private class AutoRespawn implements Listener {
+        @EventHandler
+        public void onDeath(PlayerDeathEvent e) {
+            ServerPlayer player = (ServerPlayer) getHandle(getCraftClass("entity.CraftPlayer"), e.getPlayer());
+            if (player != null && tempPlayers.containsKey(player.getName().getString())) {
+                e.getPlayer().spigot().respawn();
+            }
+        }
     }
 }

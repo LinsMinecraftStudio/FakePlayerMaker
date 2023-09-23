@@ -14,7 +14,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
-public class EmptyConnection extends Connection {
+public final class EmptyConnection extends Connection {
     public EmptyConnection(PacketFlow side) {
         super(side);
         this.channel = new EmptyChannel();

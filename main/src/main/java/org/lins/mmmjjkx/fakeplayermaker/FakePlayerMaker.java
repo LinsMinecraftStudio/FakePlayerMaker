@@ -28,13 +28,16 @@ public class FakePlayerMaker extends PolymerPlugin{
         // Plugin startup logic
         suggestSpark();
         INSTANCE = this;
-        settings = new SimpleSettingsManager(getConfig());
+        settings = new SimpleSettingsManager(this);
         completeLangFile("en-us","zh-cn");
         messageHandler = new PolymerMessageHandler(this);
         fakePlayerSaver = new FakePlayerSaver();
         stressTestSaver = new StressTestSaver();
         new Metrics(this, 19435);
         randomNameLength = settings.getInt("randomNameLength");
+
+        fakePlayerSaver.reload();
+        stressTestSaver.reload();
 
         getServer().getPluginManager().registerEvents(new InteractListener(), this);
     }
@@ -51,7 +54,7 @@ public class FakePlayerMaker extends PolymerPlugin{
 
     @Override
     public String requireVersion() {
-        return "1.3.4";
+        return "1.3.5";
     }
 
     public static void unregisterHandlers(Class<? extends JavaPlugin> clazz) {

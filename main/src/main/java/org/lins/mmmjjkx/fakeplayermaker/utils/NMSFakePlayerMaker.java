@@ -44,6 +44,7 @@ public class NMSFakePlayerMaker {
         new BukkitRunnable() {
             @Override
             public void run() {
+                fakePlayerMap.clear();
                 for (ServerPlayer player : players) {
                     if (server.getPlayerList().players.contains(player)) {
                         server.getPlayerList().remove(player);

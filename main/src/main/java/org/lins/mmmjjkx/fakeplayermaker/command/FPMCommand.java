@@ -3,6 +3,7 @@ package org.lins.mmmjjkx.fakeplayermaker.command;
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTester;
 import io.github.linsminecraftstudio.polymer.Polymer;
 import io.github.linsminecraftstudio.polymer.command.PolymerCommand;
+import io.github.linsminecraftstudio.polymer.objects.plugin.SimpleSettingsManager;
 import io.github.linsminecraftstudio.polymer.utils.ObjectConverter;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Location;
@@ -13,9 +14,9 @@ import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.WorldNotFoundException;
 import org.lins.mmmjjkx.fakeplayermaker.stress.AreaStressTester;
 import org.lins.mmmjjkx.fakeplayermaker.stress.RandomWorldStressTester;
+import org.lins.mmmjjkx.fakeplayermaker.utils.ActionUtils;
 import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -41,16 +42,17 @@ public class FPMCommand extends PolymerCommand {
     @Override
     public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) {
         if (args.length == 1) {
-            return copyPartialMatches(args[0], List.of("add","reload","removeAll","remove", "stress","join"));
+            return copyPartialMatches(args[0], List.of("add","reload","removeAll","remove", "stress","join", "chat"));
         } else if (args.length == 2) {
             return switch (args[0]) {
-                case "remove","teleport","tp","join" -> copyPartialMatches(args[1], NMSFakePlayerMaker.fakePlayerMap.keySet());
+                case "remove","teleport","tp","join",
+                        "chat" -> copyPartialMatches(args[1], NMSFakePlayerMaker.fakePlayerMap.keySet());
                 case "stress" -> copyPartialMatches(args[1], List.of("area","randomworld"));
                 default -> new ArrayList<>();
             };
         } else if (args.length==3 && args[0].equalsIgnoreCase("stress")) {
             return List.of("start","stop","players","create");
-        } else if (args.length == 4 && args[0].equals("stress")) {
+        } else if (args.length == 4 && args[0].equals("stress") && !args[2].equals("create")) {
             if (args[1].equalsIgnoreCase("area")) {
                 return copyPartialMatches(args[3], FakePlayerMaker.stressTestSaver.getAreaTesterNames());
             } else if (args[1].equalsIgnoreCase("randomworld")){
@@ -76,7 +78,8 @@ public class FPMCommand extends PolymerCommand {
                         yield true;
                     }
                     case "reload" -> {
-                        FakePlayerMaker.settings.saveAndReload(new File(FakePlayerMaker.INSTANCE.getDataFolder(),"config.yml"));
+                        FakePlayerMaker.INSTANCE.reloadConfig();
+                        FakePlayerMaker.settings = new SimpleSettingsManager(FakePlayerMaker.INSTANCE);
                         FakePlayerMaker.fakePlayerSaver.reload();
                         FakePlayerMaker.stressTestSaver.reload();
                         sendMessage(commandSender, "ReloadSuccess");
@@ -145,6 +148,8 @@ public class FPMCommand extends PolymerCommand {
                     }
                 };
             } else if (strings.length == 3) {
+                //function commands here
+                // I can't check it works
                 /*
                 if (strings[0].equals("skin")) {
                     String name = strings[1];
@@ -158,11 +163,20 @@ public class FPMCommand extends PolymerCommand {
                     }
                     sendMessage(commandSender, "PlayerNotFound");
                     return true;
-                } else {
-                    Polymer.messageHandler.sendMessage(commandSender, "Command.ArgError");
-                    return false;
                 }
                  */
+                if (strings[0].equals("chat")) {
+                    String name = strings[1];
+                    String chat = strings[2];
+                    ServerPlayer player = NMSFakePlayerMaker.fakePlayerMap.get(name);
+                    if (player == null) {
+                        sendMessage(commandSender, "PlayerNotFound");
+                        return false;
+                    }
+                    ActionUtils.chat(player, chat);
+                    return true;
+                }
+                //function commands end
                 if (strings[0].equals("add")) {
                     String name = strings[1];
                     Location location = ObjectConverter.toLocation(strings[2]);
@@ -174,6 +188,8 @@ public class FPMCommand extends PolymerCommand {
                     sendMessage(commandSender, "CreateSuccess");
                     return true;
                 }
+                Polymer.messageHandler.sendMessage(commandSender, "Command.ArgError");
+                return false;
             } else if (strings.length==4 && strings[0].equals("stress")) {
                 return hasCustomPermission(commandSender, "command.stress") && switch (strings[1]) {
                     case "area" -> {
@@ -229,7 +245,7 @@ public class FPMCommand extends PolymerCommand {
                         yield false;
                     }
                     case "randomworld" -> {
-                        Optional<RandomWorldStressTester> tester = FakePlayerMaker.stressTestSaver.getStressTesterRandomWorld(strings[2]);
+                        Optional<RandomWorldStressTester> tester = FakePlayerMaker.stressTestSaver.getStressTesterRandomWorld(strings[3]);
                         switch (strings[2]) {
                             case "start" -> {
                                 if (tester.isEmpty()) {
@@ -277,7 +293,7 @@ public class FPMCommand extends PolymerCommand {
                     }
                 };
             } else if (strings.length==5 && strings[0].equals("stress")){
-                int amount = toInteger(commandSender, strings[4], 5);
+                int amount = (int) toIntOrDouble(commandSender, strings[4], 5, true);
                 return hasCustomPermission(commandSender, "command.stress") && switch (strings[1]) {
                     case "area" -> {
                         if (strings[2].equals("create")){

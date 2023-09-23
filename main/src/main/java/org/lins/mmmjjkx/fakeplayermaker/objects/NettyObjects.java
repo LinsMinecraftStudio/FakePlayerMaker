@@ -1,6 +1,7 @@
 package org.lins.mmmjjkx.fakeplayermaker.objects;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.MessageToByteEncoder;
@@ -10,14 +11,15 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.List;
 
-class EmptyEncoder extends MessageToByteEncoder<String> {
+@ChannelHandler.Sharable
+final class EmptyEncoder extends MessageToByteEncoder<String> {
     @Override
     protected void encode(ChannelHandlerContext channelHandlerContext, String string, ByteBuf byteBuf) {
         byteBuf.writeBytes(string.getBytes());
     }
 }
 
-class EmptyDecoder extends ByteToMessageDecoder {
+final class EmptyDecoder extends ByteToMessageDecoder {
     @Override
     protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> list) {
         for (var obj: list) {

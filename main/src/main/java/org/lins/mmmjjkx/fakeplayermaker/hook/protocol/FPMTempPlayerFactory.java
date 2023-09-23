@@ -19,6 +19,7 @@ import net.bytebuddy.matcher.ElementMatchers;
 import net.bytebuddy.utility.nullability.AlwaysNull;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
@@ -97,10 +98,16 @@ public class FPMTempPlayerFactory {
                 }
 
                 // Methods that are supported in the fallback instance
-                if (methodName.equals("isOnline")) {
-                    return injector.isConnected();
-                } else if (methodName.equals("getName")) {
-                    return name;
+                switch (methodName) {
+                    case "isOnline" -> {
+                        return injector.isConnected();
+                    }
+                    case "getName" -> {
+                        return name;
+                    }
+                    case "getUniqueId" -> {
+                        return UUIDUtil.createOfflinePlayerUUID(name);
+                    }
                 }
 
                 if (methodName.equals("isSneaking")) {
@@ -116,9 +123,23 @@ public class FPMTempPlayerFactory {
                     return getNMSPlayer(player).isSprinting();
                 }
 
+                if (methodName.equals("setSprinting")) {
+                    getNMSPlayer(player).setSprinting((boolean) args[0]);
+                    return null;
+                }
+
+                if (methodName.equals("isSwimming")) {
+                    return getNMSPlayer(player).isSwimming();
+                }
+
+                if (methodName.equals("setSwimming")) {
+                    getNMSPlayer(player).setSwimming((boolean) args[0]);
+                    return null;
+                }
+
                 // Ignore all other methods
                 throw new UnsupportedOperationException(
-                        "The method " + method.getName() + " is not supported for temporary players.");
+                        "The method " + method.getName() + " is not supported for temporary players(From FakePlayerMaker).");
             }
         });
 
@@ -127,7 +148,7 @@ public class FPMTempPlayerFactory {
 
         try {
             final Constructor<?> constructor = new ByteBuddy()
-                    .subclass(FPMTempPlayer.class, ConstructorStrategy.Default.NO_CONSTRUCTORS)
+                    .subclass(TemporaryPlayer.class, ConstructorStrategy.Default.NO_CONSTRUCTORS)
                     .name(FPMTempPlayerFactory.class.getPackage().getName() + ".FPMTemporaryPlayerInvocationHandler")
                     .implement(Player.class)
 
@@ -136,7 +157,7 @@ public class FPMTempPlayerFactory {
                     .defineConstructor(Visibility.PUBLIC)
                     .withParameters(Server.class, String.class)
 
-                    .intercept(MethodCall.invoke(FPMTempPlayer.class.getDeclaredConstructor())
+                    .intercept(MethodCall.invoke(TemporaryPlayer.class.getDeclaredConstructor())
                             .andThen(FieldAccessor.ofField("server").setsArgumentAt(0))
                             .andThen(FieldAccessor.ofField("name").setsArgumentAt(1)))
 
@@ -173,11 +194,15 @@ public class FPMTempPlayerFactory {
      <li>{@link Player#isSneaking()}</li>
      <li>{@link Player#setSneaking(boolean)}</li>
      <li>{@link Player#isSprinting()}</li>
+     <li>{@link Player#setSprinting(boolean)}</li>
+     <li>{@link Player#isSwimming()}</li>
+     <li>{@link Player#setSwimming(boolean)}</li>
      <li>{@link Player#kickPlayer(String)}</li>
      <li>{@link Player#kick(Component)}</li>
      <li>{@link Player#chat(String)}</li>
      <li>{@link Player#sendMessage(String[])}</li>
      <li>{@link Player#getAddress()}</li>
+     <li>{@link Player#getUniqueId()}</li>
      </ul>
      */
     public static Player createPlayer(final Server server, String name) throws InvocationTargetException, InstantiationException, IllegalAccessException {
