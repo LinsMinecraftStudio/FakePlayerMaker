@@ -10,10 +10,12 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.objects.EmptyConnection;
 
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Objects;
@@ -45,10 +47,18 @@ public class FPMMinimalInjector implements MinimalInjector {
 
     @Override
     public Player getPlayer() {
-        ServerPlayer player = new ServerPlayer(MinecraftServer.getServer(), (ServerLevel) Objects.requireNonNull(getHandle(getCraftClass("CraftWorld"), FakePlayerMaker.settings.getLocation("defaultSpawnLocation").getWorld())),
+        ServerPlayer player = new ServerPlayer(MinecraftServer.getServer(), (ServerLevel) Objects.requireNonNull(getHandle(getCraftClass("CraftWorld"), Objects.requireNonNull(FakePlayerMaker.settings.getLocation("defaultSpawnLocation")).getWorld())),
                 new GameProfile(UUIDUtil.createOfflinePlayerUUID(name), name));
         var connection = new EmptyConnection(PacketFlow.CLIENTBOUND);
-        player.connection = new ServerGamePacketListenerImpl(MinecraftServer.getServer(), connection, player);
+        MinecraftServer server = MinecraftServer.getServer();
+        if (Bukkit.getMinecraftVersion().equals("1.19.4")) {
+            try {
+                server = (MinecraftServer) getCraftClass("CraftServer").getMethod("getServer").invoke(Bukkit.getServer());
+            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        player.connection = new ServerGamePacketListenerImpl(server, connection, player);
         return player.getBukkitEntity();
     }
 

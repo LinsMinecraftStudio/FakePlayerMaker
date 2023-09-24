@@ -3,7 +3,6 @@ package org.lins.mmmjjkx.fakeplayermaker.command;
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTester;
 import io.github.linsminecraftstudio.polymer.Polymer;
 import io.github.linsminecraftstudio.polymer.command.PolymerCommand;
-import io.github.linsminecraftstudio.polymer.objects.plugin.SimpleSettingsManager;
 import io.github.linsminecraftstudio.polymer.utils.ObjectConverter;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Location;
@@ -26,7 +25,7 @@ import static org.lins.mmmjjkx.fakeplayermaker.hook.WEHook.handleAreaCreate;
 
 public class FPMCommand extends PolymerCommand {
     public FPMCommand(@NotNull String name) {
-        super(name);
+        super(name, new ArrayList<>(List.of("fpm")));
     }
 
     @Override
@@ -42,11 +41,10 @@ public class FPMCommand extends PolymerCommand {
     @Override
     public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) {
         if (args.length == 1) {
-            return copyPartialMatches(args[0], List.of("add","reload","removeAll","remove", "stress","join", "chat"));
+            return copyPartialMatches(args[0], List.of("add","reload","removeAll","remove","stress","join","chat","teleport","tp"));
         } else if (args.length == 2) {
             return switch (args[0]) {
-                case "remove","teleport","tp","join",
-                        "chat" -> copyPartialMatches(args[1], NMSFakePlayerMaker.fakePlayerMap.keySet());
+                case "remove","teleport","tp","join","chat" -> copyPartialMatches(args[1], NMSFakePlayerMaker.fakePlayerMap.keySet());
                 case "stress" -> copyPartialMatches(args[1], List.of("area","randomworld"));
                 default -> new ArrayList<>();
             };
@@ -68,8 +66,7 @@ public class FPMCommand extends PolymerCommand {
             if (strings.length == 1) {
                 return switch (strings[0]) {
                     case "add" -> {
-                        Player p = toPlayer(commandSender);
-                        if (p == null) {
+                        if (!(commandSender instanceof Player p)) {
                             sendMessage(commandSender, "SpecifyLocation");
                             yield false;
                         }
@@ -78,10 +75,7 @@ public class FPMCommand extends PolymerCommand {
                         yield true;
                     }
                     case "reload" -> {
-                        FakePlayerMaker.INSTANCE.reloadConfig();
-                        FakePlayerMaker.settings = new SimpleSettingsManager(FakePlayerMaker.INSTANCE);
-                        FakePlayerMaker.fakePlayerSaver.reload();
-                        FakePlayerMaker.stressTestSaver.reload();
+                        FakePlayerMaker.reload();
                         sendMessage(commandSender, "ReloadSuccess");
                         yield true;
                     }

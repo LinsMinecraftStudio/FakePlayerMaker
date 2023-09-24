@@ -1,0 +1,4 @@
+example:
+  type: randomworld
+  amountPerWorld: false
+  amount: 200

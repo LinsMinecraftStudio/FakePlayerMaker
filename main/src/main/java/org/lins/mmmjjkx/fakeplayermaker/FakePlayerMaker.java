@@ -13,6 +13,8 @@ import org.lins.mmmjjkx.fakeplayermaker.listeners.InteractListener;
 import org.lins.mmmjjkx.fakeplayermaker.stress.StressTestSaver;
 import org.lins.mmmjjkx.fakeplayermaker.utils.FakePlayerSaver;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.List;
 
 public class FakePlayerMaker extends PolymerPlugin{
@@ -64,5 +66,12 @@ public class FakePlayerMaker extends PolymerPlugin{
 
     public static boolean isProtocolLibLoaded() {
         return Bukkit.getPluginManager().isPluginEnabled("ProtocolLib");
+    }
+
+    public static void reload() {
+        INSTANCE.reloadConfig();
+        settings = new SimpleSettingsManager(FakePlayerMaker.INSTANCE);
+        fakePlayerSaver.reload();
+        stressTestSaver.reload();
     }
 }

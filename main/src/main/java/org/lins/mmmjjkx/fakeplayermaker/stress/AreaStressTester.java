@@ -14,6 +14,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
@@ -85,7 +87,8 @@ public class AreaStressTester implements IStressTester {
             connection.setListener(listener);
 
             server.getPlayerList().placeNewPlayer(connection, player);
-            player.teleportTo(level, flatLocation.getX(), flatLocation.getY(), flatLocation.getZ(),0,0);
+            Location loc = getHighestBlock(world, flatLocation.getX(), flatLocation.getZ());
+            player.teleportTo(level, loc.getX(), loc.getY(), loc.getZ(), 0, 0);
 
             simulateLogin(player);
 
@@ -113,12 +116,11 @@ public class AreaStressTester implements IStressTester {
         public void onDeath(PlayerDeathEvent e) {
             ServerPlayer player = (ServerPlayer) getHandle(getCraftClass("entity.CraftPlayer"), e.getPlayer());
             if (player != null && tempPlayers.containsKey(player.getName().getString())) {
+                Location location = e.getPlayer().getLocation();
                 e.getPlayer().spigot().respawn();
                 ServerLevel level = (ServerLevel) getHandle(getCraftClass("CraftWorld"), e.getPlayer().getWorld());
-                List<BlockVector3> bv3 = getAreaBlocks();
-                BlockVector3 bv = bv3.get(new Random().nextInt(bv3.size()));
                 if (level != null) {
-                    player.teleportTo(level, bv.getX(), bv.getY(), bv.getZ(), 0, 0);
+                    player.teleportTo(level, location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
                 }
             }
         }
@@ -134,7 +136,7 @@ public class AreaStressTester implements IStressTester {
 
         final int xMin = vecMin.getBlockX();
         final int zMin = vecMin.getBlockZ();
-        final int y = spawnRegion.getMinimumY() + 1;
+        final int y = spawnRegion.getMinimumY();
 
         for (int i = xMin; i <= xMax; i++) {
             for (int k = zMin; k <= zMax; k++) {
@@ -143,5 +145,17 @@ public class AreaStressTester implements IStressTester {
             }
         }
         return list;
+    }
+
+    public Location getHighestBlock(World world, int x, int z){
+        int i = 319;
+        Location location = new Location(world, x, i, z);
+        while(i > 0){
+            if(location.getBlock().getType() != Material.AIR)
+                return location.add(0, 1, 0);
+            i--;
+            location.setY(i);
+        }
+        return new Location(world, x, 1, z);
     }
 }

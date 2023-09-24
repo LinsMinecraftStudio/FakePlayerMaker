@@ -33,14 +33,14 @@ public class StressTestSaver extends SingleFileStorage {
                 logger.log(Level.WARNING,"""
                         Failed to load stress tester {} from configuration,
                         because it isn't present.
-                        """, key);
+                        """.replace("{}",key));
                 continue;
             }
             String type = section.getString("type","").toLowerCase();
 
             int amount = section.getInt("amount");
-            if (amount == 0) {
-                logger.log(Level.WARNING, "Stress tester "+ key +" hasn't set the amount, default set to 100.");
+            if (amount <= 1) {
+                logger.log(Level.WARNING, "Stress tester "+ key +" hasn't set the amount or that's too low, default set to 100.");
                 amount = 100;
             }
 
@@ -54,7 +54,7 @@ public class StressTestSaver extends SingleFileStorage {
                     logger.log(Level.WARNING, """
                             Failed to load stress tester {} from configuration,
                             because it has no starting or ending locations.
-                            """, key);
+                            """.replace("{}",key));
                     continue;
                 }
                 areaTesterMap.put(key, new AreaStressTester(new CuboidRegion(
@@ -68,7 +68,7 @@ public class StressTestSaver extends SingleFileStorage {
                 logger.log(Level.WARNING, """
                         Failed to load stress tester {} from configuration,
                         because it has no type set or the type is invalid.
-                        """, key);
+                        """.replace("{}",key));
             }
         }
     }

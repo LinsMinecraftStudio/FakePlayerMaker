@@ -121,18 +121,9 @@ public class RandomWorldStressTester implements IStressTester {
 
     private Location generate(World world) {
         Random random = new Random();
-        Material below = Material.AIR;
-        Material top = Material.AIR;
-        Location location = null;
-        while (!below.isSolid() || top.isSolid()) {
-            int x = random.nextInt(-20000, 20000);
-            int z = random.nextInt(-20000, 20000);
-            location = new Location(world, x, world.getHighestBlockYAt(x,z), z);
-            int y = (int) (location.getY() - 1);
-            below = world.getBlockAt(x, y, z).getType();
-            top = world.getBlockAt(x, y + 1, z).getType();
-        }
-        return location;
+        int x = random.nextInt(-20000, 20000);
+        int z = random.nextInt(-20000, 20000);
+        return getHighestBlock(world, x, z);
     }
 
     private class AutoRespawn implements Listener {
@@ -140,8 +131,22 @@ public class RandomWorldStressTester implements IStressTester {
         public void onDeath(PlayerDeathEvent e) {
             ServerPlayer player = (ServerPlayer) getHandle(getCraftClass("entity.CraftPlayer"), e.getPlayer());
             if (player != null && tempPlayers.containsKey(player.getName().getString())) {
+                Location location = e.getPlayer().getLocation();
                 e.getPlayer().spigot().respawn();
+                e.getPlayer().teleport(location);
             }
         }
+    }
+
+    public Location getHighestBlock(World world, int x, int z){
+        int i = 319;
+        Location location = new Location(world, x, i, z);
+        while(i > 0){
+            if(location.getBlock().getType() != Material.AIR)
+                return location.add(0, 1, 0);
+            i--;
+            location.setY(i);
+        }
+        return new Location(world, x, 1, z);
     }
 }
