@@ -47,7 +47,7 @@ public class FPMMinimalInjector implements MinimalInjector {
     public Player getPlayer() {
         ServerPlayer player = new ServerPlayer(MinecraftServer.getServer(), (ServerLevel) Objects.requireNonNull(getHandle(getCraftClass("CraftWorld"), Objects.requireNonNull(FakePlayerMaker.settings.getLocation("defaultSpawnLocation")).getWorld())),
                 new GameProfile(UUIDUtil.createOfflinePlayerUUID(name), name));
-        var connection = new EmptyConnection(PacketFlow.CLIENTBOUND, player.gameProfile);
+        var connection = new EmptyConnection(PacketFlow.CLIENTBOUND);
         MinecraftServer server = FakePlayerMaker.getNMSServer();
         player.connection = new ServerGamePacketListenerImpl(server, connection, player);
         return player.getBukkitEntity();

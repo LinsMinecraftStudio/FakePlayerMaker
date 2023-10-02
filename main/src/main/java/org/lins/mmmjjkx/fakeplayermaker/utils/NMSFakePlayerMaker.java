@@ -61,7 +61,7 @@ public class NMSFakePlayerMaker {
                     }
 
                     fakePlayerMap.put(player.getName().getString(), player);
-                    var connection = new EmptyConnection(PacketFlow.CLIENTBOUND, player.gameProfile);
+                    var connection = new EmptyConnection(PacketFlow.CLIENTBOUND);
                     var listener = new ServerGamePacketListenerImpl(server, connection, player);
 
                     server.getPlayerList().placeNewPlayer(connection, player);
@@ -132,7 +132,7 @@ public class NMSFakePlayerMaker {
         } else {
             ServerLevel level = (ServerLevel) Objects.requireNonNull(getHandle(getCraftClass("CraftWorld"), realLoc.getWorld()));
             ServerPlayer player = new ServerPlayer(server, level, new GameProfile(UUIDUtil.createOfflinePlayerUUID(name), name));
-            var connection = new EmptyConnection(PacketFlow.CLIENTBOUND, player.gameProfile);
+            var connection = new EmptyConnection(PacketFlow.CLIENTBOUND);
             var listener = new ServerGamePacketListenerImpl(server, connection, player);
 
             fakePlayerMap.put(name, player);
@@ -146,7 +146,7 @@ public class NMSFakePlayerMaker {
     }
 
     private static void playerJoin(MinecraftServer server, ServerPlayer handle) {
-        playerJoin(server, handle, new EmptyConnection(PacketFlow.CLIENTBOUND, handle.gameProfile), new ServerGamePacketListenerImpl(server, new EmptyConnection(PacketFlow.CLIENTBOUND, handle.gameProfile), handle));
+        playerJoin(server, handle, new EmptyConnection(PacketFlow.CLIENTBOUND), new ServerGamePacketListenerImpl(server, new EmptyConnection(PacketFlow.CLIENTBOUND), handle));
     }
 
     private static void playerJoin(MinecraftServer server, ServerPlayer player, EmptyConnection connection, ServerGamePacketListenerImpl listener) {
@@ -172,7 +172,7 @@ public class NMSFakePlayerMaker {
     public static void joinFakePlayer(String name){
         ServerPlayer player = fakePlayerMap.get(name);
         if (player != null) {
-            var connection = new EmptyConnection(PacketFlow.CLIENTBOUND, player.gameProfile);
+            var connection = new EmptyConnection(PacketFlow.CLIENTBOUND);
             var listener = new ServerGamePacketListenerImpl(server, connection, player);
 
             playerJoin(server, player, connection, listener);

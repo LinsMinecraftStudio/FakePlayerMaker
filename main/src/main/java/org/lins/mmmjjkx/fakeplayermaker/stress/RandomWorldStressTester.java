@@ -91,7 +91,7 @@ public class RandomWorldStressTester implements IStressTester {
 
             ServerPlayer player = new ServerPlayer(server, level, new GameProfile(uuid, finalName));
 
-            var connection = new EmptyConnection(PacketFlow.CLIENTBOUND, player.gameProfile);
+            var connection = new EmptyConnection(PacketFlow.CLIENTBOUND);
             var listener = new ServerGamePacketListenerImpl(server, connection, player);
 
             connection.setListener(listener);

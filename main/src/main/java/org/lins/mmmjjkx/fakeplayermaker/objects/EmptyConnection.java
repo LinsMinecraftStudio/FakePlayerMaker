@@ -1,6 +1,5 @@
 package org.lins.mmmjjkx.fakeplayermaker.objects;
 
-import com.mojang.authlib.GameProfile;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -9,19 +8,17 @@ import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketFlow;
-import net.minecraft.network.protocol.login.ServerboundHelloPacket;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.util.Optional;
 
 public final class EmptyConnection extends Connection {
 
-    public EmptyConnection(PacketFlow side, GameProfile profile) {
+    public EmptyConnection(PacketFlow side) {
         super(side);
-        setup(profile);
+        setup();
     }
 
     @Override
@@ -37,7 +34,7 @@ public final class EmptyConnection extends Connection {
     public void send(Packet<?> packet, @Nullable PacketSendListener callbacks) {
     }
 
-    private void setup(GameProfile profile) {
+    private void setup() {
         ChannelFuture future = new Bootstrap()
                 .handler(new ChannelInitializer<>() {
                     @Override
