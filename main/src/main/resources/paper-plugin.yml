@@ -8,18 +8,26 @@ loader: org.lins.mmmjjkx.fakeplayermaker.paper.FPMLoader
 has-open-classloader: true
 
 dependencies:
-  - name: Polymer
-    required: true
-    bootstrap: false
-  - name: WorldEdit
-    required: false
-    bootstrap: false
-  - name: FastAsyncWorldEdit
-    required: false
-    bootstrap: false
-  - name: ProtocolLib
-    required: false
-    bootstrap: false
+  server:
+    Polymer:
+      load: BEFORE
+      required: true
+      join-classpath: true
+    FastAsyncWorldEdit:
+      load: BEFORE
+      required: false
+      join-classpath: true
+    WorldEdit:
+      load: BEFORE
+      required: false
+      join-classpath: true
+    ProtocolLib:
+      load: BEFORE
+      required: false
+      join-classpath: true
+
 permissions:
   fakeplayermaker.command:
     description: allows you to use /fakeplayermaker command
+  fakeplayermaker.command.stress:
+    description: allows you to use /fakeplayermaker stress command

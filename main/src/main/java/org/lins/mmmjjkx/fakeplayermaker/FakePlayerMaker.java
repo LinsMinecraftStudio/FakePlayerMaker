@@ -5,6 +5,7 @@ import io.github.linsminecraftstudio.polymer.objects.plugin.PolymerPlugin;
 import io.github.linsminecraftstudio.polymer.objects.plugin.SimpleSettingsManager;
 import io.github.linsminecraftstudio.polymer.objects.plugin.message.PolymerMessageHandler;
 import io.github.linsminecraftstudio.polymer.utils.Metrics;
+import net.minecraft.server.MinecraftServer;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -13,7 +14,10 @@ import org.lins.mmmjjkx.fakeplayermaker.listeners.InteractListener;
 import org.lins.mmmjjkx.fakeplayermaker.stress.StressTestSaver;
 import org.lins.mmmjjkx.fakeplayermaker.utils.FakePlayerSaver;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+
+import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getCraftClass;
 
 public class FakePlayerMaker extends PolymerPlugin{
     public static PolymerMessageHandler messageHandler;
@@ -71,5 +75,13 @@ public class FakePlayerMaker extends PolymerPlugin{
         settings = new SimpleSettingsManager(FakePlayerMaker.INSTANCE);
         fakePlayerSaver.reload();
         stressTestSaver.reload();
+    }
+
+    public static MinecraftServer getNMSServer() {
+        try {
+            return (MinecraftServer) getCraftClass("CraftServer").getMethod("getServer").invoke(Bukkit.getServer());
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

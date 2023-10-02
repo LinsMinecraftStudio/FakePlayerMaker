@@ -20,8 +20,4 @@ public class ActionUtils {
             }
         }.runTaskAsynchronously(FakePlayerMaker.INSTANCE);
     }
-
-    public static void sneak(ServerPlayer player, boolean sneak) {
-        player.setShiftKeyDown(sneak);
-    }
 }

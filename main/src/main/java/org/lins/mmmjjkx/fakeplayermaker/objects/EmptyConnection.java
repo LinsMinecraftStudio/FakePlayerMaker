@@ -1,24 +1,27 @@
 package org.lins.mmmjjkx.fakeplayermaker.objects;
 
-import io.netty.buffer.ByteBufAllocator;
+import com.mojang.authlib.GameProfile;
+import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import net.minecraft.network.Connection;
+import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketFlow;
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.network.protocol.login.ServerboundHelloPacket;
+import org.bukkit.Bukkit;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
+import java.util.Optional;
 
 public final class EmptyConnection extends Connection {
-    public EmptyConnection(PacketFlow side) {
+
+    public EmptyConnection(PacketFlow side, GameProfile profile) {
         super(side);
-        this.channel = new EmptyChannel();
-        this.address = this.channel.remoteAddress();
+        setup(profile);
     }
 
     @Override
@@ -27,112 +30,45 @@ public final class EmptyConnection extends Connection {
     }
 
     @Override
-    public void send(@NotNull Packet<?> packet) {
+    public void send(Packet<?> packet) {
     }
 
     @Override
-    public void send(@NotNull Packet<?> packet, @Nullable PacketSendListener callbacks) {
+    public void send(Packet<?> packet, @Nullable PacketSendListener callbacks) {
     }
 
-    private static class EmptyChannel extends AbstractChannel {
+    private void setup(GameProfile profile) {
+        ChannelFuture future = new Bootstrap()
+                .handler(new ChannelInitializer<>() {
+                    @Override
+                    protected void initChannel(Channel channel) {
+                        channel.config().setOption(ChannelOption.TCP_NODELAY, true);
 
-        private final ChannelConfig config = new DefaultChannelConfig(this);
-        private final ChannelPipeline pipeline;
+                        channel.pipeline().addLast("packet_handler", new Connection(PacketFlow.CLIENTBOUND));
+                    }})
+                .channel(NioSocketChannel.class)
+                .group(Connection.NETWORK_WORKER_GROUP.get())
+                .localAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 60000))
+                .connect("127.0.0.1", Bukkit.getPort());
 
-        public EmptyChannel() {
-            super(null);
-            this.pipeline = newChannelPipeline();
-            this.pipeline.addFirst("encoder", new EmptyEncoder());
-            this.pipeline.addFirst("decoder", new EmptyDecoder());
-
-            EventLoopGroup eventLoopGroup = new NioEventLoopGroup();
-            ChannelFuture channelFuture = eventLoopGroup.register(this);
-            channelFuture.addListener((ChannelFutureListener) future -> {
-                if (!future.isSuccess()) {
-                    future.cause().printStackTrace();
-                }
-            });
-
-            try {
-                channelFuture.sync();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+        future.addListener((ChannelFutureListener) future1 -> {
+            if (!future1.isSuccess()) {
+                future1.cause().printStackTrace();
             }
+        });
+
+        try {
+            future.sync();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
 
-        @Override
-        public ChannelConfig config() {
-            return config;
-        }
+        configureSerialization(future.channel().pipeline(), PacketFlow.SERVERBOUND);
 
-        @Override
-        public boolean isOpen() {
-            return true;
-        }
+        Connection.NETWORK_WORKER_GROUP.get().register(future.channel());
+        this.channel = future.channel();
+        this.address = this.channel.remoteAddress();
 
-        @Override
-        public boolean isActive() {
-            return false;
-        }
-
-        @Override
-        protected void doBeginRead() {
-        }
-
-        @Override
-        protected void doBind(SocketAddress localAddress) {
-        }
-
-        @Override
-        protected void doClose() {
-        }
-
-        @Override
-        protected void doDisconnect() {
-        }
-
-        @Override
-        protected void doWrite(ChannelOutboundBuffer outboundBuffer) {
-        }
-
-        @Override
-        protected boolean isCompatible(EventLoop eventLoop) {
-            return true;
-        }
-
-        @Override
-        protected SocketAddress localAddress0() {
-            return new InetSocketAddress(InetAddress.getLoopbackAddress(), 60000);
-        }
-
-        @Override
-        protected SocketAddress remoteAddress0() {
-            return new InetSocketAddress(InetAddress.getLoopbackAddress(), 60000);
-        }
-
-        @Override
-        public ChannelMetadata metadata() {
-            return new ChannelMetadata(false);
-        }
-
-        @Override
-        protected AbstractUnsafe newUnsafe() {
-            return new AbstractUnsafe() {
-                @Override
-                public void connect(SocketAddress remoteAddress, SocketAddress localAddress, ChannelPromise promise) {
-                    safeSetSuccess(promise);
-                }
-            };
-        }
-
-        @Override
-        public ChannelPipeline pipeline() {
-            return pipeline;
-        }
-
-        @Override
-        public ByteBufAllocator alloc() {
-            return config().getAllocator();
-        }
+        setProtocol(ConnectionProtocol.LOGIN);
     }
 }
