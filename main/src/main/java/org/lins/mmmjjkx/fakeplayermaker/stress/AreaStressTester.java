@@ -146,16 +146,4 @@ public class AreaStressTester implements IStressTester {
         }
         return list;
     }
-
-    public Location getHighestBlock(World world, int x, int z){
-        int i = 319;
-        Location location = new Location(world, x, i, z);
-        while(i > 0){
-            if(location.getBlock().getType() != Material.AIR)
-                return location.add(0, 1, 0);
-            i--;
-            location.setY(i);
-        }
-        return new Location(world, x, 1, z);
-    }
 }

@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.WorldNotFoundException;
+import org.lins.mmmjjkx.fakeplayermaker.implementation.Implementations;
 import org.lins.mmmjjkx.fakeplayermaker.stress.AreaStressTester;
 import org.lins.mmmjjkx.fakeplayermaker.stress.RandomWorldStressTester;
 import org.lins.mmmjjkx.fakeplayermaker.utils.ActionUtils;
@@ -119,7 +120,7 @@ public class FPMCommand extends PolymerCommand {
                             if (player == null) {
                                 yield false;
                             }
-                            player.teleport(serverPlayer.getBukkitEntity().getLocation());
+                            Implementations.runImpl(t -> player.teleport(t.bukkitEntity(serverPlayer)));
                             FakePlayerMaker.fakePlayerSaver.syncPlayerInfo(serverPlayer);
                             sendMessage(commandSender, "TeleportSuccess");
                             yield true;

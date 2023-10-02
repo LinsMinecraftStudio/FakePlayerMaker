@@ -45,7 +45,6 @@ public final class EmptyConnection extends Connection {
                     }})
                 .channel(NioSocketChannel.class)
                 .group(Connection.NETWORK_WORKER_GROUP.get())
-                .localAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), 60000))
                 .connect("127.0.0.1", Bukkit.getPort());
 
         future.addListener((ChannelFutureListener) future1 -> {

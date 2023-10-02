@@ -25,6 +25,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.Nullable;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.hook.protocol.FPMTempPlayerFactory;
+import org.lins.mmmjjkx.fakeplayermaker.implementation.Implementations;
 import org.lins.mmmjjkx.fakeplayermaker.objects.EmptyConnection;
 import su.nexmedia.engine.NexPlugin;
 
@@ -155,7 +156,7 @@ public class NMSFakePlayerMaker {
         server.getPlayerList().placeNewPlayer(connection, player);
         simulateLogin(player);
 
-        player.connection = listener;
+        Implementations.runImpl(t -> t.setConnection(player, listener));
         player.setShiftKeyDown(false);
 
         preventListen();

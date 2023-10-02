@@ -14,6 +14,7 @@ import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
+import org.lins.mmmjjkx.fakeplayermaker.implementation.Implementations;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -42,9 +43,9 @@ public class FakePlayerSaver extends SingleFileStorage {
 
     public void syncPlayerInfo(ServerPlayer player) {
         ConfigurationSection section = getOrElseCreate(player.getName().getString());
-        section.set("uuid", player.getUUID().toString());
-        section.set("location", ObjectConverter.toLocationString(player.getBukkitEntity().getLocation()));
-        Optional<Property> prop = ListUtil.getIf(player.gameProfile.getProperties().get("textures"), p -> p.getName().equals("textures"));
+        section.set("uuid", UUIDUtil.createOfflinePlayerUUID(player.getName().getString()).toString());
+        section.set("location", ObjectConverter.toLocationString(Implementations.runImplAndReturn(t -> t.bukkitEntity(player)).getLocation()));
+        Optional<Property> prop = ListUtil.getIf(Implementations.runImplAndReturn(t -> t.profile(player)).getProperties().get("textures"), p -> p.getName().equals("textures"));
         prop.ifPresent(property -> section.set("skin", property.getValue()));
         try {configuration.save(cfgFile);
         } catch (IOException e) {throw new RuntimeException(e);}
