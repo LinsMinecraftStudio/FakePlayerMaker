@@ -12,21 +12,9 @@ import org.jetbrains.annotations.NotNull;
 public class FPMLoader implements PluginLoader {
     @Override
     public void classloader(@NotNull PluginClasspathBuilder classpathBuilder) {
-        if (checkProtocolLib()) {
-            MavenLibraryResolver resolver = new MavenLibraryResolver();
-            resolver.addDependency(new Dependency(new DefaultArtifact("net.bytebuddy:byte-buddy:1.14.8"), null));
-            resolver.addRepository(new RemoteRepository.Builder("central", "default", "https://repo1.maven.org/maven2/").build());
-
-            classpathBuilder.addLibrary(resolver);
-        }
-    }
-
-    private boolean checkProtocolLib() {
-        try {
-            Class.forName("com.comphenix.protocol.ProtocolLib");
-            return true;
-        } catch (ClassNotFoundException e) {
-            return false;
-        }
+        MavenLibraryResolver resolver = new MavenLibraryResolver();
+        resolver.addDependency(new Dependency(new DefaultArtifact("net.bytebuddy:byte-buddy:1.14.8"), null));
+        resolver.addRepository(new RemoteRepository.Builder("central", "default", "https://repo1.maven.org/maven2/").build());
+        classpathBuilder.addLibrary(resolver);
     }
 }
