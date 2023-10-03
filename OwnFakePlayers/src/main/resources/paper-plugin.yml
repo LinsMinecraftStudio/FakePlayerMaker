@@ -1,0 +1,16 @@
+name: OwnFakePlayers
+version: '${project.version}'
+main: org.lins.mmmjjkx.ownfakeplayers.OwnFakePlayers
+api-version: '1.19'
+bootstrapper: org.lins.mmmjjkx.ownfakeplayers.paper.OFPBootstrap
+loader: org.lins.mmmjjkx.ownfakeplayers.paper.OFPLoader
+dependencies:
+  server:
+    Polymer:
+      required: true
+      load: BEFORE
+      join-classpath: true
+    FakePlayerMaker:
+      required: true
+      load: BEFORE
+      join-classpath: true

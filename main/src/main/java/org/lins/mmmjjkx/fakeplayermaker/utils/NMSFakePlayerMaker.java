@@ -98,7 +98,8 @@ public class NMSFakePlayerMaker {
         }
     }
 
-    public static void spawnFakePlayer(Location loc, String name, @Nullable CommandSender sender){
+    @Nullable
+    public static ServerPlayer spawnFakePlayer(Location loc, String name, @Nullable CommandSender sender){
         if (name == null || name.isBlank()) {
             name = getRandomName(FakePlayerMaker.randomNameLength);
         }
@@ -108,7 +109,7 @@ public class NMSFakePlayerMaker {
 
         if (realLoc == null) {
             FakePlayerMaker.INSTANCE.getLogger().warning("Failed to create a fake player, the default spawn location is null");
-            return;
+            return null;
         }
 
         if (!Strings.isNullOrEmpty(FakePlayerMaker.settings.getString("namePrefix"))) {
@@ -130,6 +131,7 @@ public class NMSFakePlayerMaker {
                 playerJoin(server, handle);
 
                 temp.teleport(realLoc);
+                return handle;
             } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
@@ -146,6 +148,7 @@ public class NMSFakePlayerMaker {
             playerJoin(server, player, connection, listener);
 
             player.teleportTo(level, realLoc.getX(), realLoc.getY(), realLoc.getZ(), realLoc.getYaw(), realLoc.getPitch());
+            return player;
         }
     }
 

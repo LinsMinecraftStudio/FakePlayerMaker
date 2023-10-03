@@ -33,6 +33,17 @@ public class FakePlayerMaker extends PolymerPlugin{
     @Override
     public void onPlEnable() {
         // Plugin startup logic
+        getLogger().info("""
+                 \n
+                  _____     _        ____  _                       __  __       _            \s
+                 |  ___|_ _| | _____|  _ \\| | __ _ _   _  ___ _ __|  \\/  | __ _| | _____ _ __\s
+                 | |_ / _` | |/ / _ \\ |_) | |/ _` | | | |/ _ \\ '__| |\\/| |/ _` | |/ / _ \\ '__|
+                 |  _| (_| |   <  __/  __/| | (_| | |_| |  __/ |  | |  | | (_| |   <  __/ |  \s
+                 |_|  \\__,_|_|\\_\\___|_|   |_|\\__,_|\\__, |\\___|_|  |_|  |_|\\__,_|_|\\_\\___|_|  \s
+                                                   |___/                                     \s
+                                                                 
+                 version %s by mmmjjkx
+                """.formatted(getPluginMeta().getVersion()));
         suggestSpark();
         INSTANCE = this;
         Implementations.setup();
