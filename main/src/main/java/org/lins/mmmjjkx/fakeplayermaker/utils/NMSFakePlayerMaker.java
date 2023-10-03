@@ -72,7 +72,7 @@ public class NMSFakePlayerMaker {
                     player.bukkitPickUpLoot = settings.getBoolean("player.canPickupItems");
                     player.collides = settings.getBoolean("player.collision");
 
-                    runCMDAdd(player, connection, listener);
+                    runCMDs(player, connection, listener);
 
                     preventListen();
                 }
@@ -80,18 +80,21 @@ public class NMSFakePlayerMaker {
         }.runTaskLater(FakePlayerMaker.INSTANCE, 10);
     }
 
-    private static void runCMDAdd(ServerPlayer player, EmptyConnection connection, ServerGamePacketListenerImpl listener) {
+    private static void runCMDs(ServerPlayer player, EmptyConnection connection, ServerGamePacketListenerImpl listener) {
         connection.setListener(listener);
 
-        Player p;
-        try {
-            p = (Player) getEntity.invoke(null, Bukkit.getServer(), player);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException(e);
+        Player p = Implementations.bukkitEntity(player);
+        for (String cmd : FakePlayerMaker.settings.getStrList("runCMDAfterJoin")) {
+            cmd = cmd.replaceAll("%player%", p.getName());
+            if (cmd.startsWith("chat:")) {
+                ActionUtils.chat(player,  cmd.replace("chat:", ""));
+                continue;
+            }
+            Bukkit.dispatchCommand(p, cmd);
         }
 
-        for (String cmd : FakePlayerMaker.settings.getStrList("runCMDAfterJoin")) {
-            Bukkit.dispatchCommand(p, cmd);
+        for (String cmd : FakePlayerMaker.settings.getStrList("runCMDConsoleAfterJoin")) {
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replaceAll("%player%", p.getName()));
         }
     }
 
@@ -161,7 +164,7 @@ public class NMSFakePlayerMaker {
 
         preventListen();
 
-        runCMDAdd(player, connection, listener);
+        runCMDs(player, connection, listener);
 
         player.setInvulnerable(settings.getBoolean("player.invulnerable"));
         player.bukkitPickUpLoot = settings.getBoolean("player.canPickupItems");

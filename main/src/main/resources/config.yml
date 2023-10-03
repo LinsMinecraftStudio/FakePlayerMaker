@@ -18,6 +18,10 @@ defaultSpawnLocation:
 runCMDAfterJoin:
   - "register 123723123 123723123"
   - "login 123723123"
+  - "chat:Hi, I am %player%"
+#Run commands after join (by console)
+runCMDConsoleAfterJoin:
+  - "broadcast Welcome %player%!!"
 #Please install the WorldEdit or FastAsyncWorldEdit plugin before turn it on!
 #Recommended creating an open area to create a stress tester.
 areaStressTesters: false

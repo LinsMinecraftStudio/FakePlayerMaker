@@ -7,8 +7,10 @@ import com.google.gson.JsonParser;
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTester;
 import io.github.linsminecraftstudio.polymer.Polymer;
 import io.github.linsminecraftstudio.polymer.command.PolymerCommand;
+import io.github.linsminecraftstudio.polymer.utils.ListUtil;
 import io.github.linsminecraftstudio.polymer.utils.ObjectConverter;
 import net.minecraft.server.level.ServerPlayer;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -25,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.lins.mmmjjkx.fakeplayermaker.hook.WEHook.handleAreaCreate;
 
@@ -55,8 +58,12 @@ public class FPMCommand extends PolymerCommand {
                 case "stress" -> copyPartialMatches(args[1], List.of("area","randomworld"));
                 default -> new ArrayList<>();
             };
-        } else if (args.length==3 && args[0].equalsIgnoreCase("stress")) {
-            return List.of("start","stop","players","create");
+        } else if (args.length==3) {
+            return switch (args[0]) {
+                case "stress" -> List.of("start","stop","players","create");
+                case "skin" -> Bukkit.getOnlinePlayers().stream().map(Player::getName).filter(n -> !NMSFakePlayerMaker.fakePlayerMap.containsKey(n)).collect(Collectors.toList());
+                default -> new ArrayList<>();
+            };
         } else if (args.length == 4 && args[0].equals("stress") && !args[2].equals("create")) {
             if (args[1].equalsIgnoreCase("area")) {
                 return copyPartialMatches(args[3], FakePlayerMaker.stressTestSaver.getAreaTesterNames());
@@ -362,12 +369,12 @@ public class FPMCommand extends PolymerCommand {
             playerProfile.setProperty(new ProfileProperty("textures", value, signature));
             bukkit.setPlayerProfile(playerProfile);
 
+            FakePlayerMaker.fakePlayerSaver.syncPlayerInfo(player);
+
             sendMessage(operator, "SkinChanged");
             return true;
-        } catch (IllegalStateException | IOException | NullPointerException exception)
-        {
+        } catch (IllegalStateException | IOException | NullPointerException exception) {
             sendMessage(operator, "SkinChangeFailed");
-            exception.printStackTrace();
             return false;
         }
     }
