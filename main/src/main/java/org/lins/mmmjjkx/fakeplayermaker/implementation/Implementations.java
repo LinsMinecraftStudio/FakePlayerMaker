@@ -18,9 +18,14 @@ import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getCraft
 public abstract class Implementations {
     private static final Map<String,Implementations> map = new HashMap<>();
 
-    public static void register(Implementations impl) {
-        for (String version : impl.minecraftVersion()) {
-            map.put(version, impl);
+    public static void setup() {
+        new v1_19_3().register();
+        new v1_20_1().register();
+    }
+
+    public void register() {
+        for (String version : minecraftVersion()) {
+            map.put(version, this);
         }
     }
 
@@ -32,7 +37,7 @@ public abstract class Implementations {
         return function.apply(map.get(Bukkit.getMinecraftVersion()));
     }
 
-    public final Player bukkitEntity(ServerPlayer player){
+    public static Player bukkitEntity(ServerPlayer player){
         try {
             return (Player) getCraftClass("entity.CraftEntity")
                     .getMethod("getEntity", getCraftClass("CraftServer"), net.minecraft.world.entity.Entity.class).invoke(null, Bukkit.getServer(), player);
@@ -44,4 +49,46 @@ public abstract class Implementations {
     public abstract GameProfile profile(ServerPlayer player);
     public abstract void setConnection(ServerPlayer player, ServerGamePacketListenerImpl connection);
     public abstract @NotNull String[] minecraftVersion();
+
+    private static class v1_19_3 extends Implementations {
+        @Override
+        public @NotNull GameProfile profile(ServerPlayer player) {
+            try {
+                return (GameProfile) player.getClass().getField("co").get(player);
+            } catch (IllegalAccessException | NoSuchFieldException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public void setConnection(ServerPlayer player, ServerGamePacketListenerImpl connection) {
+            try {
+                player.getClass().getField("b").set(player, connection);
+            } catch (IllegalAccessException | NoSuchFieldException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public String[] minecraftVersion() {
+            return new String[]{"1.19.3","1.19.4"};
+        }
+    }
+
+    private static class v1_20_1 extends Implementations {
+        @Override
+        public @NotNull GameProfile profile(ServerPlayer player) {
+            return player.getGameProfile();
+        }
+
+        @Override
+        public void setConnection(ServerPlayer player, ServerGamePacketListenerImpl connection) {
+            player.connection = connection;
+        }
+
+        @Override
+        public String[] minecraftVersion() {
+            return new String[]{"1.20.1"};
+        }
+    }
 }

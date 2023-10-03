@@ -1,5 +1,9 @@
 package org.lins.mmmjjkx.fakeplayermaker.command;
 
+import com.destroystokyo.paper.profile.PlayerProfile;
+import com.destroystokyo.paper.profile.ProfileProperty;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTester;
 import io.github.linsminecraftstudio.polymer.Polymer;
 import io.github.linsminecraftstudio.polymer.command.PolymerCommand;
@@ -17,10 +21,10 @@ import org.lins.mmmjjkx.fakeplayermaker.stress.RandomWorldStressTester;
 import org.lins.mmmjjkx.fakeplayermaker.utils.ActionUtils;
 import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.*;
 
 import static org.lins.mmmjjkx.fakeplayermaker.hook.WEHook.handleAreaCreate;
 
@@ -42,10 +46,12 @@ public class FPMCommand extends PolymerCommand {
     @Override
     public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) {
         if (args.length == 1) {
-            return copyPartialMatches(args[0], List.of("add","reload","removeAll","remove","stress","join","chat","teleport","tp"));
+            return copyPartialMatches(args[0], List.of(
+                    "add","reload","removeAll","remove","stress","join","chat","teleport","tp","skin"));
         } else if (args.length == 2) {
             return switch (args[0]) {
-                case "remove","teleport","tp","join","chat" -> copyPartialMatches(args[1], NMSFakePlayerMaker.fakePlayerMap.keySet());
+                case "remove","teleport","tp","join","chat","skin"
+                        -> copyPartialMatches(args[1], NMSFakePlayerMaker.fakePlayerMap.keySet());
                 case "stress" -> copyPartialMatches(args[1], List.of("area","randomworld"));
                 default -> new ArrayList<>();
             };
@@ -67,13 +73,20 @@ public class FPMCommand extends PolymerCommand {
             if (strings.length == 1) {
                 return switch (strings[0]) {
                     case "add" -> {
-                        if (!(commandSender instanceof Player p)) {
-                            sendMessage(commandSender, "SpecifyLocation");
-                            yield false;
+                        if (commandSender instanceof Player p) {
+                            NMSFakePlayerMaker.spawnFakePlayer(p.getLocation(), null, commandSender);
+                            sendMessage(commandSender, "CreateSuccess");
+                            yield true;
+                        } else {
+                            if (FakePlayerMaker.defaultSpawnLocation != null) {
+                                NMSFakePlayerMaker.spawnFakePlayer(FakePlayerMaker.defaultSpawnLocation, null, commandSender);
+                                sendMessage(commandSender, "CreateSuccess");
+                                yield true;
+                            } else {
+                                sendMessage(commandSender, "SpecifyLocation");
+                                yield false;
+                            }
                         }
-                        NMSFakePlayerMaker.spawnFakePlayer(p.getLocation(), null, commandSender);
-                        sendMessage(commandSender, "CreateSuccess");
-                        yield true;
                     }
                     case "reload" -> {
                         FakePlayerMaker.reload();
@@ -95,7 +108,11 @@ public class FPMCommand extends PolymerCommand {
                 return switch (strings[0]) {
                     case "add" -> {
                         if (!(commandSender instanceof Player p)) {
-                            NMSFakePlayerMaker.spawnFakePlayer(FakePlayerMaker.settings.getLocation("defaultSpawnLocation"), name, commandSender);
+                            if (FakePlayerMaker.defaultSpawnLocation == null) {
+                                sendMessage(commandSender, "SpecifyLocation");
+                                yield false;
+                            }
+                            NMSFakePlayerMaker.spawnFakePlayer(FakePlayerMaker.defaultSpawnLocation, name, commandSender);
                             sendMessage(commandSender, "CreateSuccess");
                             yield true;
                         }
@@ -118,9 +135,10 @@ public class FPMCommand extends PolymerCommand {
                             Player player = toPlayer(commandSender);
                             ServerPlayer serverPlayer = NMSFakePlayerMaker.fakePlayerMap.get(name);
                             if (player == null) {
+                                sendMessage(commandSender, "PlayerNotFound");
                                 yield false;
                             }
-                            Implementations.runImpl(t -> player.teleport(t.bukkitEntity(serverPlayer)));
+                            player.teleport(Implementations.bukkitEntity(serverPlayer));
                             FakePlayerMaker.fakePlayerSaver.syncPlayerInfo(serverPlayer);
                             sendMessage(commandSender, "TeleportSuccess");
                             yield true;
@@ -144,32 +162,27 @@ public class FPMCommand extends PolymerCommand {
                 };
             } else if (strings.length == 3) {
                 //function commands here
-                // I can't check it works
-                /*
-                if (strings[0].equals("skin")) {
-                    String name = strings[1];
-                    ServerPlayer player = NMSFakePlayerMaker.fakePlayerMap.get(name);
-                    if (player != null) {
-                        GameProfile profile = player.getGameProfile();
-                        profile.getProperties().removeAll("textures");
-                        profile.getProperties().put("textures", new Property("textures", strings[2]));
-                        player.gameProfile = profile;
-                        return true;
-                    }
-                    sendMessage(commandSender, "PlayerNotFound");
-                    return true;
-                }
-                 */
-                if (strings[0].equals("chat")) {
-                    String name = strings[1];
-                    String chat = strings[2];
-                    ServerPlayer player = NMSFakePlayerMaker.fakePlayerMap.get(name);
-                    if (player == null) {
+                switch (strings[0]) {
+                    case "skin" -> {
+                        String name = strings[2];
+                        ServerPlayer player = NMSFakePlayerMaker.fakePlayerMap.get(strings[1]);
+                        if (player != null) {
+                            return skinChange(player, commandSender, name);
+                        }
                         sendMessage(commandSender, "PlayerNotFound");
                         return false;
                     }
-                    ActionUtils.chat(player, chat);
-                    return true;
+                    case "chat" -> {
+                        String name = strings[1];
+                        String chat = strings[2];
+                        ServerPlayer player = NMSFakePlayerMaker.fakePlayerMap.get(name);
+                        if (player == null) {
+                            sendMessage(commandSender, "PlayerNotFound");
+                            return false;
+                        }
+                        ActionUtils.chat(player, chat);
+                        return false;
+                    }
                 }
                 //function commands end
                 if (strings[0].equals("add")) {
@@ -330,5 +343,32 @@ public class FPMCommand extends PolymerCommand {
         }
         Set<String> names = tester.get().getTempPlayers().keySet();
         commandSender.sendMessage(names.toString());
+    }
+
+    private boolean skinChange(ServerPlayer player, CommandSender operator, String targetName) {
+        Player bukkit = Implementations.bukkitEntity(player);
+        PlayerProfile playerProfile = bukkit.getPlayerProfile();
+        try {
+            URL url = new URL("https://api.mojang.com/users/profiles/minecraft/" + targetName);
+            InputStreamReader reader = new InputStreamReader(url.openStream());
+            String uuid = JsonParser.parseReader(reader).getAsJsonObject().get("id").getAsString();
+            URL url1 = new URL("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid + "?unsigned=false");
+            InputStreamReader reader1 = new InputStreamReader(url1.openStream());
+            JsonObject properties = JsonParser.parseReader(reader1).getAsJsonObject().get("properties").getAsJsonArray().get(0).getAsJsonObject();
+
+            String value = properties.get("value").getAsString();
+            String signature = properties.get("signature").getAsString();
+
+            playerProfile.setProperty(new ProfileProperty("textures", value, signature));
+            bukkit.setPlayerProfile(playerProfile);
+
+            sendMessage(operator, "SkinChanged");
+            return true;
+        } catch (IllegalStateException | IOException | NullPointerException exception)
+        {
+            sendMessage(operator, "SkinChangeFailed");
+            exception.printStackTrace();
+            return false;
+        }
     }
 }

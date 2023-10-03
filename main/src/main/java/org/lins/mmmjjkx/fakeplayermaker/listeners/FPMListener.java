@@ -3,16 +3,20 @@ package org.lins.mmmjjkx.fakeplayermaker.listeners;
 import io.github.linsminecraftstudio.polymer.objects.plugin.SimpleSettingsManager;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
+import org.lins.mmmjjkx.fakeplayermaker.command.FPMCommand;
 import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 
 import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getCraftClass;
 import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getHandle;
 
-public class InteractListener implements Listener {
+public class FPMListener implements Listener {
     @EventHandler
     public void onDeath(PlayerDeathEvent e) {
         SimpleSettingsManager settings = FakePlayerMaker.settings;

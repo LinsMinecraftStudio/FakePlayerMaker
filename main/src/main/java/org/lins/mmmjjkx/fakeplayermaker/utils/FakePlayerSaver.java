@@ -1,5 +1,7 @@
 package org.lins.mmmjjkx.fakeplayermaker.utils;
 
+import com.destroystokyo.paper.profile.PlayerProfile;
+import com.destroystokyo.paper.profile.ProfileProperty;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import io.github.linsminecraftstudio.polymer.objects.plugin.file.SingleFileStorage;
@@ -13,6 +15,7 @@ import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.implementation.Implementations;
 
@@ -44,9 +47,18 @@ public class FakePlayerSaver extends SingleFileStorage {
     public void syncPlayerInfo(ServerPlayer player) {
         ConfigurationSection section = getOrElseCreate(player.getName().getString());
         section.set("uuid", UUIDUtil.createOfflinePlayerUUID(player.getName().getString()).toString());
-        section.set("location", ObjectConverter.toLocationString(Implementations.runImplAndReturn(t -> t.bukkitEntity(player)).getLocation()));
-        Optional<Property> prop = ListUtil.getIf(Implementations.runImplAndReturn(t -> t.profile(player)).getProperties().get("textures"), p -> p.getName().equals("textures"));
-        prop.ifPresent(property -> section.set("skin", property.getValue()));
+        section.set("location", ObjectConverter.toLocationString(Implementations.bukkitEntity(player).getLocation()));
+
+        {
+            Player bukkit = Implementations.bukkitEntity(player);
+            PlayerProfile playerProfile = bukkit.getPlayerProfile();
+            Optional<ProfileProperty> skin = ListUtil.getIf(playerProfile.getProperties(), p -> p.getName().equals("textures"));
+            if (skin.isPresent()) {
+                section.set("skin", skin.get().getValue());
+                section.set("skin-signature", skin.get().getSignature());
+            }
+        }
+
         try {configuration.save(cfgFile);
         } catch (IOException e) {throw new RuntimeException(e);}
     }
@@ -65,12 +77,15 @@ public class FakePlayerSaver extends SingleFileStorage {
             UUID uuid = UUID.fromString(section.getString("uuid", String.valueOf(UUIDUtil.createOfflinePlayerUUID(sectionName))));
             Location location = ObjectConverter.toLocation(section.getString("location", ""));
             if (location == null) continue;
-            String skin = null;
-            if (section.contains("skin")) skin = section.getString("skin", "");
+            String skin = null, signature = null;
+            if (section.contains("skin")) {
+                skin = section.getString("skin", "");
+                signature = section.getString("skin-signature", "");
+            }
             ServerLevel level = (ServerLevel) getHandle(getCraftClass("CraftWorld"), location.getWorld());
             GameProfile profile = new GameProfile(uuid, sectionName);
-            if (!Strings.isNullOrEmpty(skin)) {
-                profile.getProperties().put("textures", new Property("textures", skin));
+            if (!Strings.isNullOrEmpty(skin) && !Strings.isNullOrEmpty(signature)) {
+                profile.getProperties().put("textures", new Property("textures", skin, signature));
             }
             if (level == null) {
                 FakePlayerMaker.INSTANCE.getLogger().log(Level.WARNING,

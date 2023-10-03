@@ -11,9 +11,6 @@ import net.minecraft.network.protocol.PacketFlow;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.Nullable;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-
 public final class EmptyConnection extends Connection {
 
     public EmptyConnection(PacketFlow side) {

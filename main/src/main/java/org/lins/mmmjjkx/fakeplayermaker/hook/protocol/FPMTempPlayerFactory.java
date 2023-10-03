@@ -110,6 +110,7 @@ public class FPMTempPlayerFactory {
                     }
                 }
 
+                //new methods
                 if (methodName.equals("isSneaking")) {
                     return getNMSPlayer(player).isShiftKeyDown();
                 }

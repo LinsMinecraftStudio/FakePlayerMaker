@@ -51,7 +51,7 @@ public class FPMMinimalInjector implements MinimalInjector {
                 new GameProfile(UUIDUtil.createOfflinePlayerUUID(name), name));
         var connection = new EmptyConnection(PacketFlow.CLIENTBOUND);
         Implementations.runImpl(t -> t.setConnection(player, new ServerGamePacketListenerImpl(server, connection, player)));
-        return Implementations.runImplAndReturn(t -> t.bukkitEntity(player));
+        return Implementations.bukkitEntity(player);
     }
 
     @Override

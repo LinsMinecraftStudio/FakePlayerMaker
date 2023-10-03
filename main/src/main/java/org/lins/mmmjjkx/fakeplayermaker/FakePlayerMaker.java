@@ -7,11 +7,12 @@ import io.github.linsminecraftstudio.polymer.objects.plugin.message.PolymerMessa
 import io.github.linsminecraftstudio.polymer.utils.Metrics;
 import net.minecraft.server.MinecraftServer;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.lins.mmmjjkx.fakeplayermaker.command.FPMCommand;
-import org.lins.mmmjjkx.fakeplayermaker.implementation.MCImplementations;
-import org.lins.mmmjjkx.fakeplayermaker.listeners.InteractListener;
+import org.lins.mmmjjkx.fakeplayermaker.implementation.Implementations;
+import org.lins.mmmjjkx.fakeplayermaker.listeners.FPMListener;
 import org.lins.mmmjjkx.fakeplayermaker.stress.StressTestSaver;
 import org.lins.mmmjjkx.fakeplayermaker.utils.FakePlayerSaver;
 
@@ -25,7 +26,8 @@ public class FakePlayerMaker extends PolymerPlugin{
     public static FakePlayerSaver fakePlayerSaver;
     public static FakePlayerMaker INSTANCE;
     public static SimpleSettingsManager settings;
-    public static int randomNameLength;
+    public static volatile int randomNameLength;
+    public static volatile Location defaultSpawnLocation;
     public static StressTestSaver stressTestSaver;
 
     @Override
@@ -33,7 +35,7 @@ public class FakePlayerMaker extends PolymerPlugin{
         // Plugin startup logic
         suggestSpark();
         INSTANCE = this;
-        MCImplementations.setup();
+        Implementations.setup();
         settings = new SimpleSettingsManager(this);
         completeLangFile("en-us","zh-cn");
         messageHandler = new PolymerMessageHandler(this);
@@ -41,11 +43,12 @@ public class FakePlayerMaker extends PolymerPlugin{
         stressTestSaver = new StressTestSaver();
         new Metrics(this, 19435);
         randomNameLength = settings.getInt("randomNameLength");
+        defaultSpawnLocation = settings.getLocation("defaultSpawnLocation");
 
         fakePlayerSaver.reload();
         stressTestSaver.reload();
 
-        getServer().getPluginManager().registerEvents(new InteractListener(), this);
+        getServer().getPluginManager().registerEvents(new FPMListener(), this);
     }
 
     @Override
@@ -77,6 +80,9 @@ public class FakePlayerMaker extends PolymerPlugin{
         settings = new SimpleSettingsManager(FakePlayerMaker.INSTANCE);
         fakePlayerSaver.reload();
         stressTestSaver.reload();
+
+        randomNameLength = settings.getInt("randomNameLength");
+        defaultSpawnLocation = settings.getLocation("defaultSpawnLocation");
     }
 
     public static MinecraftServer getNMSServer() {
