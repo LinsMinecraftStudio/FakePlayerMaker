@@ -82,8 +82,10 @@
 		<dependency>
 			<groupId>io.github.linsminecraftstudio</groupId>
 			<artifactId>Polymer</artifactId>
-			<version>1.3.5-SNAPSHOT</version>
-			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>ca.bkaw</groupId>
+			<artifactId>paper-nms</artifactId>
 		</dependency>
 	</dependencies>
 </project>

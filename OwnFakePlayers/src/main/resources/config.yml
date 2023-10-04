@@ -1,0 +1,21 @@
+player:
+  invulnerable: false
+  canPickupItems: false
+  collision: false
+  respawnBack: true
+  noGravity: true
+  #Commands to prevent the use of fake players
+  blockedCommands:
+    #block if the command is starts with "help"
+    - "head::help"
+    #block when the content completely matches
+    - "all::help 1"
+    #prevent the owner gets another sign reward (if you want to prevent the owner getting sign reward from fake players, just replace it to your signin plugin command)
+    - "all::signin sign"
+    #block when a parameter exists
+    # "**" represents a parameter
+    - "ap::help **"
+    #block when parameter #2 exists
+    - "ap::help plugin **"
+#Use seconds
+teleportCooldown: 10

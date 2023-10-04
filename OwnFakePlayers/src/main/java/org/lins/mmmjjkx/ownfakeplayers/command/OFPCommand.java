@@ -25,6 +25,10 @@ public class OFPCommand extends PolymerCommand {
 
     @Override
     public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
+        if (args.length == 1) {
+            return copyPartialMatches(args[0], List.of("create","list","remove","reload","lookat","tp",
+                    "tphere","skin","mount","unmount","inventory","sneak","runcmd"));
+        }
         return new ArrayList<>();
     }
 

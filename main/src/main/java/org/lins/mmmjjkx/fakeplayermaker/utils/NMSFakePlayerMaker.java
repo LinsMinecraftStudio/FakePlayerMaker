@@ -8,7 +8,6 @@ import com.mojang.authlib.GameProfile;
 import fr.xephi.authme.api.v3.AuthMeApi;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.FakePlayerCreateEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.FakePlayerRemoveEvent;
-import io.github.linsminecraftstudio.polymer.objects.plugin.SimpleSettingsManager;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.MinecraftServer;
@@ -27,6 +26,7 @@ import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.hook.protocol.FPMTempPlayerFactory;
 import org.lins.mmmjjkx.fakeplayermaker.implementation.Implementations;
 import org.lins.mmmjjkx.fakeplayermaker.objects.EmptyConnection;
+import org.lins.mmmjjkx.fakeplayermaker.objects.FPMPacketListener;
 import su.nexmedia.engine.NexPlugin;
 
 import java.lang.reflect.InvocationTargetException;
@@ -40,7 +40,6 @@ public class NMSFakePlayerMaker {
     public static Map<String, ServerPlayer> fakePlayerMap = new HashMap<>();
     private static final FakePlayerSaver saver = FakePlayerMaker.fakePlayerSaver;
     private static final MinecraftServer server = MinecraftServer.getServer();
-    private static final SimpleSettingsManager settings = FakePlayerMaker.settings;
     private static final Method getEntity;
 
     static {
@@ -63,14 +62,12 @@ public class NMSFakePlayerMaker {
 
                     fakePlayerMap.put(player.getName().getString(), player);
                     var connection = new EmptyConnection(PacketFlow.CLIENTBOUND);
-                    var listener = new ServerGamePacketListenerImpl(server, connection, player);
+                    var listener = new FPMPacketListener(connection, player);
 
                     server.getPlayerList().placeNewPlayer(connection, player);
                     simulateLogin(player);
 
-                    player.setInvulnerable(settings.getBoolean("player.invulnerable"));
-                    player.bukkitPickUpLoot = settings.getBoolean("player.canPickupItems");
-                    player.collides = settings.getBoolean("player.collision");
+                    ActionUtils.setupValues(player);
 
                     runCMDs(player, connection, listener);
 
@@ -139,7 +136,7 @@ public class NMSFakePlayerMaker {
             ServerLevel level = (ServerLevel) Objects.requireNonNull(getHandle(getCraftClass("CraftWorld"), realLoc.getWorld()));
             ServerPlayer player = new ServerPlayer(server, level, new GameProfile(UUIDUtil.createOfflinePlayerUUID(name), name));
             var connection = new EmptyConnection(PacketFlow.CLIENTBOUND);
-            var listener = new ServerGamePacketListenerImpl(server, connection, player);
+            var listener = new FPMPacketListener(connection, player);
 
             fakePlayerMap.put(name, player);
             saver.syncPlayerInfo(player);
@@ -169,9 +166,7 @@ public class NMSFakePlayerMaker {
 
         runCMDs(player, connection, listener);
 
-        player.setInvulnerable(settings.getBoolean("player.invulnerable"));
-        player.bukkitPickUpLoot = settings.getBoolean("player.canPickupItems");
-        player.collides = settings.getBoolean("player.collision");
+        ActionUtils.setupValues(player);
 
         preventListen();
     }
@@ -180,7 +175,7 @@ public class NMSFakePlayerMaker {
         ServerPlayer player = fakePlayerMap.get(name);
         if (player != null) {
             var connection = new EmptyConnection(PacketFlow.CLIENTBOUND);
-            var listener = new ServerGamePacketListenerImpl(server, connection, player);
+            var listener = new FPMPacketListener(connection, player);
 
             playerJoin(server, player, connection, listener);
         }

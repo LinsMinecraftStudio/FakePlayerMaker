@@ -29,5 +29,7 @@ dependencies:
 permissions:
   fakeplayermaker.command:
     description: allows you to use /fakeplayermaker command
+    default: op
   fakeplayermaker.command.stress:
     description: allows you to use /fakeplayermaker stress command
+    default: op

@@ -6,22 +6,28 @@ import io.github.linsminecraftstudio.polymer.objects.plugin.SimpleSettingsManage
 import io.github.linsminecraftstudio.polymer.objects.plugin.message.PolymerMessageHandler;
 import io.github.linsminecraftstudio.polymer.utils.Metrics;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.lins.mmmjjkx.fakeplayermaker.command.FPMCommand;
 import org.lins.mmmjjkx.fakeplayermaker.implementation.Implementations;
-import org.lins.mmmjjkx.fakeplayermaker.listeners.FPMListener;
 import org.lins.mmmjjkx.fakeplayermaker.stress.StressTestSaver;
+import org.lins.mmmjjkx.fakeplayermaker.utils.ActionUtils;
 import org.lins.mmmjjkx.fakeplayermaker.utils.FakePlayerSaver;
+import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getCraftClass;
+import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getHandle;
 
-public class FakePlayerMaker extends PolymerPlugin{
+public class FakePlayerMaker extends PolymerPlugin implements Listener {
     public static PolymerMessageHandler messageHandler;
     public static FakePlayerSaver fakePlayerSaver;
     public static FakePlayerMaker INSTANCE;
@@ -52,6 +58,7 @@ public class FakePlayerMaker extends PolymerPlugin{
         messageHandler = new PolymerMessageHandler(this);
         fakePlayerSaver = new FakePlayerSaver();
         stressTestSaver = new StressTestSaver();
+
         new Metrics(this, 19435);
         randomNameLength = settings.getInt("randomNameLength");
         defaultSpawnLocation = settings.getLocation("defaultSpawnLocation");
@@ -59,7 +66,7 @@ public class FakePlayerMaker extends PolymerPlugin{
         fakePlayerSaver.reload();
         stressTestSaver.reload();
 
-        getServer().getPluginManager().registerEvents(new FPMListener(), this);
+        getServer().getPluginManager().registerEvents(this, this);
     }
 
     @Override
@@ -101,6 +108,20 @@ public class FakePlayerMaker extends PolymerPlugin{
             return (MinecraftServer) getCraftClass("CraftServer").getMethod("getServer").invoke(Bukkit.getServer());
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    @EventHandler
+    public void onDeath(PlayerDeathEvent e) {
+        SimpleSettingsManager settings = FakePlayerMaker.settings;
+        ServerPlayer player = (ServerPlayer) getHandle(getCraftClass("entity.CraftPlayer"), e.getEntity().getPlayer());
+        if (player != null && NMSFakePlayerMaker.fakePlayerMap.containsKey(player.getName().getString())) {
+            Location loc = e.getPlayer().getLocation();
+            e.getPlayer().spigot().respawn();
+            ActionUtils.setupValues(player);
+            if (settings.getBoolean("player.respawnBack")) {
+                e.getPlayer().teleport(loc);
+            }
         }
     }
 }

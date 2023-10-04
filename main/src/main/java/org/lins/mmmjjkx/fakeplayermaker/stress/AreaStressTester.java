@@ -24,6 +24,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.WorldNotFoundException;
 import org.lins.mmmjjkx.fakeplayermaker.objects.EmptyConnection;
+import org.lins.mmmjjkx.fakeplayermaker.objects.FPMPacketListener;
 import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 
 import java.util.*;
@@ -82,7 +83,7 @@ public class AreaStressTester implements IStressTester {
             ServerPlayer player = new ServerPlayer(server, level, new GameProfile(uuid, finalName));
 
             var connection = new EmptyConnection(PacketFlow.CLIENTBOUND);
-            var listener = new ServerGamePacketListenerImpl(server, connection, player);
+            var listener = new FPMPacketListener(connection, player);
 
             connection.setListener(listener);
 

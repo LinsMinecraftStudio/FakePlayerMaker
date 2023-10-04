@@ -14,3 +14,55 @@ dependencies:
       required: true
       load: BEFORE
       join-classpath: true
+permissions:
+  ownfakeplayers.create:
+    description: Allows the player to create fake players.
+    default: true
+  ownfakeplayers.create.3:
+    description: Allows the player to create 3 fake players.
+    default: op
+  ownfakeplayers.create.5:
+    description: Allows the player to create 5 fake players.
+    default: op
+  ownfakeplayers.bypassCMD:
+    description: Allows the player to bypass the blocked command.
+    default: op
+  ownfakeplayers.bypassTpCooldown:
+    description: Allows the player to bypass the tp/tphere cooldown.
+    default: op
+  ownfakeplayers.list:
+    description: Allows the player check the fake players he owns
+    default: true
+  ownfakeplayers.remove:
+    description: Allows the player to remove fake players.
+    default: true
+  ownfakeplayers.reload:
+    default: op
+    description: Reload the plugin.
+  ownfakeplayers.lookat:
+    default: true
+    description: Allows the player control the direction of the fake player's eye's gaze
+  ownfakeplayers.tp:
+    default: true
+    description: Allows the player teleport to the fake player
+  ownfakeplayers.tphere:
+    default: true
+    description: Allows let the fake player teleport to the player
+  ownfakeplayers.skin:
+    description: Allows the player to change the skin of the fake player
+    default: op
+  ownfakeplayers.mount:
+    description: Allows the fake player of the player to mount the nearest horse/minecart/boat
+    default: true
+  ownfakeplayers.unmount:
+    description: Allows the fake player of the player to unmount
+    default: true
+  ownfakeplayers.inventory:
+    default: op
+    description: Allows the player to open the inventory of the fake player
+  ownfakeplayers.sneak:
+    default: true
+    description: Allows the player to control the fake player to switch sneaking
+  ownfakeplayers.runcmd:
+    default: true
+    description: Allows the player to run commands as the fake player

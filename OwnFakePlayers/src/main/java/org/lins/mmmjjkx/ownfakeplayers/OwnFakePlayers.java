@@ -4,6 +4,7 @@ import io.github.linsminecraftstudio.polymer.command.PolymerCommand;
 import io.github.linsminecraftstudio.polymer.objects.plugin.PolymerPlugin;
 import io.github.linsminecraftstudio.polymer.objects.plugin.SimpleSettingsManager;
 import io.github.linsminecraftstudio.polymer.objects.plugin.message.PolymerMessageHandler;
+import net.minecraft.server.level.ServerPlayer;
 import org.lins.mmmjjkx.ownfakeplayers.command.OFPCommand;
 
 import java.util.List;
@@ -33,7 +34,6 @@ public final class OwnFakePlayers extends PolymerPlugin {
 
     @Override
     public void onPlDisable() {
-
     }
 
     @Override
@@ -44,5 +44,12 @@ public final class OwnFakePlayers extends PolymerPlugin {
     @Override
     public String requireVersion() {
         return "1.3.5";
+    }
+
+    public static void setupValues(ServerPlayer player) {
+        player.setInvulnerable(settings.getBoolean("player.invulnerable"));
+        player.bukkitPickUpLoot = settings.getBoolean("player.canPickupItems");
+        player.collides = settings.getBoolean("player.collision");
+        player.setNoGravity(settings.getBoolean("player.noGravity"));
     }
 }
