@@ -6,7 +6,6 @@ player:
   canPickupItems: false
   collision: false
   respawnBack: true
-  noGravity: true
 defaultSpawnLocation:
   world: "world"
   x: 0

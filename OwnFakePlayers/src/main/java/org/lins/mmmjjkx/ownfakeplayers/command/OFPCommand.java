@@ -28,12 +28,17 @@ public class OFPCommand extends PolymerCommand {
         if (args.length == 1) {
             return copyPartialMatches(args[0], List.of("create","list","remove","reload","lookat","tp",
                     "tphere","skin","mount","unmount","inventory","sneak","runcmd"));
+        } else if (args.length == 2) {
+
         }
         return new ArrayList<>();
     }
 
     @Override
     public boolean execute(@NotNull CommandSender commandSender, @NotNull String s, @NotNull String[] strings) {
+        if (strings.length == 1) {
+
+        }
         return false;
     }
 }

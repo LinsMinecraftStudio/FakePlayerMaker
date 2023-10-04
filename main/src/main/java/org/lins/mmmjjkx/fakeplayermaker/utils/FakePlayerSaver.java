@@ -92,7 +92,7 @@ public class FakePlayerSaver extends SingleFileStorage {
                         "Failed to create fake player for " + sectionName + ": world is null or the world not found");
                 continue;
             }
-            ServerPlayer player = new ServerPlayer(MinecraftServer.getServer(), level, profile);
+            ServerPlayer player = new ServerPlayer(FakePlayerMaker.getNMSServer(), level, profile);
             player.teleportTo(level, location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
             players.add(player);
         }

@@ -96,7 +96,12 @@ public class NMSFakePlayerMaker {
     }
 
     @Nullable
-    public static ServerPlayer spawnFakePlayer(Location loc, String name, @Nullable CommandSender sender){
+    public static ServerPlayer spawnFakePlayer(Location loc, String name, @Nullable CommandSender sender) {
+        return spawnFakePlayer(loc, name, sender, true);
+    }
+
+    @Nullable
+    public static ServerPlayer spawnFakePlayer(Location loc, String name, @Nullable CommandSender sender, boolean runCMD){
         if (name == null || name.isBlank()) {
             name = getRandomName(FakePlayerMaker.randomNameLength);
         }
@@ -142,7 +147,7 @@ public class NMSFakePlayerMaker {
             saver.syncPlayerInfo(player);
 
             new FakePlayerCreateEvent(player.getBukkitEntity(), sender).callEvent();
-            playerJoin(server, player, connection, listener);
+            playerJoin(server, player, connection, listener, runCMD);
 
             player.teleportTo(level, realLoc.getX(), realLoc.getY(), realLoc.getZ(), realLoc.getYaw(), realLoc.getPitch());
             return player;
@@ -150,10 +155,10 @@ public class NMSFakePlayerMaker {
     }
 
     private static void playerJoin(MinecraftServer server, ServerPlayer handle) {
-        playerJoin(server, handle, new EmptyConnection(PacketFlow.CLIENTBOUND), new ServerGamePacketListenerImpl(server, new EmptyConnection(PacketFlow.CLIENTBOUND), handle));
+        playerJoin(server, handle, new EmptyConnection(PacketFlow.CLIENTBOUND), new ServerGamePacketListenerImpl(server, new EmptyConnection(PacketFlow.CLIENTBOUND), handle), true);
     }
 
-    private static void playerJoin(MinecraftServer server, ServerPlayer player, EmptyConnection connection, ServerGamePacketListenerImpl listener) {
+    private static void playerJoin(MinecraftServer server, ServerPlayer player, EmptyConnection connection, ServerGamePacketListenerImpl listener, boolean runCMD) {
         MinecraftServer.getServer().playerDataStorage.save(player);
 
         server.getPlayerList().placeNewPlayer(connection, player);
@@ -166,7 +171,9 @@ public class NMSFakePlayerMaker {
 
         runCMDs(player, connection, listener);
 
-        ActionUtils.setupValues(player);
+        if (runCMD) {
+            ActionUtils.setupValues(player);
+        }
 
         preventListen();
     }
@@ -177,7 +184,7 @@ public class NMSFakePlayerMaker {
             var connection = new EmptyConnection(PacketFlow.CLIENTBOUND);
             var listener = new FPMPacketListener(connection, player);
 
-            playerJoin(server, player, connection, listener);
+            playerJoin(server, player, connection, listener, true);
         }
     }
 

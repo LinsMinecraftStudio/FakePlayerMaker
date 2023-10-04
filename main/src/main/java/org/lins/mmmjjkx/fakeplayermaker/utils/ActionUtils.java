@@ -78,6 +78,5 @@ public class ActionUtils {
         player.setInvulnerable(settings.getBoolean("player.invulnerable"));
         player.bukkitPickUpLoot = settings.getBoolean("player.canPickupItems");
         player.collides = settings.getBoolean("player.collision");
-        player.setNoGravity(settings.getBoolean("player.noGravity"));
     }
 }
