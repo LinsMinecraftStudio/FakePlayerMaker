@@ -13,16 +13,12 @@ import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.implementation.Implementations;
 import org.lins.mmmjjkx.ownfakeplayers.objects.OwnableFakePlayer;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getCraftClass;
 import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getHandle;
@@ -49,13 +45,14 @@ public class DataUtil {
                 ConfigurationSection section = configuration.getConfigurationSection(uuid);
                 if (section == null) continue;
                 String name = section.getString("name");
-                Location location = ObjectConverter.toLocation(section.getString("location"));
+                Location location = ObjectConverter.toLocation(section.getString("location",""));
+                if (location == null) continue;
                 GameProfile profile = new GameProfile(uuid1, name);
                 if (section.contains("skin") && section.contains("skin-signature")) {
                     profile.getProperties().put("textures", new Property("textures",
                             section.getString("skin",""), section.getString("skin-signature", "")));
                 }
-                map.put(uuid1, new OwnableFakePlayer(owner, new ServerPlayer(FakePlayerMaker.getNMSServer(), getLevel(location), profile)));
+                map.put(uuid1, new OwnableFakePlayer(owner, Implementations.runImplAndReturn(t -> t.create(getLevel(location), profile))));
             }
         }
     }
@@ -117,6 +114,18 @@ public class DataUtil {
 
     private ServerLevel getLevel(Location l) {
         return (ServerLevel) getHandle(getCraftClass("CraftWorld"), l.getWorld());
+    }
+
+    public List<String> getOwnFakePlayerNames(UUID owner) {
+        List<OwnableFakePlayer> list = ListUtil.getAllMatches(map.values(), ofp -> ofp.owner().equals(owner));
+        if (list.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return list.stream().map(t -> t.player().getName().getString()).toList();
+    }
+
+    public boolean creatable(Player player) {
+        return PermissionCheck.getCreationLimit(player) > getOwnFakePlayerNames(player.getUniqueId()).size();
     }
 
     Map<UUID, OwnableFakePlayer> getMap() {

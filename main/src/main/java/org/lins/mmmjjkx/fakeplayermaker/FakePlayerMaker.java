@@ -1,5 +1,6 @@
 package org.lins.mmmjjkx.fakeplayermaker;
 
+import io.github.linsminecraftstudio.fakeplayermaker.api.events.FPMPluginLoadEvent;
 import io.github.linsminecraftstudio.polymer.command.PolymerCommand;
 import io.github.linsminecraftstudio.polymer.objects.plugin.PolymerPlugin;
 import io.github.linsminecraftstudio.polymer.objects.plugin.SimpleSettingsManager;
@@ -14,6 +15,7 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.lins.mmmjjkx.fakeplayermaker.command.FPMCommand;
 import org.lins.mmmjjkx.fakeplayermaker.implementation.Implementations;
 import org.lins.mmmjjkx.fakeplayermaker.stress.StressTestSaver;
@@ -65,6 +67,13 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
 
         fakePlayerSaver.reload();
         stressTestSaver.reload();
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                new FPMPluginLoadEvent(NMSFakePlayerMaker.asController()).callEvent();
+            }
+        }.runTaskAsynchronously(this);
 
         getServer().getPluginManager().registerEvents(this, this);
     }

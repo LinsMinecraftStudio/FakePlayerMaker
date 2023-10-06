@@ -12,10 +12,8 @@ import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
@@ -23,8 +21,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.WorldNotFoundException;
+import org.lins.mmmjjkx.fakeplayermaker.implementation.Implementations;
+import org.lins.mmmjjkx.fakeplayermaker.implementation.PacketListenerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.objects.EmptyConnection;
-import org.lins.mmmjjkx.fakeplayermaker.objects.FPMPacketListener;
 import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 
 import java.util.*;
@@ -80,14 +79,14 @@ public class AreaStressTester implements IStressTester {
                 return;
             }
 
-            ServerPlayer player = new ServerPlayer(server, level, new GameProfile(uuid, finalName));
+            ServerPlayer player = Implementations.runImplAndReturn(t -> t.create(level, new GameProfile(uuid, finalName)));
 
             var connection = new EmptyConnection(PacketFlow.CLIENTBOUND);
-            var listener = new FPMPacketListener(connection, player);
+            var listener = PacketListenerMaker.getGamePacketListener(connection, player);
 
             connection.setListener(listener);
 
-            server.getPlayerList().placeNewPlayer(connection, player);
+            Implementations.runImpl(t -> t.placePlayer(connection, player));
             Location loc = getHighestBlock(world, flatLocation.getX(), flatLocation.getZ());
             player.teleportTo(level, loc.getX(), loc.getY(), loc.getZ(), 0, 0);
 

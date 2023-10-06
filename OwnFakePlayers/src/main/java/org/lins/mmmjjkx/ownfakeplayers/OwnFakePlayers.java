@@ -6,13 +6,16 @@ import io.github.linsminecraftstudio.polymer.objects.plugin.SimpleSettingsManage
 import io.github.linsminecraftstudio.polymer.objects.plugin.message.PolymerMessageHandler;
 import net.minecraft.server.level.ServerPlayer;
 import org.lins.mmmjjkx.ownfakeplayers.command.OFPCommand;
+import org.lins.mmmjjkx.ownfakeplayers.utils.DataUtil;
 
+import java.io.File;
 import java.util.List;
 
 public final class OwnFakePlayers extends PolymerPlugin {
     public static OwnFakePlayers INSTANCE;
     public static PolymerMessageHandler messageHandler;
     public static SimpleSettingsManager settings;
+    public static DataUtil data;
 
     @Override
     public void onPlEnable() {
@@ -29,6 +32,7 @@ public final class OwnFakePlayers extends PolymerPlugin {
                 """.formatted(getPluginMeta().getVersion()));
         INSTANCE = this;
         settings = new SimpleSettingsManager(this);
+        data = new DataUtil(new File(getDataFolder(), "data"));
         messageHandler = new PolymerMessageHandler(this);
     }
 
@@ -50,6 +54,5 @@ public final class OwnFakePlayers extends PolymerPlugin {
         player.setInvulnerable(settings.getBoolean("player.invulnerable"));
         player.bukkitPickUpLoot = settings.getBoolean("player.canPickupItems");
         player.collides = settings.getBoolean("player.collision");
-        player.setNoGravity(settings.getBoolean("player.noGravity"));
     }
 }

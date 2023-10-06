@@ -13,6 +13,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<mcVersion>1.20.2</mcVersion>
 	</properties>
 
 	<modules>
@@ -76,7 +77,7 @@
 			<dependency>
 				<groupId>io.papermc.paper</groupId>
 				<artifactId>paper-api</artifactId>
-				<version>1.20.1-R0.1-SNAPSHOT</version>
+				<version>${mcVersion}-R0.1-SNAPSHOT</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
@@ -88,7 +89,7 @@
 			<dependency>
 				<groupId>ca.bkaw</groupId>
 				<artifactId>paper-nms</artifactId>
-				<version>1.20.1-SNAPSHOT</version>
+				<version>${mcVersion}-SNAPSHOT</version>
 				<scope>provided</scope>
 			</dependency>
 		</dependencies>

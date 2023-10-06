@@ -1,9 +1,17 @@
+#Fake players settings
+#The fake players rely on the FakePlayerMaker plugin to generate it.
+#Do not involve any issues related to player generation in this addon
 player:
+  #%owner% represents the owner of the fake player
+  #%name% represents the name of the fake player
+  #%num% represents the order of creating fake players
+  nameFormat: "%owner%_%name%_%num%"
+  #prevent the owner takes items or puts items in the fake players' inventory
+  onlyViewInventory: true
   invulnerable: false
   canPickupItems: false
   collision: false
   respawnBack: true
-  noGravity: true
   #Commands to prevent the use of fake players
   blockedCommands:
     #block if the command is starts with "help"
@@ -19,3 +27,23 @@ player:
     - "ap::help plugin **"
 #Use seconds
 teleportCooldown: 10
+#When enabled, if the owner of the fake players quits the game,
+#the fake players will exit after a specific time after the owner quits.
+#It can also save some performance
+timeout-quit:
+  enabled: true
+  seconds: 10
+#If turned off, when the owner of the fake players joins the server, the fake players will be added to the game together.
+#On the contrary, when the server completes loading, all fake players will join the server together
+#It can also save some performance
+join-on-start: false
+#Fake players' survival time, in seconds
+#Set 0 to make fake players' always exists
+#If the life-time is not "always", the timeout-quit option will automatically turn off
+life-time: 0
+runCMDAfterJoin:
+  - "register 0000 0000"
+  - "login 0000"
+  - "chat:Hi, I am %player%, my owner is %owner%"
+runCMDConsoleAfterJoin:
+  - "broadcast %player% has joined the server, it's a fake player"

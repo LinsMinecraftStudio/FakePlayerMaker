@@ -4,17 +4,19 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.entity.RelativeMovement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
+import org.lins.mmmjjkx.fakeplayermaker.implementation.Implementations;
 
 import java.util.Set;
 
 public class FPMPacketListener extends ServerGamePacketListenerImpl {
     public FPMPacketListener(Connection connection, ServerPlayer player) {
-        super(FakePlayerMaker.getNMSServer(), connection, player);
+        super(FakePlayerMaker.getNMSServer(), connection, player, CommonListenerCookie.createInitial(Implementations.runImplAndReturn(t -> t.profile(player))));
     }
 
     @Override

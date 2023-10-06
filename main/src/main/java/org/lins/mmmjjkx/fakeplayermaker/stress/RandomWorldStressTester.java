@@ -9,7 +9,6 @@ import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -18,8 +17,9 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
+import org.lins.mmmjjkx.fakeplayermaker.implementation.Implementations;
+import org.lins.mmmjjkx.fakeplayermaker.implementation.PacketListenerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.objects.EmptyConnection;
-import org.lins.mmmjjkx.fakeplayermaker.objects.FPMPacketListener;
 import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 
 import java.util.*;
@@ -64,7 +64,7 @@ public class RandomWorldStressTester implements IStressTester {
                     continue;
                 }
                 ServerLevel level = (ServerLevel) getHandle(getCraftClass("CraftWorld"), world);
-                placePlayer(server, randomNamePrefix, level, amount);
+                placePlayer(randomNamePrefix, level, amount);
             }
         } else {
             for (int i = 0; i < worlds.size(); i++) {
@@ -75,7 +75,7 @@ public class RandomWorldStressTester implements IStressTester {
                 ServerLevel level = (ServerLevel) getHandle(getCraftClass("CraftWorld"), world);
                 int placeAmount = random.nextInt(amount);
                 if (amount == 0) return;
-                placePlayer(server, randomNamePrefix, level, placeAmount);
+                placePlayer(randomNamePrefix, level, placeAmount);
                 amount -= placeAmount;
             }
         }
@@ -83,20 +83,20 @@ public class RandomWorldStressTester implements IStressTester {
         lastStartTimestamp = currentTimestamp;
     }
 
-    private void placePlayer(MinecraftServer server, String randomNamePrefix, ServerLevel level, int amount) {
+    private void placePlayer(String randomNamePrefix, ServerLevel level, int amount) {
         for (int i = 0; i < amount; i++) {
             String finalName = randomNamePrefix + (i +1);
             UUID uuid = UUIDUtil.createOfflinePlayerUUID(finalName);
             Location location = generate(level.getWorld());
 
-            ServerPlayer player = new ServerPlayer(server, level, new GameProfile(uuid, finalName));
+            ServerPlayer player = Implementations.runImplAndReturn(t -> t.create(level, new GameProfile(uuid, finalName)));
 
             var connection = new EmptyConnection(PacketFlow.CLIENTBOUND);
-            var listener = new FPMPacketListener(connection, player);
+            var listener = PacketListenerMaker.getGamePacketListener(connection, player);
 
             connection.setListener(listener);
 
-            server.getPlayerList().placeNewPlayer(connection, player);
+            Implementations.runImpl(t -> t.placePlayer(connection, player));
             simulateLogin(player);
 
             player.connection = listener;

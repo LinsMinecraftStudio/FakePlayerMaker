@@ -9,7 +9,6 @@ import io.github.linsminecraftstudio.polymer.utils.ListUtil;
 import io.github.linsminecraftstudio.polymer.utils.ObjectConverter;
 import joptsimple.internal.Strings;
 import net.minecraft.core.UUIDUtil;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Location;
@@ -28,7 +27,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Level;
 
-import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.*;
+import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getCraftClass;
+import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getHandle;
 
 public class FakePlayerSaver extends SingleFileStorage {
     private YamlConfiguration configuration;
@@ -45,8 +45,8 @@ public class FakePlayerSaver extends SingleFileStorage {
     }
 
     public void syncPlayerInfo(ServerPlayer player) {
-        ConfigurationSection section = getOrElseCreate(player.getName().getString());
-        section.set("uuid", UUIDUtil.createOfflinePlayerUUID(player.getName().getString()).toString());
+        ConfigurationSection section = getOrElseCreate(Implementations.runImplAndReturn(t -> t.getName(player)));
+        section.set("uuid", UUIDUtil.createOfflinePlayerUUID(Implementations.runImplAndReturn(t -> t.getName(player))).toString());
         section.set("location", ObjectConverter.toLocationString(Implementations.bukkitEntity(player).getLocation()));
 
         {
@@ -92,7 +92,7 @@ public class FakePlayerSaver extends SingleFileStorage {
                         "Failed to create fake player for " + sectionName + ": world is null or the world not found");
                 continue;
             }
-            ServerPlayer player = new ServerPlayer(FakePlayerMaker.getNMSServer(), level, profile);
+            ServerPlayer player = Implementations.runImplAndReturn(t -> t.create(level, profile));
             player.teleportTo(level, location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
             players.add(player);
         }
