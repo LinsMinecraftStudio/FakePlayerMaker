@@ -14,6 +14,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.lins.mmmjjkx.fakeplayermaker.command.FPMCommand;
@@ -124,12 +125,22 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
     public void onDeath(PlayerDeathEvent e) {
         SimpleSettingsManager settings = FakePlayerMaker.settings;
         ServerPlayer player = (ServerPlayer) getHandle(getCraftClass("entity.CraftPlayer"), e.getEntity().getPlayer());
-        if (player != null && NMSFakePlayerMaker.fakePlayerMap.containsKey(player.getName().getString())) {
+        if (player != null && NMSFakePlayerMaker.fakePlayerMap.containsKey(Implementations.runImplAndReturn(t -> t.getName(player)))) {
             Location loc = e.getPlayer().getLocation();
             e.getPlayer().spigot().respawn();
             ActionUtils.setupValues(player);
             if (settings.getBoolean("player.respawnBack")) {
                 e.getPlayer().teleport(loc);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onJoin(PlayerJoinEvent e) {
+        ServerPlayer player = (ServerPlayer) getHandle(getCraftClass("entity.CraftPlayer"), e.getPlayer());
+        if (player != null && NMSFakePlayerMaker.fakePlayerMap.containsKey(Implementations.runImplAndReturn(t -> t.getName(player)))) {
+            if (e.getPlayer().isDead()) {
+                e.getPlayer().spigot().respawn();
             }
         }
     }

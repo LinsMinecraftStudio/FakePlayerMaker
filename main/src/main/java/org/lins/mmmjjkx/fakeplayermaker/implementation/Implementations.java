@@ -18,6 +18,7 @@ import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -27,7 +28,6 @@ public abstract class Implementations {
     private static final Map<String,Implementations> map = new HashMap<>();
 
     public static void setup() {
-        new v1_19_3().register();
         new v1_20_1().register();
         new v1_20_2().register();
     }
@@ -55,6 +55,10 @@ public abstract class Implementations {
         }
     }
 
+    public static UUID getUUID(ServerPlayer player) {
+        return runImplAndReturn(t -> t.profile(player).getId());
+    }
+
     public abstract GameProfile profile(ServerPlayer player);
     public abstract void setConnection(ServerPlayer player, ServerGamePacketListenerImpl connection);
     public abstract @NotNull String[] minecraftVersion();
@@ -62,63 +66,7 @@ public abstract class Implementations {
     public abstract ServerPlayer create(@NotNull ServerLevel level, @NotNull GameProfile profile);
     public abstract String getName(ServerPlayer player);
 
-    private static class v1_19_3 extends Implementations {
-        @Override
-        public @NotNull GameProfile profile(ServerPlayer player) {
-            try {
-                return (GameProfile) player.getClass().getField("co").get(player);
-            } catch (IllegalAccessException | NoSuchFieldException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        @Override
-        public void setConnection(ServerPlayer player, ServerGamePacketListenerImpl connection) {
-            try {
-                player.getClass().getField("b").set(player, connection);
-            } catch (IllegalAccessException | NoSuchFieldException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        @Override
-        public String[] minecraftVersion() {
-            return new String[]{"1.19.3","1.19.4"};
-        }
-
-        @Override
-        public void placePlayer(Connection connection, ServerPlayer player) {
-            try {
-                PlayerList list = (PlayerList) MinecraftServer.class.getMethod("ac").invoke(FakePlayerMaker.getNMSServer());
-                list.getClass().getMethod("a", Connection.class, ServerPlayer.class).invoke(list, connection, player);
-            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        @Override
-        public ServerPlayer create(@NotNull ServerLevel level, @NotNull GameProfile profile) {
-            try {
-                return ServerPlayer.class.getDeclaredConstructor(MinecraftServer.class, ServerLevel.class, GameProfile.class)
-                        .newInstance(FakePlayerMaker.getNMSServer(), level, profile);
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-                     NoSuchMethodException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        @Override
-        public String getName(ServerPlayer player) {
-            try {
-                Component component = (Component) player.getClass().getMethod("Z").invoke(player);
-                return component.getString();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    private static class v1_20_1 extends v1_19_3 {
+    private static class v1_20_1 extends Implementations {
         @Override
         public @NotNull GameProfile profile(ServerPlayer player) {
             try {
@@ -145,6 +93,36 @@ public abstract class Implementations {
         @Override
         public String[] minecraftVersion() {
             return new String[]{"1.20.1"};
+        }
+
+        @Override
+        public ServerPlayer create(@NotNull ServerLevel level, @NotNull GameProfile profile) {
+            try {
+                return ServerPlayer.class.getDeclaredConstructor(MinecraftServer.class, ServerLevel.class, GameProfile.class)
+                        .newInstance(FakePlayerMaker.getNMSServer(), level, profile);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public String getName(ServerPlayer player) {
+            try {
+                Component component = (Component) player.getClass().getMethod("Z").invoke(player);
+                return component.getString();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public void placePlayer(Connection connection, ServerPlayer player) {
+            try {
+                PlayerList list = (PlayerList) MinecraftServer.class.getMethod("ac").invoke(FakePlayerMaker.getNMSServer());
+                list.getClass().getMethod("a", Connection.class, ServerPlayer.class).invoke(list, connection, player);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

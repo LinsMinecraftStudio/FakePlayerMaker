@@ -21,10 +21,7 @@ import org.lins.mmmjjkx.fakeplayermaker.implementation.Implementations;
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 
 import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getCraftClass;
@@ -69,8 +66,8 @@ public class FakePlayerSaver extends SingleFileStorage {
         } catch (IOException e) {throw new RuntimeException(e);}
     }
 
-    public List<ServerPlayer> getFakePlayers() {
-        List<ServerPlayer> players = new ArrayList<>();
+    public Map<ServerPlayer, Location> getFakePlayers() {
+        Map<ServerPlayer,Location> players = new HashMap<>();
         for (String sectionName : configuration.getKeys(false)) {
             ConfigurationSection section = configuration.getConfigurationSection(sectionName);
             if (section == null) continue;
@@ -93,8 +90,7 @@ public class FakePlayerSaver extends SingleFileStorage {
                 continue;
             }
             ServerPlayer player = Implementations.runImplAndReturn(t -> t.create(level, profile));
-            player.teleportTo(level, location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
-            players.add(player);
+            players.put(player, location);
         }
         return players;
     }

@@ -17,19 +17,25 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.entity.vehicle.Minecart;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
+import org.lins.mmmjjkx.fakeplayermaker.implementation.Implementations;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 public class ActionUtils {
+    private static final Class<ServerPlayer> clazz = ServerPlayer.class;
     public static void chat(ServerPlayer player, String message) {
         new BukkitRunnable() {
             @Override
             public void run() {
                 ChatDecorator.ModernResult result = new ChatDecorator.ModernResult(Component.text(message), true, true);
-                PlayerChatMessage message1 = new PlayerChatMessage(SignedMessageLink.unsigned(player.getUUID()), null, SignedMessageBody.unsigned(message), null, FilterMask.PASS_THROUGH, result);
+                PlayerChatMessage message1 = new PlayerChatMessage(SignedMessageLink.unsigned(Implementations.getUUID(player)), null, SignedMessageBody.unsigned(message), null, FilterMask.PASS_THROUGH, result);
                 ChatProcessor processor = new ChatProcessor(MinecraftServer.getServer(), player, message1, true);
                 processor.process();
             }
@@ -46,8 +52,8 @@ public class ActionUtils {
             case SOUTH -> look(player, 0, 0);
             case EAST  -> look(player, -90, 0);
             case WEST  -> look(player, 90, 0);
-            case UP    -> look(player, player.getYRot(), -90);
-            case DOWN  -> look(player, player.getYRot(), 90);
+            case UP    -> look(player, player.getBukkitYaw(), -90);
+            case DOWN  -> look(player, player.getBukkitYaw(), 90);
         }
     }
 
@@ -55,13 +61,25 @@ public class ActionUtils {
         player.setYRot(yaw % 360); //set yaw
         player.setXRot(Mth.clamp(pitch, -90, 90)); // set pitch
 
-        FakePlayerMaker.getNMSServer().getPlayerList().broadcastAll(new ClientboundRotateHeadPacket(player, (byte) (player.getYRot()%360*256/360)));
-        FakePlayerMaker.getNMSServer().getPlayerList().broadcastAll(new ClientboundMoveEntityPacket.Rot(player.getId(), (byte) (player.getYRot()%360*256/360), (byte) (player.getXRot()%360*256/360), player.onGround()));
+        Player bukkit = Implementations.bukkitEntity(player);
+
+        FakePlayerMaker.getNMSServer().getPlayerList().broadcastAll(new ClientboundRotateHeadPacket(player, (byte) (player.getBukkitYaw()%360*256/360)));
+        FakePlayerMaker.getNMSServer().getPlayerList().broadcastAll(new ClientboundMoveEntityPacket.Rot(getID(player), (byte) (player.getBukkitYaw()%360*256/360), (byte) (bukkit.getPitch()%360*256/360), bukkit.isOnGround()));
     }
 
     public static void mountNearest(ServerPlayer player) {
         ServerLevel level = player.serverLevel();
-        List<Entity> rideable = ListUtil.getAllMatches(level.getEntities(player, player.getBoundingBox().inflate(3,2,3)), e ->
+        AABB boundingBox = switch (Bukkit.getMinecraftVersion()) {
+            case "1.20.1" -> {
+                try {
+                    yield (AABB) clazz.getMethod("cE").invoke(player);
+                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            default -> player.getBoundingBox();
+        };
+        List<Entity> rideable = ListUtil.getAllMatches(level.getEntities(player, boundingBox.inflate(3,2,3)), e ->
                 e instanceof Minecart || e instanceof AbstractHorse || e instanceof Boat);
         if (!rideable.isEmpty()) {
             Entity entity = rideable.get(0);
@@ -70,7 +88,14 @@ public class ActionUtils {
     }
 
     public static void unmount(ServerPlayer player) {
-        player.stopRiding();
+        try {
+            switch (Bukkit.getMinecraftVersion()) {
+                case "1.20.1" -> clazz.getMethod("Y").invoke(player);
+                case "1.20.2" -> clazz.getMethod("aa").invoke(player);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static void setupValues(ServerPlayer player) {
@@ -78,5 +103,17 @@ public class ActionUtils {
         player.setInvulnerable(settings.getBoolean("player.invulnerable"));
         player.bukkitPickUpLoot = settings.getBoolean("player.canPickupItems");
         player.collides = settings.getBoolean("player.collision");
+    }
+
+    private static int getID(ServerPlayer player) {
+        try {
+            return switch (Bukkit.getMinecraftVersion()) {
+                case "1.20.1" -> (int) clazz.getMethod("af").invoke(player);
+                case "1.20.2" -> player.getId();
+                default -> 0;
+            };
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

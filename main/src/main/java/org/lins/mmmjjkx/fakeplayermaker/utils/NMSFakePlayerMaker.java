@@ -41,12 +41,12 @@ public class NMSFakePlayerMaker{
     private static final FakePlayerSaver saver = FakePlayerMaker.fakePlayerSaver;
     private static final MinecraftServer server = MinecraftServer.getServer();
 
-    static void reloadMap(List<ServerPlayer> players){
+    static void reloadMap(Map<ServerPlayer, Location> players){
         new BukkitRunnable() {
             @Override
             public void run() {
                 fakePlayerMap.clear();
-                for (ServerPlayer player : players) {
+                for (ServerPlayer player : players.keySet()) {
                     if (server.getPlayerList().getPlayers().contains(player)) {
                         server.getPlayerList().remove(player);
                     }
@@ -63,6 +63,12 @@ public class NMSFakePlayerMaker{
                     runCMDs(player, connection, listener);
 
                     preventListen();
+
+                    Location location = players.get(player);
+                    ServerLevel level = (ServerLevel) getHandle(getCraftClass("CraftWorld"),  location.getWorld());
+                    if (level != null) {
+                        player.teleportTo(level, location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
+                    }
                 }
             }
         }.runTaskLater(FakePlayerMaker.INSTANCE, 10);
@@ -178,23 +184,21 @@ public class NMSFakePlayerMaker{
     public static void removeFakePlayer(String name,@Nullable CommandSender sender){
         ServerPlayer player = fakePlayerMap.get(name);
         if (player != null) {
-            new FakePlayerRemoveEvent(player.getName().getString(), sender).callEvent();
+            new FakePlayerRemoveEvent(Implementations.runImplAndReturn(t -> t.getName(player)), sender).callEvent();
             fakePlayerMap.remove(name);
             saver.removeFakePlayer(name);
             server.getPlayerList().remove(player);
 
             if (Bukkit.getPluginManager().isPluginEnabled("AuthMe")) {
-                AuthMeApi.getInstance().forceUnregister(player.getName().getString());
+                AuthMeApi.getInstance().forceUnregister((String) Implementations.runImplAndReturn(t -> t.getName(player)));
             }
         }
     }
 
     public static void removeAllFakePlayers(@Nullable CommandSender sender) {
-        Iterator<String> iterator = fakePlayerMap.keySet().iterator();
-        while (iterator.hasNext()) {
-            String name = iterator.next();
+        Set<String> set = new HashSet<>(fakePlayerMap.keySet());
+        for (String name : set) {
             removeFakePlayer(name, sender);
-            iterator.remove();
         }
     }
 
@@ -238,11 +242,11 @@ public class NMSFakePlayerMaker{
             @Override
             public void run() {
                 new AsyncPlayerPreLoginEvent(
-                        p.getName().getString(),
+                        Implementations.runImplAndReturn(t -> t.getName(p)),
                         fakeNetAddress,
                         fakeNetAddress,
-                        UUIDUtil.createOfflinePlayerUUID(p.getName().getString()),
-                        new CraftPlayerProfile(UUIDUtil.createOfflinePlayerUUID(p.getName().getString()), p.getName().getString()),
+                        Implementations.getUUID(p),
+                        new CraftPlayerProfile((GameProfile) Implementations.runImplAndReturn(t -> t.profile(p))),
                         fakeNetAddress.getHostName()
                 ).callEvent();
             }
