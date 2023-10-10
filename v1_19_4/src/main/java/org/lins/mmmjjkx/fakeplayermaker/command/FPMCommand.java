@@ -5,7 +5,6 @@ import com.destroystokyo.paper.profile.ProfileProperty;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTester;
-import io.github.linsminecraftstudio.fakeplayermaker.api.objects.WorldNotFoundException;
 import io.github.linsminecraftstudio.polymer.Polymer;
 import io.github.linsminecraftstudio.polymer.command.PolymerCommand;
 import io.github.linsminecraftstudio.polymer.objects.PolymerConstants;
@@ -20,7 +19,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
-import org.lins.mmmjjkx.fakeplayermaker.implementation.Implementations;
+import org.lins.mmmjjkx.fakeplayermaker.WorldNotFoundException;
 import org.lins.mmmjjkx.fakeplayermaker.stress.AreaStressTester;
 import org.lins.mmmjjkx.fakeplayermaker.stress.RandomWorldStressTester;
 import org.lins.mmmjjkx.fakeplayermaker.utils.ActionUtils;
@@ -53,28 +52,31 @@ public class FPMCommand extends PolymerCommand {
     public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) {
         if (args.length == 1) {
             return copyPartialMatches(args[0], List.of(
-                    "add","reload","removeAll","remove","stress","join","chat","teleport",
-                    "tp","skin","lookat","jump","mount","unmount","pose","inventory","sneak","look"));
+                    "add", "reload", "removeAll", "remove", "stress", "join", "chat", "teleport",
+                    "tp", "skin", "lookat", "jump", "mount", "unmount", "pose", "inventory", "sneak", "look"));
         } else if (args.length == 2) {
             return switch (args[0]) {
-                case "remove","teleport","tp","join","chat","skin","lookat","jump","mount","unmount","pose","inventory","sneak","look"
-                        -> copyPartialMatches(args[1], NMSFakePlayerMaker.fakePlayerMap.keySet());
-                case "stress" -> copyPartialMatches(args[1], List.of("area","randomworld"));
+                case "remove", "teleport", "tp", "join", "chat", "skin", "lookat", "jump", "mount", "unmount", "pose", "inventory", "sneak", "look" ->
+                        copyPartialMatches(args[1], NMSFakePlayerMaker.fakePlayerMap.keySet());
+                case "stress" -> copyPartialMatches(args[1], List.of("area", "randomworld"));
                 default -> new ArrayList<>();
             };
-        } else if (args.length==3) {
+        } else if (args.length == 3) {
             return switch (args[0]) {
-                case "stress" -> copyPartialMatches(args[2], List.of("start","stop","players","create"));
-                case "skin" -> copyPartialMatches(args[2], Bukkit.getOnlinePlayers().stream().map(Player::getName).filter(n -> !NMSFakePlayerMaker.fakePlayerMap.containsKey(n)).collect(Collectors.toList()));
-                case "look" -> copyPartialMatches(args[2], Arrays.stream(Direction.values()).map(d -> d.getName().toUpperCase()).collect(Collectors.toList()));
-                case "jump" -> copyPartialMatches(args[2], List.of("1","2","3","4","5","hold","stop"));
-                case "pose" -> copyPartialMatches(args[2], Arrays.stream(Pose.values()).map(Pose::toString).collect(Collectors.toList()));
+                case "stress" -> copyPartialMatches(args[2], List.of("start", "stop", "players", "create"));
+                case "skin" ->
+                        copyPartialMatches(args[2], Bukkit.getOnlinePlayers().stream().map(Player::getName).filter(n -> !NMSFakePlayerMaker.fakePlayerMap.containsKey(n)).collect(Collectors.toList()));
+                case "look" ->
+                        copyPartialMatches(args[2], Arrays.stream(Direction.values()).map(d -> d.getName().toUpperCase()).collect(Collectors.toList()));
+                case "jump" -> copyPartialMatches(args[2], List.of("1", "2", "3", "4", "5", "hold", "stop"));
+                case "pose" ->
+                        copyPartialMatches(args[2], Arrays.stream(Pose.values()).map(Pose::toString).collect(Collectors.toList()));
                 default -> new ArrayList<>();
             };
         } else if (args.length == 4 && args[0].equals("stress") && !args[2].equals("create")) {
             if (args[1].equalsIgnoreCase("area")) {
                 return copyPartialMatches(args[3], FakePlayerMaker.stressTestSaver.getAreaTesterNames());
-            } else if (args[1].equalsIgnoreCase("randomworld")){
+            } else if (args[1].equalsIgnoreCase("randomworld")) {
                 return copyPartialMatches(args[3], FakePlayerMaker.stressTestSaver.getRWTesterNames());
             }
         }
@@ -83,7 +85,7 @@ public class FPMCommand extends PolymerCommand {
 
     @Override
     public boolean execute(@NotNull CommandSender commandSender, @NotNull String s, @NotNull String[] strings) {
-        if (hasCustomPermission(commandSender,"command")) {
+        if (hasCustomPermission(commandSender, "command")) {
             if (strings.length == 1) {
                 return switch (strings[0]) {
                     case "add" -> {
@@ -152,7 +154,7 @@ public class FPMCommand extends PolymerCommand {
                                 sendMessage(commandSender, "PlayerNotFound");
                                 yield false;
                             }
-                            player.teleport(Implementations.bukkitEntity(serverPlayer));
+                            player.teleport(serverPlayer.getBukkitEntity());
                             FakePlayerMaker.fakePlayerSaver.syncPlayerInfo(serverPlayer);
                             sendMessage(commandSender, "TeleportSuccess");
                             yield true;
@@ -195,7 +197,7 @@ public class FPMCommand extends PolymerCommand {
                         }
                         Player p1 = toPlayer(commandSender);
                         if (p1 == null) yield false;
-                        Player p2 = Implementations.bukkitEntity(player);
+                        Player p2 = player.getBukkitEntity();
                         p1.openInventory(p2.getInventory());
                         yield true;
                     }
@@ -205,7 +207,7 @@ public class FPMCommand extends PolymerCommand {
                             sendMessage(commandSender, "PlayerNotFound");
                             yield false;
                         }
-                        Implementations.bukkitEntity(player).setSneaking(true);
+                        player.setShiftKeyDown(true);
                         player.setPose(player.isShiftKeyDown() ? Pose.CROUCHING : Pose.STANDING);
                         yield true;
                     }
@@ -266,7 +268,7 @@ public class FPMCommand extends PolymerCommand {
                         try {
                             int times = Integer.parseInt(strings[2]);
                             if (times <= 0) {
-                                Polymer.messageHandler.sendMessage(commandSender, "Value.TooLow",3);
+                                Polymer.messageHandler.sendMessage(commandSender, "Value.TooLow", 3);
                                 return false;
                             }
                             for (int i = 0; i < times; i++) {
@@ -315,7 +317,7 @@ public class FPMCommand extends PolymerCommand {
                 }
                 Polymer.messageHandler.sendMessage(commandSender, "Command.ArgError");
                 return false;
-            } else if (strings.length==4 && strings[0].equals("stress")) {
+            } else if (strings.length == 4 && strings[0].equals("stress")) {
                 return hasCustomPermission(commandSender, "command.stress") && switch (strings[1]) {
                     case "area" -> {
                         Optional<AreaStressTester> tester = FakePlayerMaker.stressTestSaver.getStressTesterArea(strings[3]);
@@ -417,13 +419,13 @@ public class FPMCommand extends PolymerCommand {
                         yield false;
                     }
                 };
-            } else if (strings.length==5){
+            } else if (strings.length == 5) {
                 switch (strings[0]) {
                     case "stress" -> {
                         int amount = (int) toIntOrDouble(commandSender, strings[4], 5, true);
                         return hasCustomPermission(commandSender, "command.stress") && switch (strings[1]) {
                             case "area" -> {
-                                if (strings[2].equals("create")){
+                                if (strings[2].equals("create")) {
                                     if (amount != PolymerConstants.ERROR_CODE) {
                                         yield handleAreaCreate(commandSender, strings, amount);
                                     }
@@ -493,7 +495,7 @@ public class FPMCommand extends PolymerCommand {
     }
 
     private boolean skinChange(ServerPlayer player, CommandSender operator, String targetName) {
-        Player bukkit = Implementations.bukkitEntity(player);
+        Player bukkit = player.getBukkitEntity();
         PlayerProfile playerProfile = bukkit.getPlayerProfile();
         try {
             URL url = new URL("https://api.mojang.com/users/profiles/minecraft/" + targetName);

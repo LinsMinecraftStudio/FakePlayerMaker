@@ -24,9 +24,8 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.Nullable;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.hook.protocol.FPMTempPlayerFactory;
-import org.lins.mmmjjkx.fakeplayermaker.implementation.Implementations;
-import org.lins.mmmjjkx.fakeplayermaker.implementation.PacketListenerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.objects.EmptyConnection;
+import org.lins.mmmjjkx.fakeplayermaker.objects.FPMPacketListener;
 import su.nexmedia.engine.NexPlugin;
 
 import java.lang.reflect.InvocationTargetException;
@@ -35,12 +34,12 @@ import java.security.SecureRandom;
 import java.util.*;
 import java.util.logging.Level;
 
-public class NMSFakePlayerMaker{
+public class NMSFakePlayerMaker {
     public static Map<String, ServerPlayer> fakePlayerMap = new HashMap<>();
     private static final FakePlayerSaver saver = FakePlayerMaker.fakePlayerSaver;
     private static final MinecraftServer server = MinecraftServer.getServer();
 
-    static void reloadMap(Map<ServerPlayer, Location> players){
+    static void reloadMap(Map<ServerPlayer, Location> players) {
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -50,11 +49,11 @@ public class NMSFakePlayerMaker{
                         server.getPlayerList().remove(player);
                     }
 
-                    fakePlayerMap.put(Implementations.runImplAndReturn(t -> t.getName(player)), player);
+                    fakePlayerMap.put(player.getName().getString(), player);
                     var connection = new EmptyConnection();
-                    var listener = PacketListenerMaker.getGamePacketListener(connection, player);
+                    var listener = new FPMPacketListener(connection, player);
 
-                    Implementations.runImpl(t -> t.placePlayer(connection, player));
+                    MinecraftServer.getServer().getPlayerList().placeNewPlayer(connection, player);
                     simulateLogin(player);
 
                     ActionUtils.setupValues(player);
@@ -64,7 +63,7 @@ public class NMSFakePlayerMaker{
                     preventListen();
 
                     Location location = players.get(player);
-                    ServerLevel level = (ServerLevel) getHandle(getCraftClass("CraftWorld"),  location.getWorld());
+                    ServerLevel level = (ServerLevel) getHandle(getCraftClass("CraftWorld"), location.getWorld());
                     if (level != null) {
                         player.teleportTo(level, location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
                     }
@@ -76,11 +75,11 @@ public class NMSFakePlayerMaker{
     private static void runCMDs(ServerPlayer player, EmptyConnection connection, ServerGamePacketListenerImpl listener) {
         connection.setListener(listener);
 
-        Player p = Implementations.bukkitEntity(player);
+        Player p = player.getBukkitEntity();
         for (String cmd : FakePlayerMaker.settings.getStrList("runCMDAfterJoin")) {
             cmd = cmd.replaceAll("%player%", p.getName());
             if (cmd.startsWith("chat:")) {
-                ActionUtils.chat(player,  cmd.replace("chat:", ""));
+                ActionUtils.chat(player, cmd.replace("chat:", ""));
                 continue;
             }
             Bukkit.dispatchCommand(p, cmd);
@@ -97,7 +96,7 @@ public class NMSFakePlayerMaker{
     }
 
     @Nullable
-    public static ServerPlayer spawnFakePlayer(Location loc, String name, @Nullable CommandSender sender, boolean runCMD){
+    public static ServerPlayer spawnFakePlayer(Location loc, String name, @Nullable CommandSender sender, boolean runCMD) {
         if (name == null || name.isBlank()) {
             name = getRandomName(FakePlayerMaker.randomNameLength);
         }
@@ -128,7 +127,7 @@ public class NMSFakePlayerMaker{
 
                 new FakePlayerCreateEvent(temp, sender).callEvent();
                 var connection = new EmptyConnection();
-                playerJoin(handle, connection, PacketListenerMaker.getGamePacketListener(connection, handle),true);
+                playerJoin(handle, connection, new FPMPacketListener(connection, handle), true);
 
                 temp.teleport(realLoc);
                 return handle;
@@ -137,14 +136,14 @@ public class NMSFakePlayerMaker{
             }
         } else {
             ServerLevel level = (ServerLevel) Objects.requireNonNull(getHandle(getCraftClass("CraftWorld"), realLoc.getWorld()));
-            ServerPlayer player = Implementations.runImplAndReturn(t -> t.create(level, profile));
+            ServerPlayer player = new ServerPlayer(MinecraftServer.getServer(), level, profile);
             var connection = new EmptyConnection();
 
             fakePlayerMap.put(name, player);
             saver.syncPlayerInfo(player);
 
-            new FakePlayerCreateEvent(Implementations.bukkitEntity(player), sender).callEvent();
-            playerJoin(player, connection, PacketListenerMaker.getGamePacketListener(connection, player), runCMD);
+            new FakePlayerCreateEvent(player.getBukkitEntity(), sender).callEvent();
+            playerJoin(player, connection, new FPMPacketListener(connection, player), runCMD);
 
             player.teleportTo(level, realLoc.getX(), realLoc.getY(), realLoc.getZ(), realLoc.getYaw(), realLoc.getPitch());
             return player;
@@ -154,10 +153,10 @@ public class NMSFakePlayerMaker{
     private static void playerJoin(ServerPlayer player, EmptyConnection connection, ServerGamePacketListenerImpl listener, boolean runCMD) {
         MinecraftServer.getServer().playerDataStorage.save(player);
 
-        Implementations.runImpl(t -> t.placePlayer(connection, player));
+        MinecraftServer.getServer().getPlayerList().placeNewPlayer(connection, player);
         simulateLogin(player);
 
-        Implementations.runImpl(t -> t.setConnection(player, listener));
+        player.connection = listener;
 
         preventListen();
 
@@ -170,26 +169,26 @@ public class NMSFakePlayerMaker{
         preventListen();
     }
 
-    public static void joinFakePlayer(String name){
+    public static void joinFakePlayer(String name) {
         ServerPlayer player = fakePlayerMap.get(name);
         if (player != null) {
             var connection = new EmptyConnection();
-            var listener = PacketListenerMaker.getGamePacketListener(connection, player);
+            var listener = new FPMPacketListener(connection, player);
 
             playerJoin(player, connection, listener, true);
         }
     }
 
-    public static void removeFakePlayer(String name,@Nullable CommandSender sender){
+    public static void removeFakePlayer(String name, @Nullable CommandSender sender) {
         ServerPlayer player = fakePlayerMap.get(name);
         if (player != null) {
-            new FakePlayerRemoveEvent(Implementations.runImplAndReturn(t -> t.getName(player)), sender).callEvent();
+            new FakePlayerRemoveEvent(player.getName().getString(), sender).callEvent();
             fakePlayerMap.remove(name);
             saver.removeFakePlayer(name);
             server.getPlayerList().remove(player);
 
             if (Bukkit.getPluginManager().isPluginEnabled("AuthMe")) {
-                AuthMeApi.getInstance().forceUnregister((String) Implementations.runImplAndReturn(t -> t.getName(player)));
+                AuthMeApi.getInstance().forceUnregister(player.getBukkitEntity());
             }
         }
     }
@@ -217,7 +216,7 @@ public class NMSFakePlayerMaker{
         Class<?> c = null;
         try {
             c = Class.forName(className);
-        } catch(Exception e) {
+        } catch (Exception e) {
             FakePlayerMaker.INSTANCE.getLogger().log(Level.WARNING, "Could not find CraftBukkit class for " + name + " .\n" +
                     "Maybe your server minecraft version is not compatible with the plugin or an error occurred while executing the remap task, " +
                     "you should open a issue in our github repo!(Please confirm that you are using an official plugin)", e);
@@ -225,11 +224,11 @@ public class NMSFakePlayerMaker{
         return c;
     }
 
-    public static Object getHandle(Class<?> craftClazz, Object obj){
+    public static Object getHandle(Class<?> craftClazz, Object obj) {
         try {
             return craftClazz.getDeclaredMethod("getHandle").invoke(craftClazz.cast(obj));
         } catch (Exception e) {
-            FakePlayerMaker.INSTANCE.getLogger().log(Level.SEVERE, "Could not get handle of " + obj + " the class is " + craftClazz.getName() +",");
+            FakePlayerMaker.INSTANCE.getLogger().log(Level.SEVERE, "Could not get handle of " + obj + " the class is " + craftClazz.getName() + ",");
         }
         return null;
     }
@@ -241,18 +240,18 @@ public class NMSFakePlayerMaker{
             @Override
             public void run() {
                 new AsyncPlayerPreLoginEvent(
-                        Implementations.runImplAndReturn(t -> t.getName(p)),
+                        p.getName().getString(),
                         fakeNetAddress,
                         fakeNetAddress,
-                        Implementations.getUUID(p),
-                        new CraftPlayerProfile((GameProfile) Implementations.runImplAndReturn(t -> t.profile(p))),
+                        p.getUUID(),
+                        new CraftPlayerProfile(p.getGameProfile()),
                         fakeNetAddress.getHostName()
                 ).callEvent();
             }
         }.runTaskAsynchronously(FakePlayerMaker.INSTANCE);
 
         new PlayerLoginEvent(
-                Implementations.bukkitEntity(p),
+                p.getBukkitEntity(),
                 fakeNetAddress.getHostName(),
                 fakeNetAddress
         ).callEvent();
@@ -278,7 +277,7 @@ public class NMSFakePlayerMaker{
 
             @Override
             public Player asBukkitEntity(ServerPlayer player) {
-                return Implementations.bukkitEntity(player);
+                return player.getBukkitEntity();
             }
 
             @Override

@@ -7,7 +7,6 @@ import com.sk89q.worldedit.regions.CuboidRegion;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStartEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStopEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTester;
-import io.github.linsminecraftstudio.fakeplayermaker.api.objects.WorldNotFoundException;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -20,9 +19,9 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
-import org.lins.mmmjjkx.fakeplayermaker.implementation.Implementations;
-import org.lins.mmmjjkx.fakeplayermaker.implementation.PacketListenerMaker;
+import org.lins.mmmjjkx.fakeplayermaker.WorldNotFoundException;
 import org.lins.mmmjjkx.fakeplayermaker.objects.EmptyConnection;
+import org.lins.mmmjjkx.fakeplayermaker.objects.FPMPacketListener;
 import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 
 import java.util.*;
@@ -36,6 +35,7 @@ public class AreaStressTester implements IStressTester {
     private final MinecraftServer server = MinecraftServer.getServer();
     private long lastStartTimestamp;
     private final AutoRespawn listener;
+
     public AreaStressTester(CuboidRegion spawnRegion, int amount) {
         this.spawnRegion = spawnRegion;
         this.amount = amount;
@@ -44,8 +44,8 @@ public class AreaStressTester implements IStressTester {
     }
 
     @Override
-    public void run() throws WorldNotFoundException, IllegalStateException{
-        if (!FakePlayerMaker.settings.getBoolean("areaStressTesters")){
+    public void run() throws WorldNotFoundException, IllegalStateException {
+        if (!FakePlayerMaker.settings.getBoolean("areaStressTesters")) {
             return;
         }
 
@@ -54,7 +54,7 @@ public class AreaStressTester implements IStressTester {
         }
 
         long currentTimestamp = System.currentTimeMillis();
-        if (currentTimestamp - lastStartTimestamp < (5 * 1000L)){
+        if (currentTimestamp - lastStartTimestamp < (5 * 1000L)) {
             throw new IllegalStateException();
         }
 
@@ -78,14 +78,14 @@ public class AreaStressTester implements IStressTester {
                 return;
             }
 
-            ServerPlayer player = Implementations.runImplAndReturn(t -> t.create(level, new GameProfile(uuid, finalName)));
+            ServerPlayer player = new ServerPlayer(MinecraftServer.getServer(), level, new GameProfile(uuid, finalName));
 
             var connection = new EmptyConnection();
-            var listener = PacketListenerMaker.getGamePacketListener(connection, player);
+            var listener = new FPMPacketListener(connection, player);
 
             connection.setListener(listener);
 
-            Implementations.runImpl(t -> t.placePlayer(connection, player));
+            MinecraftServer.getServer().getPlayerList().placeNewPlayer(connection, player);
             Location loc = getHighestBlock(world, flatLocation.getX(), flatLocation.getZ());
             player.teleportTo(level, loc.getX(), loc.getY(), loc.getZ(), 0, 0);
 

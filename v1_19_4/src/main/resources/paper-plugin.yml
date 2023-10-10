@@ -1,0 +1,35 @@
+name: FakePlayerMaker
+version: '${project.version}'
+main: org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker
+api-version: "1.19"
+website: https://github.com/LinsMinecraftStudio/FakePlayerMaker
+bootstrapper: org.lins.mmmjjkx.fakeplayermaker.paper.FPMBootStrap
+loader: org.lins.mmmjjkx.fakeplayermaker.paper.FPMLoader
+has-open-classloader: true
+
+dependencies:
+  server:
+    Polymer:
+      load: BEFORE
+      required: true
+      join-classpath: true
+    FastAsyncWorldEdit:
+      load: BEFORE
+      required: false
+      join-classpath: true
+    WorldEdit:
+      load: BEFORE
+      required: false
+      join-classpath: true
+    ProtocolLib:
+      load: BEFORE
+      required: false
+      join-classpath: true
+
+permissions:
+  fakeplayermaker.command:
+    description: allows you to use /fakeplayermaker command
+    default: op
+  fakeplayermaker.command.stress:
+    description: allows you to use /fakeplayermaker stress command
+    default: op

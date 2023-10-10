@@ -14,6 +14,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<mcVersion>1.20.2</mcVersion>
+		<mainVersion>1.2.4</mainVersion>
 	</properties>
 
 	<modules>
@@ -53,12 +54,20 @@
 
 	<repositories>
 		<repository>
-			<id>papermc-repo</id>
-			<url>https://repo.papermc.io/repository/maven-public/</url>
-		</repository>
-		<repository>
 			<id>enginehub-maven</id>
 			<url>https://maven.enginehub.org/repo/</url>
+		</repository>
+		<repository>
+			<id>dmulloy2-repo</id>
+			<url>https://repo.dmulloy2.net/repository/public/</url>
+		</repository>
+		<repository>
+			<id>codemc-repo</id>
+			<url>https://repo.codemc.org/repository/maven-public/</url>
+		</repository>
+		<repository>
+			<id>papermc-repo</id>
+			<url>https://repo.papermc.io/repository/maven-public/</url>
 		</repository>
 		<repository>
 			<id>sonatype</id>
@@ -90,6 +99,12 @@
 				<groupId>ca.bkaw</groupId>
 				<artifactId>paper-nms</artifactId>
 				<version>${mcVersion}-SNAPSHOT</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.lins.mmmjjkx</groupId>
+				<artifactId>FakePlayerMaker</artifactId>
+				<version>${mainVersion}</version>
 				<scope>provided</scope>
 			</dependency>
 		</dependencies>

@@ -2,13 +2,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<!--
+	Note: this is a special version for minecraft 1.19.4.
+	Do not use it in other versions.
+	-->
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>OwnFakePlayers</artifactId>
+	<artifactId>FakePlayerMaker</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>OwnFakePlayers</name>
+	<name>v1_19_4</name>
 
 	<parent>
 		<groupId>org.lins.mmmjjkx</groupId>
@@ -57,33 +61,68 @@
 		</resources>
 	</build>
 
-	<repositories>
-		<repository>
-			<id>papermc-repo</id>
-			<url>https://repo.papermc.io/repository/maven-public/</url>
-		</repository>
-		<repository>
-			<id>sonatype</id>
-			<url>https://oss.sonatype.org/content/groups/public/</url>
-		</repository>
-	</repositories>
-
 	<dependencies>
 		<dependency>
-			<groupId>io.papermc.paper</groupId>
-			<artifactId>paper-api</artifactId>
+			<groupId>fr.xephi</groupId>
+			<artifactId>authme</artifactId>
+			<version>5.6.0-SNAPSHOT</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.lins.mmmjjkx</groupId>
-			<artifactId>FakePlayerMaker</artifactId>
+			<groupId>com.sk89q.worldedit</groupId>
+			<artifactId>worldedit-bukkit</artifactId>
+			<version>7.2.9</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.github.linsminecraftstudio</groupId>
 			<artifactId>Polymer</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>com.mojang</groupId>
+			<artifactId>authlib</artifactId>
+			<version>3.17.30</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>ca.bkaw</groupId>
 			<artifactId>paper-nms</artifactId>
+			<version>1.19.4-SNAPSHOT</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.papermc.paper</groupId>
+			<artifactId>paper-api</artifactId>
+			<version>1.19.4-R0.1-SNAPSHOT</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.github.linsminecraftstudio</groupId>
+			<artifactId>FakePlayerMakerAPI</artifactId>
+			<version>1.1-SNAPSHOT</version>
+		</dependency>
+
+		<!-- Unregister handlers-->
+		<dependency>
+			<groupId>com.comphenix.protocol</groupId>
+			<artifactId>ProtocolLib</artifactId>
+			<version>5.1.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.github.nulli0n</groupId>
+			<artifactId>NexEngine-spigot</artifactId>
+			<version>v2.2.11</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/lib/NexEngine.jar</systemPath>
+		</dependency>
+
+		<!-- external dependencies-->
+		<dependency>
+			<groupId>net.bytebuddy</groupId>
+			<artifactId>byte-buddy</artifactId>
+			<version>1.14.8</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 </project>

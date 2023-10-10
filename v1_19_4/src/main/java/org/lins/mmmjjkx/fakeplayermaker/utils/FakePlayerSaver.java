@@ -9,6 +9,7 @@ import io.github.linsminecraftstudio.polymer.utils.ListUtil;
 import io.github.linsminecraftstudio.polymer.utils.ObjectConverter;
 import joptsimple.internal.Strings;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Location;
@@ -16,7 +17,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
-import org.lins.mmmjjkx.fakeplayermaker.implementation.Implementations;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -33,7 +33,8 @@ import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getHandl
 public class FakePlayerSaver extends SingleFileStorage {
     private YamlConfiguration configuration;
     private final File cfgFile = new File(FakePlayerMaker.INSTANCE.getDataFolder(), "fakePlayers.yml");
-    public FakePlayerSaver(){
+
+    public FakePlayerSaver() {
         super(FakePlayerMaker.INSTANCE);
         configuration = handleConfig("fakePlayers.yml");
     }
@@ -45,12 +46,13 @@ public class FakePlayerSaver extends SingleFileStorage {
     }
 
     public void syncPlayerInfo(ServerPlayer player) {
-        ConfigurationSection section = getOrElseCreate(Implementations.runImplAndReturn(t -> t.getName(player)));
-        section.set("uuid", UUIDUtil.createOfflinePlayerUUID(Implementations.runImplAndReturn(t -> t.getName(player))).toString());
-        section.set("location", ObjectConverter.toLocationString(Implementations.bukkitEntity(player).getLocation()));
+        Player bukkit = player.getBukkitEntity();
+        ConfigurationSection section = getOrElseCreate(bukkit.getName());
+        section.set("uuid", bukkit.getUniqueId());
+        section.set("location", ObjectConverter.toLocationString(bukkit.getLocation()));
 
         {
-            Player bukkit = Implementations.bukkitEntity(player);
+
             PlayerProfile playerProfile = bukkit.getPlayerProfile();
             Optional<ProfileProperty> skin = ListUtil.getIf(playerProfile.getProperties(), p -> p.getName().equals("textures"));
             if (skin.isPresent()) {
@@ -59,18 +61,24 @@ public class FakePlayerSaver extends SingleFileStorage {
             }
         }
 
-        try {configuration.save(cfgFile);
-        } catch (IOException e) {throw new RuntimeException(e);}
+        try {
+            configuration.save(cfgFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void removeFakePlayer(String name) {
         configuration.set(name, null);
-        try {configuration.save(cfgFile);
-        } catch (IOException e) {throw new RuntimeException(e);}
+        try {
+            configuration.save(cfgFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public Map<ServerPlayer, Location> getFakePlayers() {
-        Map<ServerPlayer,Location> players = new HashMap<>();
+        Map<ServerPlayer, Location> players = new HashMap<>();
         for (String sectionName : configuration.getKeys(false)) {
             ConfigurationSection section = configuration.getConfigurationSection(sectionName);
             if (section == null) continue;
@@ -92,19 +100,22 @@ public class FakePlayerSaver extends SingleFileStorage {
                         "Failed to create fake player for " + sectionName + ": world is null or the world not found");
                 continue;
             }
-            ServerPlayer player = Implementations.runImplAndReturn(t -> t.create(level, profile));
+            ServerPlayer player = new ServerPlayer(MinecraftServer.getServer(), level, profile);
             players.put(player, location);
         }
         return players;
     }
 
     @Nonnull
-    private ConfigurationSection getOrElseCreate(String path){
+    private ConfigurationSection getOrElseCreate(String path) {
         ConfigurationSection section = configuration.getConfigurationSection(path);
         if (section == null) {
             section = configuration.createSection(path);
-            try {configuration.save(cfgFile);
-            } catch (IOException e) {throw new RuntimeException(e);}
+            try {
+                configuration.save(cfgFile);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
         return section;
     }

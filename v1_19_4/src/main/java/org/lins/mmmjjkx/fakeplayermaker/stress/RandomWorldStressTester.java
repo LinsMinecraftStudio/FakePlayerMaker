@@ -16,9 +16,8 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
-import org.lins.mmmjjkx.fakeplayermaker.implementation.Implementations;
-import org.lins.mmmjjkx.fakeplayermaker.implementation.PacketListenerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.objects.EmptyConnection;
+import org.lins.mmmjjkx.fakeplayermaker.objects.FPMPacketListener;
 import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 
 import java.util.*;
@@ -34,7 +33,7 @@ public class RandomWorldStressTester implements IStressTester {
     private final List<String> ignores;
     private final AutoRespawn listener;
 
-    public RandomWorldStressTester(boolean isAmountPerWorld,int amount,List<String> ignoreWorlds) {
+    public RandomWorldStressTester(boolean isAmountPerWorld, int amount, List<String> ignoreWorlds) {
         this.amount = amount;
         this.lastStartTimestamp = 0;
         this.isAmountPerWorld = isAmountPerWorld;
@@ -43,9 +42,9 @@ public class RandomWorldStressTester implements IStressTester {
     }
 
     @Override
-    public void run() throws IllegalStateException{
+    public void run() throws IllegalStateException {
         long currentTimestamp = System.currentTimeMillis();
-        if (currentTimestamp - lastStartTimestamp < (5 * 1000L)){
+        if (currentTimestamp - lastStartTimestamp < (5 * 1000L)) {
             throw new IllegalStateException();
         }
 
@@ -58,7 +57,7 @@ public class RandomWorldStressTester implements IStressTester {
 
         String randomNamePrefix = NMSFakePlayerMaker.getRandomName(FakePlayerMaker.randomNameLength);
         if (isAmountPerWorld) {
-            for (World world: Bukkit.getWorlds()) {
+            for (World world : Bukkit.getWorlds()) {
                 if (ignores.contains(world.getName())) {
                     continue;
                 }
@@ -84,22 +83,22 @@ public class RandomWorldStressTester implements IStressTester {
 
     private void placePlayer(String randomNamePrefix, ServerLevel level, int amount) {
         for (int i = 0; i < amount; i++) {
-            String finalName = randomNamePrefix + (i +1);
+            String finalName = randomNamePrefix + (i + 1);
             UUID uuid = UUIDUtil.createOfflinePlayerUUID(finalName);
             Location location = generate(level.getWorld());
 
-            ServerPlayer player = Implementations.runImplAndReturn(t -> t.create(level, new GameProfile(uuid, finalName)));
+            ServerPlayer player = new ServerPlayer(MinecraftServer.getServer(), level, new GameProfile(uuid, finalName));
 
             var connection = new EmptyConnection();
-            var listener = PacketListenerMaker.getGamePacketListener(connection, player);
+            var listener = new FPMPacketListener(connection, player);
 
             connection.setListener(listener);
 
-            Implementations.runImpl(t -> t.placePlayer(connection, player));
+            MinecraftServer.getServer().getPlayerList().placeNewPlayer(connection, player);
             simulateLogin(player);
 
             player.connection = listener;
-            player.teleportTo(level, location.getX(), location.getY(), location.getZ(),0,0);
+            player.teleportTo(level, location.getX(), location.getY(), location.getZ(), 0, 0);
 
             tempPlayers.put(finalName, player);
         }
@@ -114,7 +113,7 @@ public class RandomWorldStressTester implements IStressTester {
     }
 
     @Override
-    public Map<String, ServerPlayer> getTempPlayers(){
+    public Map<String, ServerPlayer> getTempPlayers() {
         return tempPlayers;
     }
 

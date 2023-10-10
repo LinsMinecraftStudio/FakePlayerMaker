@@ -1,10 +1,8 @@
 package org.lins.mmmjjkx.fakeplayermaker.objects;
 
+import io.netty.channel.Channel;
 import io.netty.channel.embedded.EmbeddedChannel;
-import net.minecraft.network.Connection;
-import net.minecraft.network.PacketDecoder;
-import net.minecraft.network.PacketEncoder;
-import net.minecraft.network.PacketSendListener;
+import net.minecraft.network.*;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketFlow;
 import org.bukkit.Bukkit;
@@ -17,8 +15,8 @@ import java.net.InetSocketAddress;
 
 public final class EmptyConnection extends Connection {
 
-    public EmptyConnection(PacketFlow side) {
-        super(side);
+    public EmptyConnection() {
+        super(PacketFlow.SERVERBOUND);
 
         EmbeddedChannel theChannel = new EmbeddedChannel();
         theChannel.bind(new InetSocketAddress(InetAddress.getLoopbackAddress(), 60000));
@@ -26,7 +24,7 @@ public final class EmptyConnection extends Connection {
         theChannel.pipeline().addLast("decoder", getDecoder());
 
         if (Bukkit.getMinecraftVersion().equals("1.20.2")) {
-            setInitialProtocolAttributes(theChannel);
+            setupChannel(theChannel);
 
             this.channel = theChannel;
         } else {
@@ -78,5 +76,10 @@ public final class EmptyConnection extends Connection {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    private void setupChannel(Channel channel) {
+        channel.attr(ATTRIBUTE_SERVERBOUND_PROTOCOL).set(ConnectionProtocol.PLAY.codec(PacketFlow.SERVERBOUND));
+        channel.attr(ATTRIBUTE_CLIENTBOUND_PROTOCOL).set(ConnectionProtocol.PLAY.codec(PacketFlow.CLIENTBOUND));
     }
 }
