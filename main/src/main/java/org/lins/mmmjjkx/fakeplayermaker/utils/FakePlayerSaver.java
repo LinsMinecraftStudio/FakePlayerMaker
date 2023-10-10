@@ -4,6 +4,7 @@ import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
+import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
 import io.github.linsminecraftstudio.polymer.objects.plugin.file.SingleFileStorage;
 import io.github.linsminecraftstudio.polymer.utils.ListUtil;
 import io.github.linsminecraftstudio.polymer.utils.ObjectConverter;
@@ -16,7 +17,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
-import org.lins.mmmjjkx.fakeplayermaker.implementation.Implementations;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -27,7 +27,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Level;
 
-import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getCraftClass;
+import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils.getCraftClass;
 import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getHandle;
 
 public class FakePlayerSaver extends SingleFileStorage {
@@ -45,8 +45,8 @@ public class FakePlayerSaver extends SingleFileStorage {
     }
 
     public void syncPlayerInfo(ServerPlayer player) {
-        ConfigurationSection section = getOrElseCreate(Implementations.runImplAndReturn(t -> t.getName(player)));
-        section.set("uuid", UUIDUtil.createOfflinePlayerUUID(Implementations.runImplAndReturn(t -> t.getName(player))).toString());
+        ConfigurationSection section = getOrElseCreate(Implementations.get().getName(player));
+        section.set("uuid", Implementations.getUUID(player));
         section.set("location", ObjectConverter.toLocationString(Implementations.bukkitEntity(player).getLocation()));
 
         {
@@ -92,7 +92,7 @@ public class FakePlayerSaver extends SingleFileStorage {
                         "Failed to create fake player for " + sectionName + ": world is null or the world not found");
                 continue;
             }
-            ServerPlayer player = Implementations.runImplAndReturn(t -> t.create(level, profile));
+            ServerPlayer player = Implementations.get().create(level, profile);
             players.put(player, location);
         }
         return players;

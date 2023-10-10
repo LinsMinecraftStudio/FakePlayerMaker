@@ -3,7 +3,9 @@ package org.lins.mmmjjkx.fakeplayermaker.stress;
 import com.mojang.authlib.GameProfile;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStartEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStopEvent;
+import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTester;
+import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -16,14 +18,13 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
-import org.lins.mmmjjkx.fakeplayermaker.implementation.Implementations;
-import org.lins.mmmjjkx.fakeplayermaker.implementation.PacketListenerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.objects.EmptyConnection;
 import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 
 import java.util.*;
 
-import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.*;
+import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getHandle;
+import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.simulateLogin;
 
 public class RandomWorldStressTester implements IStressTester {
     private final Map<String, ServerPlayer> tempPlayers = new HashMap<>();
@@ -62,7 +63,7 @@ public class RandomWorldStressTester implements IStressTester {
                 if (ignores.contains(world.getName())) {
                     continue;
                 }
-                ServerLevel level = (ServerLevel) getHandle(getCraftClass("CraftWorld"), world);
+                ServerLevel level = (ServerLevel) getHandle(MinecraftUtils.getCraftClass("CraftWorld"), world);
                 placePlayer(randomNamePrefix, level, amount);
             }
         } else {
@@ -71,7 +72,7 @@ public class RandomWorldStressTester implements IStressTester {
                 if (ignores.contains(world.getName())) {
                     continue;
                 }
-                ServerLevel level = (ServerLevel) getHandle(getCraftClass("CraftWorld"), world);
+                ServerLevel level = (ServerLevel) getHandle(MinecraftUtils.getCraftClass("CraftWorld"), world);
                 int placeAmount = random.nextInt(amount);
                 if (amount == 0) return;
                 placePlayer(randomNamePrefix, level, placeAmount);
@@ -88,14 +89,14 @@ public class RandomWorldStressTester implements IStressTester {
             UUID uuid = UUIDUtil.createOfflinePlayerUUID(finalName);
             Location location = generate(level.getWorld());
 
-            ServerPlayer player = Implementations.runImplAndReturn(t -> t.create(level, new GameProfile(uuid, finalName)));
+            ServerPlayer player = Implementations.get().create(level, new GameProfile(uuid, finalName));
 
             var connection = new EmptyConnection();
-            var listener = PacketListenerMaker.getGamePacketListener(connection, player);
+            var listener = MinecraftUtils.getGamePacketListener(connection, player);
 
             connection.setListener(listener);
 
-            Implementations.runImpl(t -> t.placePlayer(connection, player));
+            Implementations.get().placePlayer(connection, player);
             simulateLogin(player);
 
             player.connection = listener;
@@ -128,7 +129,7 @@ public class RandomWorldStressTester implements IStressTester {
     private class AutoRespawn implements Listener {
         @EventHandler
         public void onDeath(PlayerDeathEvent e) {
-            ServerPlayer player = (ServerPlayer) getHandle(getCraftClass("entity.CraftPlayer"), e.getPlayer());
+            ServerPlayer player = (ServerPlayer) getHandle(MinecraftUtils.getCraftClass("entity.CraftPlayer"), e.getPlayer());
             if (player != null && tempPlayers.containsKey(player.getName().getString())) {
                 Location location = e.getPlayer().getLocation();
                 e.getPlayer().spigot().respawn();

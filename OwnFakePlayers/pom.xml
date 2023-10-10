@@ -70,12 +70,14 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>io.papermc.paper</groupId>
-			<artifactId>paper-api</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.lins.mmmjjkx</groupId>
 			<artifactId>FakePlayerMaker</artifactId>
+			<version>${mainVersion}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.papermc.paper</groupId>
+			<artifactId>paper-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>io.github.linsminecraftstudio</groupId>

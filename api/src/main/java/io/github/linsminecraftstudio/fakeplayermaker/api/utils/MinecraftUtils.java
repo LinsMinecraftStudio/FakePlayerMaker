@@ -1,5 +1,7 @@
-package org.lins.mmmjjkx.fakeplayermaker.implementation;
+package io.github.linsminecraftstudio.fakeplayermaker.api.utils;
 
+import io.github.linsminecraftstudio.fakeplayermaker.api.objects.CraftBukkitClassNotFoundError;
+import io.github.linsminecraftstudio.fakeplayermaker.api.objects.FPMPacketListener;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.modifier.Visibility;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
@@ -12,12 +14,11 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.bukkit.Bukkit;
-import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
-import org.lins.mmmjjkx.fakeplayermaker.objects.FPMPacketListener;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 
-public class PacketListenerMaker {
+public class MinecraftUtils {
     public static ServerGamePacketListenerImpl getGamePacketListener(Connection connection, ServerPlayer player) {
         if (!Bukkit.getMinecraftVersion().equals("1.20.2")) {
             try {
@@ -27,7 +28,7 @@ public class PacketListenerMaker {
 
                 Constructor<? extends ServerGamePacketListenerImpl> constructor = new ByteBuddy()
                         .subclass(ServerGamePacketListenerImpl.class)
-                        .name(PacketListenerMaker.class.getPackage().getName() + ".FPMGamePacketListenerBEFORE1202V")
+                        .name(MinecraftUtils.class.getPackage().getName() + ".FPMGamePacketListenerBEFORE1202V")
 
                         .defineField("pl", ServerPlayer.class, Visibility.PRIVATE)
                         .constructor(ElementMatchers.any())
@@ -41,16 +42,36 @@ public class PacketListenerMaker {
                         .intercept(delegation)
 
                         .make()
-                        .load(PacketListenerMaker.class.getClassLoader(), ClassLoadingStrategy.Default.WRAPPER)
+                        .load(MinecraftUtils.class.getClassLoader(), ClassLoadingStrategy.Default.WRAPPER)
                         .getLoaded()
                         .getDeclaredConstructor(MinecraftServer.class, Connection.class, ServerPlayer.class);
 
-                return constructor.newInstance(FakePlayerMaker.getNMSServer(), connection, player);
+                return constructor.newInstance(getNMSServer(), connection, player);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
 
         return new FPMPacketListener(connection, player);
+    }
+
+    public static MinecraftServer getNMSServer() {
+        try {
+            return (MinecraftServer) getCraftClass("CraftServer").getMethod("getServer").invoke(Bukkit.getServer());
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Class<?> getCraftClass(String name) {
+        String version = Bukkit.getServer().getClass().getName().split("\\.")[3];
+        String className = "org.bukkit.craftbukkit." + version + "." + name;
+        Class<?> c;
+        try {
+            c = Class.forName(className);
+        } catch (Exception e) {
+            throw new CraftBukkitClassNotFoundError(name, e);
+        }
+        return c;
     }
 }

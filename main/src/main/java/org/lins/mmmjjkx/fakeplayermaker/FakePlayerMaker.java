@@ -1,6 +1,7 @@
 package org.lins.mmmjjkx.fakeplayermaker;
 
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.FPMPluginLoadEvent;
+import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
 import io.github.linsminecraftstudio.polymer.command.PolymerCommand;
 import io.github.linsminecraftstudio.polymer.objects.plugin.PolymerPlugin;
 import io.github.linsminecraftstudio.polymer.objects.plugin.SimpleSettingsManager;
@@ -18,7 +19,6 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.lins.mmmjjkx.fakeplayermaker.command.FPMCommand;
-import org.lins.mmmjjkx.fakeplayermaker.implementation.Implementations;
 import org.lins.mmmjjkx.fakeplayermaker.stress.StressTestSaver;
 import org.lins.mmmjjkx.fakeplayermaker.utils.ActionUtils;
 import org.lins.mmmjjkx.fakeplayermaker.utils.FakePlayerSaver;
@@ -27,7 +27,7 @@ import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
-import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getCraftClass;
+import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils.getCraftClass;
 import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getHandle;
 
 public class FakePlayerMaker extends PolymerPlugin implements Listener {
@@ -125,7 +125,7 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
     public void onDeath(PlayerDeathEvent e) {
         SimpleSettingsManager settings = FakePlayerMaker.settings;
         ServerPlayer player = (ServerPlayer) getHandle(getCraftClass("entity.CraftPlayer"), e.getEntity().getPlayer());
-        if (player != null && NMSFakePlayerMaker.fakePlayerMap.containsKey(Implementations.runImplAndReturn(t -> t.getName(player)))) {
+        if (player != null && NMSFakePlayerMaker.fakePlayerMap.containsKey(Implementations.get().getName(player))) {
             Location loc = e.getPlayer().getLocation();
             e.getPlayer().spigot().respawn();
             ActionUtils.setupValues(player);
@@ -138,7 +138,7 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
         ServerPlayer player = (ServerPlayer) getHandle(getCraftClass("entity.CraftPlayer"), e.getPlayer());
-        if (player != null && NMSFakePlayerMaker.fakePlayerMap.containsKey(Implementations.runImplAndReturn(t -> t.getName(player)))) {
+        if (player != null && NMSFakePlayerMaker.fakePlayerMap.containsKey(Implementations.get().getName(player))) {
             if (e.getPlayer().isDead()) {
                 e.getPlayer().spigot().respawn();
             }

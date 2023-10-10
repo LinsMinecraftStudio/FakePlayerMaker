@@ -1,6 +1,7 @@
-package org.lins.mmmjjkx.fakeplayermaker.implementation;
+package io.github.linsminecraftstudio.fakeplayermaker.api.implementation;
 
 import com.mojang.authlib.GameProfile;
+import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -13,16 +14,13 @@ import net.minecraft.server.players.PlayerList;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
-import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getCraftClass;
+import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils.getCraftClass;
 
 public abstract class Implementations {
     private static final Map<String,Implementations> map = new HashMap<>();
@@ -38,12 +36,8 @@ public abstract class Implementations {
         }
     }
 
-    public static void runImpl(Consumer<Implementations> consumer) {
-        consumer.accept(map.get(Bukkit.getMinecraftVersion()));
-    }
-
-    public static <T> T runImplAndReturn(Function<Implementations, T> function) {
-        return function.apply(map.get(Bukkit.getMinecraftVersion()));
+    public static Implementations get() {
+        return map.get(Bukkit.getMinecraftVersion());
     }
 
     public static Player bukkitEntity(ServerPlayer player){
@@ -56,7 +50,7 @@ public abstract class Implementations {
     }
 
     public static UUID getUUID(ServerPlayer player) {
-        return runImplAndReturn(t -> t.profile(player).getId());
+        return get().profile(player).getId();
     }
 
     public abstract GameProfile profile(ServerPlayer player);
@@ -99,7 +93,7 @@ public abstract class Implementations {
         public ServerPlayer create(@NotNull ServerLevel level, @NotNull GameProfile profile) {
             try {
                 return ServerPlayer.class.getDeclaredConstructor(MinecraftServer.class, ServerLevel.class, GameProfile.class)
-                        .newInstance(FakePlayerMaker.getNMSServer(), level, profile);
+                        .newInstance(MinecraftUtils.getNMSServer(), level, profile);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -118,7 +112,7 @@ public abstract class Implementations {
         @Override
         public void placePlayer(Connection connection, ServerPlayer player) {
             try {
-                PlayerList list = (PlayerList) MinecraftServer.class.getMethod("ac").invoke(FakePlayerMaker.getNMSServer());
+                PlayerList list = (PlayerList) MinecraftServer.class.getMethod("ac").invoke(MinecraftUtils.getNMSServer());
                 list.getClass().getMethod("a", Connection.class, ServerPlayer.class).invoke(list, connection, player);
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -139,12 +133,12 @@ public abstract class Implementations {
 
         @Override
         public void placePlayer(Connection connection, ServerPlayer player) {
-            FakePlayerMaker.getNMSServer().getPlayerList().placeNewPlayer(connection, player, CommonListenerCookie.createInitial(this.profile(player)));
+            MinecraftUtils.getNMSServer().getPlayerList().placeNewPlayer(connection, player, CommonListenerCookie.createInitial(this.profile(player)));
         }
 
         @Override
         public ServerPlayer create(@NotNull ServerLevel level, @NotNull GameProfile profile) {
-            return new ServerPlayer(FakePlayerMaker.getNMSServer(), level, profile, ClientInformation.createDefault());
+            return new ServerPlayer(MinecraftUtils.getNMSServer(), level, profile, ClientInformation.createDefault());
         }
 
         @Override

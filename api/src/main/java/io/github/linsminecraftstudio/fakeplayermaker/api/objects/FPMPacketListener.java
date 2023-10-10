@@ -1,5 +1,7 @@
-package org.lins.mmmjjkx.fakeplayermaker.objects;
+package io.github.linsminecraftstudio.fakeplayermaker.api.objects;
 
+import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
+import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
 import net.minecraft.network.Connection;
 import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.protocol.Packet;
@@ -9,14 +11,15 @@ import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.entity.RelativeMovement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
-import org.lins.mmmjjkx.fakeplayermaker.implementation.Implementations;
 
 import java.util.Set;
 
+/**
+ * A packet listener on version 1.20.2
+ */
 public class FPMPacketListener extends ServerGamePacketListenerImpl {
     public FPMPacketListener(Connection connection, ServerPlayer player) {
-        super(FakePlayerMaker.getNMSServer(), connection, player, CommonListenerCookie.createInitial(Implementations.runImplAndReturn(t -> t.profile(player))));
+        super(MinecraftUtils.getNMSServer(), connection, player, CommonListenerCookie.createInitial(Implementations.get().profile(player)));
     }
 
     @Override

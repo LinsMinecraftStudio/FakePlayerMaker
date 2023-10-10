@@ -8,8 +8,8 @@
 	-->
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>FakePlayerMaker</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<artifactId>FakePlayerMaker-1194</artifactId>
+	<version>${mainVersion}</version>
 	<packaging>jar</packaging>
 
 	<name>v1_19_4</name>
@@ -99,7 +99,7 @@
 		<dependency>
 			<groupId>io.github.linsminecraftstudio</groupId>
 			<artifactId>FakePlayerMakerAPI</artifactId>
-			<version>1.1-SNAPSHOT</version>
+			<version>${apiVersion}</version>
 		</dependency>
 
 		<!-- Unregister handlers-->
@@ -121,8 +121,6 @@
 		<dependency>
 			<groupId>net.bytebuddy</groupId>
 			<artifactId>byte-buddy</artifactId>
-			<version>1.14.8</version>
-			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 </project>

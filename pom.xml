@@ -15,6 +15,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<mcVersion>1.20.2</mcVersion>
 		<mainVersion>1.2.4</mainVersion>
+		<apiVersion>1.2-SNAPSHOT</apiVersion>
 	</properties>
 
 	<modules>
@@ -105,6 +106,12 @@
 				<groupId>org.lins.mmmjjkx</groupId>
 				<artifactId>FakePlayerMaker</artifactId>
 				<version>${mainVersion}</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>net.bytebuddy</groupId>
+				<artifactId>byte-buddy</artifactId>
+				<version>1.14.8</version>
 				<scope>provided</scope>
 			</dependency>
 		</dependencies>

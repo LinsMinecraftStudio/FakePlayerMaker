@@ -1,4 +1,4 @@
-package org.lins.mmmjjkx.fakeplayermaker.implementation;
+package io.github.linsminecraftstudio.fakeplayermaker.api.utils;
 
 import net.bytebuddy.implementation.bind.annotation.*;
 import net.minecraft.core.UUIDUtil;
@@ -8,6 +8,9 @@ import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import java.lang.reflect.Method;
 
 public class PacketListenerDelegation {
+    PacketListenerDelegation() {
+    }
+
     @RuntimeType
     public Object delegate(@This Object o, @Origin Method method, @FieldValue("pl") ServerPlayer player, @AllArguments Object... args) {
         try {

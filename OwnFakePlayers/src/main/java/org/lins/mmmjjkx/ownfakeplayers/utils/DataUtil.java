@@ -5,6 +5,7 @@ import com.destroystokyo.paper.profile.ProfileProperty;
 import com.google.common.io.Files;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
+import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
 import io.github.linsminecraftstudio.polymer.utils.ListUtil;
 import io.github.linsminecraftstudio.polymer.utils.ObjectConverter;
 import net.minecraft.server.level.ServerLevel;
@@ -13,19 +14,18 @@ import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.lins.mmmjjkx.fakeplayermaker.implementation.Implementations;
 import org.lins.mmmjjkx.ownfakeplayers.objects.OwnableFakePlayer;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getCraftClass;
+import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils.getCraftClass;
 import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getHandle;
 
 public class DataUtil {
     private final File folder;
-    private final Map<UUID, OwnableFakePlayer> map = new HashMap<>(); //fake player uuid
+    private final Map<UUID, OwnableFakePlayer> map = new HashMap<>(); //fake player uuid : a fake player object
     public DataUtil(File folder) {
         this.folder = folder;
         load();
@@ -52,7 +52,7 @@ public class DataUtil {
                     profile.getProperties().put("textures", new Property("textures",
                             section.getString("skin",""), section.getString("skin-signature", "")));
                 }
-                map.put(uuid1, new OwnableFakePlayer(owner, Implementations.runImplAndReturn(t -> t.create(getLevel(location), profile))));
+                map.put(uuid1, new OwnableFakePlayer(owner, Implementations.get().create(getLevel(location), profile)));
             }
         }
     }

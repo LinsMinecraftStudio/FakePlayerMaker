@@ -1,5 +1,6 @@
 package org.lins.mmmjjkx.fakeplayermaker.utils;
 
+import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
 import io.github.linsminecraftstudio.polymer.objects.plugin.SimpleSettingsManager;
 import io.github.linsminecraftstudio.polymer.utils.ListUtil;
 import io.papermc.paper.adventure.ChatProcessor;
@@ -23,7 +24,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
-import org.lins.mmmjjkx.fakeplayermaker.implementation.Implementations;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;

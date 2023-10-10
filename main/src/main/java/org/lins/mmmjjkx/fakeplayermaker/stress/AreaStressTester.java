@@ -6,8 +6,10 @@ import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStartEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStopEvent;
+import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTester;
 import io.github.linsminecraftstudio.fakeplayermaker.api.objects.WorldNotFoundException;
+import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -20,14 +22,13 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
-import org.lins.mmmjjkx.fakeplayermaker.implementation.Implementations;
-import org.lins.mmmjjkx.fakeplayermaker.implementation.PacketListenerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.objects.EmptyConnection;
 import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 
 import java.util.*;
 
-import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.*;
+import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getHandle;
+import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.simulateLogin;
 
 public class AreaStressTester implements IStressTester {
     private final Map<String, ServerPlayer> tempPlayers = new HashMap<>();
@@ -66,7 +67,7 @@ public class AreaStressTester implements IStressTester {
         List<BlockVector3> list = getAreaBlocks();
         Random random = new Random();
         String randomNamePrefix = NMSFakePlayerMaker.getRandomName(FakePlayerMaker.randomNameLength);
-        ServerLevel level = (ServerLevel) getHandle(getCraftClass("CraftWorld"), world);
+        ServerLevel level = (ServerLevel) getHandle(MinecraftUtils.getCraftClass("CraftWorld"), world);
 
         for (int i = 0; i < amount; i++) {
             String finalName = randomNamePrefix + (i + 1);
@@ -78,14 +79,14 @@ public class AreaStressTester implements IStressTester {
                 return;
             }
 
-            ServerPlayer player = Implementations.runImplAndReturn(t -> t.create(level, new GameProfile(uuid, finalName)));
+            ServerPlayer player = Implementations.get().create(level, new GameProfile(uuid, finalName));
 
             var connection = new EmptyConnection();
-            var listener = PacketListenerMaker.getGamePacketListener(connection, player);
+            var listener = MinecraftUtils.getGamePacketListener(connection, player);
 
             connection.setListener(listener);
 
-            Implementations.runImpl(t -> t.placePlayer(connection, player));
+            Implementations.get().placePlayer(connection, player);
             Location loc = getHighestBlock(world, flatLocation.getX(), flatLocation.getZ());
             player.teleportTo(level, loc.getX(), loc.getY(), loc.getZ(), 0, 0);
 
@@ -113,11 +114,11 @@ public class AreaStressTester implements IStressTester {
     private class AutoRespawn implements Listener {
         @EventHandler
         public void onDeath(PlayerDeathEvent e) {
-            ServerPlayer player = (ServerPlayer) getHandle(getCraftClass("entity.CraftPlayer"), e.getPlayer());
+            ServerPlayer player = (ServerPlayer) getHandle(MinecraftUtils.getCraftClass("entity.CraftPlayer"), e.getPlayer());
             if (player != null && tempPlayers.containsKey(player.getName().getString())) {
                 Location location = e.getPlayer().getLocation();
                 e.getPlayer().spigot().respawn();
-                ServerLevel level = (ServerLevel) getHandle(getCraftClass("CraftWorld"), e.getPlayer().getWorld());
+                ServerLevel level = (ServerLevel) getHandle(MinecraftUtils.getCraftClass("CraftWorld"), e.getPlayer().getWorld());
                 if (level != null) {
                     player.teleportTo(level, location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
                 }
