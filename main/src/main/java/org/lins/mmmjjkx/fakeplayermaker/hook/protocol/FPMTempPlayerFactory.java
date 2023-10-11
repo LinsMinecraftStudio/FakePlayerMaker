@@ -5,6 +5,7 @@ import com.comphenix.protocol.injector.temporary.MinimalInjector;
 import com.comphenix.protocol.injector.temporary.TemporaryPlayer;
 import com.comphenix.protocol.injector.temporary.TemporaryPlayerFactory;
 import com.comphenix.protocol.utility.ChatExtensions;
+import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.ByteCodeElement;
 import net.bytebuddy.description.modifier.Visibility;
@@ -20,6 +21,7 @@ import net.bytebuddy.utility.nullability.AlwaysNull;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.network.Connection;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
@@ -29,7 +31,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils.getCraftClass;
-import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getHandle;
 
 public class FPMTempPlayerFactory {
     private static final Constructor<? extends Player> CONSTRUCTOR = getConstructor();
@@ -184,7 +185,7 @@ public class FPMTempPlayerFactory {
     }
 
     private static ServerPlayer getNMSPlayer(Player bukkit) {
-        return (ServerPlayer) getHandle(getCraftClass("entity.CraftPlayer"), bukkit);
+        return (ServerPlayer) MinecraftUtils.getHandle(getCraftClass("entity.CraftPlayer"), bukkit);
     }
 
     /**
@@ -206,9 +207,9 @@ public class FPMTempPlayerFactory {
      <li>{@link Player#getUniqueId()}</li>
      </ul>
      */
-    public static Player createPlayer(final Server server, String name) throws InvocationTargetException, InstantiationException, IllegalAccessException {
+    public static Player createPlayer(Connection connection, Server server, String name) throws InvocationTargetException, InstantiationException, IllegalAccessException {
         Player p = CONSTRUCTOR.newInstance(server, name);
-        TemporaryPlayerFactory.setInjectorInPlayer(p, new FPMMinimalInjector(name));
+        TemporaryPlayerFactory.setInjectorInPlayer(p, new FPMMinimalInjector(name, connection));
         return p;
     }
 }

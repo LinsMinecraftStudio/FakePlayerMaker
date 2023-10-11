@@ -14,11 +14,16 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.bukkit.Bukkit;
+import org.bukkit.event.HandlerList;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class MinecraftUtils {
+    private static final Logger LOGGER = Logger.getLogger("FakePlayerMaker");
     public static ServerGamePacketListenerImpl getGamePacketListener(Connection connection, ServerPlayer player) {
         if (!Bukkit.getMinecraftVersion().equals("1.20.2")) {
             try {
@@ -73,5 +78,30 @@ public class MinecraftUtils {
             throw new CraftBukkitClassNotFoundError(name, e);
         }
         return c;
+    }
+
+    public static void preventListen(String clazzName) {
+        try {
+            Class<?> c = Class.forName(clazzName);
+            preventListen(c);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void preventListen(Class<?> clazz) {
+        if (JavaPlugin.class.isAssignableFrom(clazz)) {
+            JavaPlugin plugin = JavaPlugin.getPlugin((Class<? extends JavaPlugin>) clazz);
+            HandlerList.unregisterAll(plugin);
+        }
+    }
+
+    public static Object getHandle(Class<?> craftClazz, Object obj) {
+        try {
+            return craftClazz.getDeclaredMethod("getHandle").invoke(craftClazz.cast(obj));
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Could not get handle of " + obj + " the class is " + craftClazz.getName() + ",");
+        }
+        return null;
     }
 }

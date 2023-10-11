@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStartEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStopEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTester;
+import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -22,7 +23,8 @@ import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 
 import java.util.*;
 
-import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.*;
+import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getCraftClass;
+import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.simulateLogin;
 
 public class RandomWorldStressTester implements IStressTester {
     private final Map<String, ServerPlayer> tempPlayers = new HashMap<>();
@@ -61,7 +63,7 @@ public class RandomWorldStressTester implements IStressTester {
                 if (ignores.contains(world.getName())) {
                     continue;
                 }
-                ServerLevel level = (ServerLevel) getHandle(getCraftClass("CraftWorld"), world);
+                ServerLevel level = (ServerLevel) MinecraftUtils.getHandle(getCraftClass("CraftWorld"), world);
                 placePlayer(randomNamePrefix, level, amount);
             }
         } else {
@@ -70,7 +72,7 @@ public class RandomWorldStressTester implements IStressTester {
                 if (ignores.contains(world.getName())) {
                     continue;
                 }
-                ServerLevel level = (ServerLevel) getHandle(getCraftClass("CraftWorld"), world);
+                ServerLevel level = (ServerLevel) MinecraftUtils.getHandle(getCraftClass("CraftWorld"), world);
                 int placeAmount = random.nextInt(amount);
                 if (amount == 0) return;
                 placePlayer(randomNamePrefix, level, placeAmount);
@@ -127,7 +129,7 @@ public class RandomWorldStressTester implements IStressTester {
     private class AutoRespawn implements Listener {
         @EventHandler
         public void onDeath(PlayerDeathEvent e) {
-            ServerPlayer player = (ServerPlayer) getHandle(getCraftClass("entity.CraftPlayer"), e.getPlayer());
+            ServerPlayer player = (ServerPlayer) MinecraftUtils.getHandle(getCraftClass("entity.CraftPlayer"), e.getPlayer());
             if (player != null && tempPlayers.containsKey(player.getName().getString())) {
                 Location location = e.getPlayer().getLocation();
                 e.getPlayer().spigot().respawn();

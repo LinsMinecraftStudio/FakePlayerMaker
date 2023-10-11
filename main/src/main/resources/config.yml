@@ -22,6 +22,9 @@ runCMDAfterJoin:
 #Run commands after join (by console)
 runCMDConsoleAfterJoin:
   - "broadcast Welcome %player%!!"
+#Run commands after remove a fake player (by console)
+runCMDAfterRemove:
+  - "authme unregister %player%"
 #Please install the WorldEdit or FastAsyncWorldEdit plugin before turn it on!
 #Recommended creating an open area to create a stress tester.
 areaStressTesters: false

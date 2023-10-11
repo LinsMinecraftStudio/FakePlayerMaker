@@ -6,25 +6,26 @@ import com.mojang.authlib.GameProfile;
 import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
 import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.entity.Player;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
-import org.lins.mmmjjkx.fakeplayermaker.objects.EmptyConnection;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Objects;
 
 import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils.getCraftClass;
-import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getHandle;
 
 public class FPMMinimalInjector implements MinimalInjector {
     private final String name;
+    private final Connection connection;
 
-    public FPMMinimalInjector(String name) {
+    public FPMMinimalInjector(String name, Connection connection) {
         this.name = name;
+        this.connection = connection;
     }
 
     @Override
@@ -44,9 +45,8 @@ public class FPMMinimalInjector implements MinimalInjector {
 
     @Override
     public Player getPlayer() {
-        ServerLevel level = (ServerLevel) Objects.requireNonNull(getHandle(getCraftClass("CraftWorld"), Objects.requireNonNull(FakePlayerMaker.settings.getLocation("defaultSpawnLocation")).getWorld()));
+        ServerLevel level = (ServerLevel) Objects.requireNonNull(MinecraftUtils.getHandle(getCraftClass("CraftWorld"), Objects.requireNonNull(FakePlayerMaker.settings.getLocation("defaultSpawnLocation")).getWorld()));
         ServerPlayer player = Implementations.get().create(level, new GameProfile(UUIDUtil.createOfflinePlayerUUID(name), name));
-        var connection = new EmptyConnection();
         Implementations.get().setConnection(player, MinecraftUtils.getGamePacketListener(connection, player));
         return Implementations.bukkitEntity(player);
     }
@@ -57,6 +57,6 @@ public class FPMMinimalInjector implements MinimalInjector {
     }
 
     private ServerPlayer nmsPlayer() {
-        return (ServerPlayer) getHandle(getCraftClass("entity.CraftPlayer"), getPlayer());
+        return (ServerPlayer) MinecraftUtils.getHandle(getCraftClass("entity.CraftPlayer"), getPlayer());
     }
 }

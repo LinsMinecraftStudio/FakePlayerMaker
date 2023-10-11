@@ -5,10 +5,10 @@ import com.comphenix.protocol.injector.temporary.TemporaryPlayerFactory;
 import com.destroystokyo.paper.profile.CraftPlayerProfile;
 import com.google.common.base.Strings;
 import com.mojang.authlib.GameProfile;
-import fr.xephi.authme.api.v3.AuthMeApi;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.FakePlayerCreateEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.FakePlayerRemoveEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.FakePlayerController;
+import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -63,7 +63,7 @@ public class NMSFakePlayerMaker {
                     preventListen();
 
                     Location location = players.get(player);
-                    ServerLevel level = (ServerLevel) getHandle(getCraftClass("CraftWorld"), location.getWorld());
+                    ServerLevel level = (ServerLevel) MinecraftUtils.getHandle(getCraftClass("CraftWorld"), location.getWorld());
                     if (level != null) {
                         player.teleportTo(level, location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
                     }
@@ -118,7 +118,7 @@ public class NMSFakePlayerMaker {
             try {
                 Player temp = FPMTempPlayerFactory.createPlayer(Bukkit.getServer(), name);
                 MinimalInjector injector = TemporaryPlayerFactory.getInjectorFromPlayer(temp);
-                ServerPlayer handle = (ServerPlayer) getHandle(getCraftClass("entity.CraftPlayer"), injector.getPlayer());
+                ServerPlayer handle = (ServerPlayer) MinecraftUtils.getHandle(getCraftClass("entity.CraftPlayer"), injector.getPlayer());
                 fakePlayerMap.put(name, handle);
 
                 if (handle != null) {
@@ -135,7 +135,7 @@ public class NMSFakePlayerMaker {
                 throw new RuntimeException(e);
             }
         } else {
-            ServerLevel level = (ServerLevel) Objects.requireNonNull(getHandle(getCraftClass("CraftWorld"), realLoc.getWorld()));
+            ServerLevel level = (ServerLevel) Objects.requireNonNull(MinecraftUtils.getHandle(getCraftClass("CraftWorld"), realLoc.getWorld()));
             ServerPlayer player = new ServerPlayer(MinecraftServer.getServer(), level, profile);
             var connection = new EmptyConnection();
 
@@ -165,8 +165,6 @@ public class NMSFakePlayerMaker {
         if (runCMD) {
             runCMDs(player, connection, listener);
         }
-
-        preventListen();
     }
 
     public static void joinFakePlayer(String name) {
@@ -183,13 +181,15 @@ public class NMSFakePlayerMaker {
         ServerPlayer player = fakePlayerMap.get(name);
         if (player != null) {
             new FakePlayerRemoveEvent(player.getName().getString(), sender).callEvent();
+
+            for (String cmd : FakePlayerMaker.settings.getStrList("runCMDAfterRemove")) {
+                cmd = cmd.replaceAll("%player%", name);
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+            }
+
             fakePlayerMap.remove(name);
             saver.removeFakePlayer(name);
             server.getPlayerList().remove(player);
-
-            if (Bukkit.getPluginManager().isPluginEnabled("AuthMe")) {
-                AuthMeApi.getInstance().forceUnregister(player.getBukkitEntity());
-            }
         }
     }
 
@@ -222,15 +222,6 @@ public class NMSFakePlayerMaker {
                     "you should open a issue in our github repo!(Please confirm that you are using an official plugin)", e);
         }
         return c;
-    }
-
-    public static Object getHandle(Class<?> craftClazz, Object obj) {
-        try {
-            return craftClazz.getDeclaredMethod("getHandle").invoke(craftClazz.cast(obj));
-        } catch (Exception e) {
-            FakePlayerMaker.INSTANCE.getLogger().log(Level.SEVERE, "Could not get handle of " + obj + " the class is " + craftClazz.getName() + ",");
-        }
-        return null;
     }
 
     public static void simulateLogin(ServerPlayer p) {

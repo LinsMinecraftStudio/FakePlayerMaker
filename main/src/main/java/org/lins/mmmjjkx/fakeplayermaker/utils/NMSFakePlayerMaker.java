@@ -5,7 +5,6 @@ import com.comphenix.protocol.injector.temporary.TemporaryPlayerFactory;
 import com.destroystokyo.paper.profile.CraftPlayerProfile;
 import com.google.common.base.Strings;
 import com.mojang.authlib.GameProfile;
-import fr.xephi.authme.api.v3.AuthMeApi;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.FakePlayerCreateEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.FakePlayerRemoveEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
@@ -61,7 +60,7 @@ public class NMSFakePlayerMaker{
 
                     runCMDs(player, connection, listener);
 
-                    preventListen();
+                    MinecraftUtils.preventListen(NexPlugin.class);
 
                     Location location = players.get(player);
                     ServerLevel level = (ServerLevel) getHandle(MinecraftUtils.getCraftClass("CraftWorld"), location.getWorld());
@@ -117,7 +116,8 @@ public class NMSFakePlayerMaker{
 
         if (FakePlayerMaker.isProtocolLibLoaded()) {
             try {
-                Player temp = FPMTempPlayerFactory.createPlayer(Bukkit.getServer(), name);
+                var connection = new EmptyConnection();
+                Player temp = FPMTempPlayerFactory.createPlayer(connection, Bukkit.getServer(), name);
                 MinimalInjector injector = TemporaryPlayerFactory.getInjectorFromPlayer(temp);
                 ServerPlayer handle = (ServerPlayer) getHandle(MinecraftUtils.getCraftClass("entity.CraftPlayer"), injector.getPlayer());
                 fakePlayerMap.put(name, handle);
@@ -127,7 +127,7 @@ public class NMSFakePlayerMaker{
                 }
 
                 new FakePlayerCreateEvent(temp, sender).callEvent();
-                var connection = new EmptyConnection();
+
                 playerJoin(handle, connection, MinecraftUtils.getGamePacketListener(connection, handle), true);
 
                 temp.teleport(realLoc);
@@ -159,15 +159,13 @@ public class NMSFakePlayerMaker{
 
         Implementations.get().setConnection(player, listener);
 
-        preventListen();
+        MinecraftUtils.preventListen(NexPlugin.class);
 
         ActionUtils.setupValues(player);
 
         if (runCMD) {
             runCMDs(player, connection, listener);
         }
-
-        preventListen();
     }
 
     public static void joinFakePlayer(String name){
@@ -184,13 +182,15 @@ public class NMSFakePlayerMaker{
         ServerPlayer player = fakePlayerMap.get(name);
         if (player != null) {
             new FakePlayerRemoveEvent(Implementations.get().getName(player), sender).callEvent();
+
+            for (String cmd : FakePlayerMaker.settings.getStrList("runCMDAfterRemove")) {
+                cmd = cmd.replaceAll("%player%", name);
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+            }
+
             fakePlayerMap.remove(name);
             saver.removeFakePlayer(name);
             server.getPlayerList().remove(player);
-
-            if (Bukkit.getPluginManager().isPluginEnabled("AuthMe")) {
-                AuthMeApi.getInstance().forceUnregister(Implementations.bukkitEntity(player));
-            }
         }
     }
 
@@ -242,12 +242,6 @@ public class NMSFakePlayerMaker{
                 fakeNetAddress.getHostName(),
                 fakeNetAddress
         ).callEvent();
-    }
-
-    private static void preventListen() {
-        if (Bukkit.getPluginManager().isPluginEnabled("NexEngine")) {
-            FakePlayerMaker.unregisterHandlers(NexPlugin.class);
-        }
     }
 
     public static FakePlayerController asController() {

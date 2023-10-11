@@ -3,7 +3,6 @@ package io.github.linsminecraftstudio.fakeplayermaker.api.implementation;
 import com.mojang.authlib.GameProfile;
 import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
 import net.minecraft.network.Connection;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerLevel;
@@ -22,6 +21,9 @@ import java.util.UUID;
 
 import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils.getCraftClass;
 
+/**
+ * Just an implementation in different versions of Minecraft.
+ */
 public abstract class Implementations {
     private static final Map<String,Implementations> map = new HashMap<>();
 
@@ -49,6 +51,10 @@ public abstract class Implementations {
         }
     }
 
+    public static String getName(ServerPlayer player) {
+        return get().profile(player).getName();
+    }
+
     public static UUID getUUID(ServerPlayer player) {
         return get().profile(player).getId();
     }
@@ -58,7 +64,7 @@ public abstract class Implementations {
     public abstract @NotNull String[] minecraftVersion();
     public abstract void placePlayer(Connection connection, ServerPlayer player);
     public abstract ServerPlayer create(@NotNull ServerLevel level, @NotNull GameProfile profile);
-    public abstract String getName(ServerPlayer player);
+
 
     private static class v1_20_1 extends Implementations {
         @Override
@@ -100,16 +106,6 @@ public abstract class Implementations {
         }
 
         @Override
-        public String getName(ServerPlayer player) {
-            try {
-                Component component = (Component) player.getClass().getMethod("Z").invoke(player);
-                return component.getString();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        @Override
         public void placePlayer(Connection connection, ServerPlayer player) {
             try {
                 PlayerList list = (PlayerList) MinecraftServer.class.getMethod("ac").invoke(MinecraftUtils.getNMSServer());
@@ -139,11 +135,6 @@ public abstract class Implementations {
         @Override
         public ServerPlayer create(@NotNull ServerLevel level, @NotNull GameProfile profile) {
             return new ServerPlayer(MinecraftUtils.getNMSServer(), level, profile, ClientInformation.createDefault());
-        }
-
-        @Override
-        public String getName(ServerPlayer player) {
-            return player.getName().getString();
         }
     }
 }

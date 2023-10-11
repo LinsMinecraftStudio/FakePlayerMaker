@@ -27,8 +27,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Level;
 
+import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils.getHandle;
 import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getCraftClass;
-import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getHandle;
 
 public class FakePlayerSaver extends SingleFileStorage {
     private YamlConfiguration configuration;
