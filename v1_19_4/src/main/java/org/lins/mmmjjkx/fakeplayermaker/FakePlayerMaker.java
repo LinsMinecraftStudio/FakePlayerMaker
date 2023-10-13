@@ -1,22 +1,19 @@
 package org.lins.mmmjjkx.fakeplayermaker;
 
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.FPMPluginLoadEvent;
+import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
 import io.github.linsminecraftstudio.polymer.command.PolymerCommand;
 import io.github.linsminecraftstudio.polymer.objects.plugin.PolymerPlugin;
 import io.github.linsminecraftstudio.polymer.objects.plugin.SimpleSettingsManager;
 import io.github.linsminecraftstudio.polymer.objects.plugin.message.PolymerMessageHandler;
 import io.github.linsminecraftstudio.polymer.utils.Metrics;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.lins.mmmjjkx.fakeplayermaker.command.FPMCommand;
 import org.lins.mmmjjkx.fakeplayermaker.stress.StressTestSaver;
 import org.lins.mmmjjkx.fakeplayermaker.utils.ActionUtils;
@@ -49,7 +46,7 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
                  |_|  \\__,_|_|\\_\\___|_|   |_|\\__,_|\\__, |\\___|_|  |_|  |_|\\__,_|_|\\_\\___|_|  \s
                                                    |___/                                     \s
                                                                  
-                 version %s by mmmjjkx
+                 version %s by mmmjjkx(special version on 1.19.4)
                 """.formatted(getPluginMeta().getVersion()));
         suggestSpark();
         INSTANCE = this;
@@ -66,12 +63,7 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
         fakePlayerSaver.reload();
         stressTestSaver.reload();
 
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                new FPMPluginLoadEvent(NMSFakePlayerMaker.asController()).callEvent();
-            }
-        }.runTaskAsynchronously(this);
+        MinecraftUtils.schedule(this, () -> new FPMPluginLoadEvent(NMSFakePlayerMaker.asController()).callEvent(), 0, true);
 
         getServer().getPluginManager().registerEvents(this, this);
     }
@@ -91,11 +83,6 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
         return "1.3.5";
     }
 
-    public static void unregisterHandlers(Class<? extends JavaPlugin> clazz) {
-        JavaPlugin plugin = JavaPlugin.getPlugin(clazz);
-        HandlerList.unregisterAll(plugin);
-    }
-
     public static boolean isProtocolLibLoaded() {
         return Bukkit.getPluginManager().isPluginEnabled("ProtocolLib");
     }
@@ -108,10 +95,6 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
 
         randomNameLength = settings.getInt("randomNameLength");
         defaultSpawnLocation = settings.getLocation("defaultSpawnLocation");
-    }
-
-    public static MinecraftServer getNMSServer() {
-        return MinecraftServer.getServer();
     }
 
     @EventHandler

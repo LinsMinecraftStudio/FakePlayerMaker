@@ -12,7 +12,7 @@ public interface FakePlayerController {
 
     List<ServerPlayer> getAllFakePlayers();
 
-    Player asBukkitEntity(ServerPlayer player);
-
     ServerPlayer spawnFakePlayer(@Nullable String name, Location location);
+
+    @Nullable Player getFakePlayer(String name);
 }

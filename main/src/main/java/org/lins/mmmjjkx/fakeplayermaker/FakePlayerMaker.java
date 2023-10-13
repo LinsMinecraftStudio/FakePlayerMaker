@@ -2,29 +2,25 @@ package org.lins.mmmjjkx.fakeplayermaker;
 
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.FPMPluginLoadEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
+import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
 import io.github.linsminecraftstudio.polymer.command.PolymerCommand;
 import io.github.linsminecraftstudio.polymer.objects.plugin.PolymerPlugin;
 import io.github.linsminecraftstudio.polymer.objects.plugin.SimpleSettingsManager;
 import io.github.linsminecraftstudio.polymer.objects.plugin.message.PolymerMessageHandler;
 import io.github.linsminecraftstudio.polymer.utils.Metrics;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.lins.mmmjjkx.fakeplayermaker.command.FPMCommand;
 import org.lins.mmmjjkx.fakeplayermaker.stress.StressTestSaver;
 import org.lins.mmmjjkx.fakeplayermaker.utils.ActionUtils;
 import org.lins.mmmjjkx.fakeplayermaker.utils.FakePlayerSaver;
 import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils.getCraftClass;
@@ -69,12 +65,7 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
         fakePlayerSaver.reload();
         stressTestSaver.reload();
 
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                new FPMPluginLoadEvent(NMSFakePlayerMaker.asController()).callEvent();
-            }
-        }.runTaskAsynchronously(this);
+        MinecraftUtils.schedule(this, () -> new FPMPluginLoadEvent(NMSFakePlayerMaker.asController()).callEvent(), 0, true);
 
         getServer().getPluginManager().registerEvents(this, this);
     }
@@ -94,11 +85,6 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
         return "1.3.5";
     }
 
-    public static void unregisterHandlers(Class<? extends JavaPlugin> clazz) {
-        JavaPlugin plugin = JavaPlugin.getPlugin(clazz);
-        HandlerList.unregisterAll(plugin);
-    }
-
     public static boolean isProtocolLibLoaded() {
         return Bukkit.getPluginManager().isPluginEnabled("ProtocolLib");
     }
@@ -113,19 +99,11 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
         defaultSpawnLocation = settings.getLocation("defaultSpawnLocation");
     }
 
-    public static MinecraftServer getNMSServer() {
-        try {
-            return (MinecraftServer) getCraftClass("CraftServer").getMethod("getServer").invoke(Bukkit.getServer());
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     @EventHandler
     public void onDeath(PlayerDeathEvent e) {
         SimpleSettingsManager settings = FakePlayerMaker.settings;
         ServerPlayer player = (ServerPlayer) getHandle(getCraftClass("entity.CraftPlayer"), e.getEntity().getPlayer());
-        if (player != null && NMSFakePlayerMaker.fakePlayerMap.containsKey(Implementations.get().getName(player))) {
+        if (player != null && NMSFakePlayerMaker.fakePlayerMap.containsKey(Implementations.getName(player))) {
             Location loc = e.getPlayer().getLocation();
             e.getPlayer().spigot().respawn();
             ActionUtils.setupValues(player);
@@ -138,7 +116,7 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
         ServerPlayer player = (ServerPlayer) getHandle(getCraftClass("entity.CraftPlayer"), e.getPlayer());
-        if (player != null && NMSFakePlayerMaker.fakePlayerMap.containsKey(Implementations.get().getName(player))) {
+        if (player != null && NMSFakePlayerMaker.fakePlayerMap.containsKey(Implementations.getName(player))) {
             if (e.getPlayer().isDead()) {
                 e.getPlayer().spigot().respawn();
             }

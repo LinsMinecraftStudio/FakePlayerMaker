@@ -1,6 +1,7 @@
 package org.lins.mmmjjkx.fakeplayermaker.utils;
 
 import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
+import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
 import io.github.linsminecraftstudio.polymer.objects.plugin.SimpleSettingsManager;
 import io.github.linsminecraftstudio.polymer.utils.ListUtil;
 import io.papermc.paper.adventure.ChatProcessor;
@@ -63,8 +64,8 @@ public class ActionUtils {
 
         Player bukkit = Implementations.bukkitEntity(player);
 
-        FakePlayerMaker.getNMSServer().getPlayerList().broadcastAll(new ClientboundRotateHeadPacket(player, (byte) (player.getBukkitYaw()%360*256/360)));
-        FakePlayerMaker.getNMSServer().getPlayerList().broadcastAll(new ClientboundMoveEntityPacket.Rot(getID(player), (byte) (player.getBukkitYaw()%360*256/360), (byte) (bukkit.getPitch()%360*256/360), bukkit.isOnGround()));
+        MinecraftUtils.getNMSServer().getPlayerList().broadcastAll(new ClientboundRotateHeadPacket(player, (byte) (player.getBukkitYaw() % 360 * 256 / 360)));
+        MinecraftUtils.getNMSServer().getPlayerList().broadcastAll(new ClientboundMoveEntityPacket.Rot(getID(player), (byte) (player.getBukkitYaw() % 360 * 256 / 360), (byte) (bukkit.getPitch() % 360 * 256 / 360), bukkit.isOnGround()));
     }
 
     public static void mountNearest(ServerPlayer player) {

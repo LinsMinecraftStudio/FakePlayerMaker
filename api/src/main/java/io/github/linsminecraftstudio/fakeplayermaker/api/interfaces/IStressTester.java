@@ -15,7 +15,7 @@ public interface IStressTester extends Runnable{
 
     /**
      * Start the stress tester
-     * @throws IllegalStateException
+     * @throws IllegalStateException when you start it too fast
      */
     void run() throws IllegalStateException;
 
@@ -25,13 +25,6 @@ public interface IStressTester extends Runnable{
      */
     void stop();
 
-    /**
-     * Just for help location generating
-     * @param world
-     * @param x
-     * @param z
-     * @return
-     */
     default Location getHighestBlock(World world, int x, int z){
         int i = 319;
         Location location = new Location(world, x, i, z);

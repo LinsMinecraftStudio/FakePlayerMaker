@@ -13,6 +13,7 @@ import net.minecraft.server.players.PlayerList;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -32,9 +33,11 @@ public abstract class Implementations {
         new v1_20_2().register();
     }
 
-    public void register() {
+    public final void register() {
         for (String version : minecraftVersion()) {
-            map.put(version, this);
+            if (!map.containsKey(version)) {
+                map.put(version, this);
+            }
         }
     }
 
@@ -42,7 +45,10 @@ public abstract class Implementations {
         return map.get(Bukkit.getMinecraftVersion());
     }
 
+    @Nullable
     public static Player bukkitEntity(ServerPlayer player){
+        if (player == null) return null;
+
         try {
             return (Player) getCraftClass("entity.CraftEntity")
                     .getMethod("getEntity", getCraftClass("CraftServer"), net.minecraft.world.entity.Entity.class).invoke(null, Bukkit.getServer(), player);

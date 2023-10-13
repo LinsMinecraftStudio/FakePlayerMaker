@@ -19,6 +19,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -68,6 +69,13 @@ public class MinecraftUtils {
         }
     }
 
+    /**
+     * Get craft bukkit class
+     * If not found it will throw {@link CraftBukkitClassNotFoundError}
+     *
+     * @param name the class name
+     * @return a craft bukkit class
+     */
     public static Class<?> getCraftClass(String name) {
         String version = Bukkit.getServer().getClass().getName().split("\\.")[3];
         String className = "org.bukkit.craftbukkit." + version + "." + name;
@@ -90,7 +98,7 @@ public class MinecraftUtils {
     }
 
     public static void preventListen(Class<?> clazz) {
-        if (JavaPlugin.class.isAssignableFrom(clazz)) {
+        if (clazz.getSuperclass() == JavaPlugin.class) {
             JavaPlugin plugin = JavaPlugin.getPlugin((Class<? extends JavaPlugin>) clazz);
             HandlerList.unregisterAll(plugin);
         }
@@ -103,5 +111,13 @@ public class MinecraftUtils {
             LOGGER.log(Level.SEVERE, "Could not get handle of " + obj + " the class is " + craftClazz.getName() + ",");
         }
         return null;
+    }
+
+    public static void schedule(JavaPlugin plugin, Runnable runnable, long delay, boolean async) {
+        if (async) {
+            Bukkit.getAsyncScheduler().runDelayed(plugin, t -> runnable.run(), delay, TimeUnit.MILLISECONDS);
+        } else {
+            Bukkit.getGlobalRegionScheduler().runDelayed(plugin, t -> runnable.run(), delay);
+        }
     }
 }
