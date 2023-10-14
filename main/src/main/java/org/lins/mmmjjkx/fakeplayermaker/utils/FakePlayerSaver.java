@@ -20,7 +20,6 @@ import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 
 import javax.annotation.Nonnull;
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -32,15 +31,14 @@ import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getHandl
 
 public class FakePlayerSaver extends SingleFileStorage {
     private YamlConfiguration configuration;
-    private final File cfgFile = new File(FakePlayerMaker.INSTANCE.getDataFolder(), "fakePlayers.yml");
     public FakePlayerSaver(){
-        super(FakePlayerMaker.INSTANCE);
-        configuration = handleConfig("fakePlayers.yml");
+        super(FakePlayerMaker.INSTANCE, new File(FakePlayerMaker.INSTANCE.getDataFolder(), "fakePlayers.yml"));
+        configuration = getConfiguration();
     }
 
     @Override
     public void reload() {
-        configuration = handleConfig("fakePlayers.yml");
+        configuration = getConfiguration();
         NMSFakePlayerMaker.reloadMap(getFakePlayers());
     }
 
@@ -59,14 +57,12 @@ public class FakePlayerSaver extends SingleFileStorage {
             }
         }
 
-        try {configuration.save(cfgFile);
-        } catch (IOException e) {throw new RuntimeException(e);}
+        reload();
     }
 
     public void removeFakePlayer(String name) {
         configuration.set(name, null);
-        try {configuration.save(cfgFile);
-        } catch (IOException e) {throw new RuntimeException(e);}
+        reload();
     }
 
     public Map<ServerPlayer, Location> getFakePlayers() {
@@ -103,8 +99,7 @@ public class FakePlayerSaver extends SingleFileStorage {
         ConfigurationSection section = configuration.getConfigurationSection(path);
         if (section == null) {
             section = configuration.createSection(path);
-            try {configuration.save(cfgFile);
-            } catch (IOException e) {throw new RuntimeException(e);}
+            reload();
         }
         return section;
     }
