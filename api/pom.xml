@@ -82,10 +82,6 @@
 			<activation>
 				<activeByDefault>true</activeByDefault>
 			</activation>
-			<properties>
-				<gpg.executable>gpg</gpg.executable>
-				<gpg.passphrase>12345ssdlk</gpg.passphrase>
-			</properties>
 			<build>
 				<plugins>
 					<plugin>
@@ -172,12 +168,6 @@
 	</repositories>
 
 	<dependencies>
-		<dependency>
-			<groupId>com.comphenix.protocol</groupId>
-			<artifactId>ProtocolLib</artifactId>
-			<version>5.1.0</version>
-			<scope>provided</scope>
-		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>

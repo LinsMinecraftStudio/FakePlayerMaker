@@ -26,7 +26,6 @@ import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.hook.protocol.FPMTempPlayerFactory;
 import org.lins.mmmjjkx.fakeplayermaker.objects.EmptyConnection;
 import org.lins.mmmjjkx.fakeplayermaker.objects.FPMPacketListener;
-import su.nexmedia.engine.NexPlugin;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
@@ -243,7 +242,7 @@ public class NMSFakePlayerMaker {
 
     private static void preventListen() {
         if (Bukkit.getPluginManager().isPluginEnabled("NexEngine")) {
-            MinecraftUtils.preventListen(NexPlugin.class);
+            MinecraftUtils.preventListen("su.nexmedia.engine.NexPlugin");
         }
     }
 
