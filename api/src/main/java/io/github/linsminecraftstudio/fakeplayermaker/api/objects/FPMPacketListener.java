@@ -39,5 +39,4 @@ public class FPMPacketListener extends ServerGamePacketListenerImpl {
             player.serverLevel().getChunkSource().move(player);
         }
     }
-
 }

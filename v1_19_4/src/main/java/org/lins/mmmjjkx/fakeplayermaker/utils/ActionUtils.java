@@ -26,12 +26,12 @@ import java.util.List;
 
 public class ActionUtils {
     public static void chat(ServerPlayer player, String message) {
-        MinecraftUtils.schedule(FakePlayerMaker.INSTANCE, () -> {
+        MinecraftUtils.scheduleNoDelay(FakePlayerMaker.INSTANCE, () -> {
             ChatDecorator.ModernResult result = new ChatDecorator.ModernResult(Component.text(message), true, true);
             PlayerChatMessage message1 = new PlayerChatMessage(SignedMessageLink.unsigned(player.getUUID()), null, SignedMessageBody.unsigned(message), null, FilterMask.PASS_THROUGH, result);
             ChatProcessor processor = new ChatProcessor(MinecraftServer.getServer(), player, message1, true);
             processor.process();
-        }, 0, true);
+        }, true);
     }
 
     public static void lookAtBlock(ServerPlayer player, Vec3 v3) {

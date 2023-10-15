@@ -14,17 +14,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
-	<pluginRepositories>
-		<pluginRepository>
-			<id>central</id>
-			<url>https://repo1.maven.org/maven2/</url>
-		</pluginRepository>
-		<pluginRepository>
-			<id>bytecode.space</id>
-			<url>https://repo.bytecode.space/repository/maven-public/</url>
-		</pluginRepository>
-	</pluginRepositories>
-
 	<parent>
 		<groupId>org.lins.mmmjjkx</groupId>
 		<artifactId>FPMContainer</artifactId>
@@ -126,15 +115,6 @@
 			<artifactId>ProtocolLib</artifactId>
 			<version>5.1.0</version>
 			<scope>provided</scope>
-		</dependency>
-
-		<!-- Unregister handlers-->
-		<dependency>
-			<groupId>com.github.nulli0n</groupId>
-			<artifactId>NexEngine-spigot</artifactId>
-			<version>v2.2.11</version>
-			<scope>system</scope>
-			<systemPath>${basedir}/lib/NexEngine.jar</systemPath>
 		</dependency>
 
 		<!-- external dependencies-->

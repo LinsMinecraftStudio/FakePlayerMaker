@@ -44,7 +44,7 @@ public class FakePlayerSaver extends SingleFileStorage {
 
     public void syncPlayerInfo(ServerPlayer player) {
         ConfigurationSection section = getOrElseCreate(Implementations.getName(player));
-        section.set("uuid", Implementations.getUUID(player));
+        section.set("uuid", Implementations.getUUID(player).toString());
         section.set("location", ObjectConverter.toLocationString(Implementations.bukkitEntity(player).getLocation()));
 
         {

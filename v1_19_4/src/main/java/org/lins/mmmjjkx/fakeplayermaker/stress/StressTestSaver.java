@@ -21,8 +21,8 @@ public class StressTestSaver extends SingleFileStorage {
     private final Map<String, RandomWorldStressTester> randomWorldStressTesterMap = new HashMap<>();
 
     public StressTestSaver() {
-        super(FakePlayerMaker.INSTANCE);
-        configuration = handleConfig("stresses.yml");
+        super(FakePlayerMaker.INSTANCE, new File(FakePlayerMaker.INSTANCE.getDataFolder(), "stress"));
+        configuration = getConfiguration();
         loadStressTesters();
     }
 
@@ -135,7 +135,7 @@ public class StressTestSaver extends SingleFileStorage {
 
     @Override
     public void reload() {
-        configuration = handleConfig("stresses.yml");
+        configuration = getConfiguration();
         stopAll();
         loadStressTesters();
     }

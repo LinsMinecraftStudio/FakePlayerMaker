@@ -6,7 +6,6 @@ import io.github.linsminecraftstudio.polymer.command.PolymerCommand;
 import io.github.linsminecraftstudio.polymer.objects.plugin.PolymerPlugin;
 import io.github.linsminecraftstudio.polymer.objects.plugin.SimpleSettingsManager;
 import io.github.linsminecraftstudio.polymer.objects.plugin.message.PolymerMessageHandler;
-import io.github.linsminecraftstudio.polymer.utils.Metrics;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -56,14 +55,15 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
         fakePlayerSaver = new FakePlayerSaver();
         stressTestSaver = new StressTestSaver();
 
-        new Metrics(this, 19435);
+        startMetrics(19435);
+
         randomNameLength = settings.getInt("randomNameLength");
         defaultSpawnLocation = settings.getLocation("defaultSpawnLocation");
 
         fakePlayerSaver.reload();
         stressTestSaver.reload();
 
-        MinecraftUtils.schedule(this, () -> new FPMPluginLoadEvent(NMSFakePlayerMaker.asController()).callEvent(), 0, true);
+        MinecraftUtils.scheduleNoDelay(this, () -> new FPMPluginLoadEvent(NMSFakePlayerMaker.asController()).callEvent(), true);
 
         getServer().getPluginManager().registerEvents(this, this);
     }
@@ -80,7 +80,7 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
 
     @Override
     public String requireVersion() {
-        return "1.3.5";
+        return "1.4";
     }
 
     public static boolean isProtocolLibLoaded() {

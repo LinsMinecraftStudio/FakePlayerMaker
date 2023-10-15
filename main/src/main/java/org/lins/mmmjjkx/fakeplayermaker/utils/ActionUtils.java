@@ -23,7 +23,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 
 import java.lang.reflect.InvocationTargetException;
@@ -32,15 +31,12 @@ import java.util.List;
 public class ActionUtils {
     private static final Class<ServerPlayer> clazz = ServerPlayer.class;
     public static void chat(ServerPlayer player, String message) {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                ChatDecorator.ModernResult result = new ChatDecorator.ModernResult(Component.text(message), true, true);
-                PlayerChatMessage message1 = new PlayerChatMessage(SignedMessageLink.unsigned(Implementations.getUUID(player)), null, SignedMessageBody.unsigned(message), null, FilterMask.PASS_THROUGH, result);
-                ChatProcessor processor = new ChatProcessor(MinecraftServer.getServer(), player, message1, true);
-                processor.process();
-            }
-        }.runTaskAsynchronously(FakePlayerMaker.INSTANCE);
+        MinecraftUtils.scheduleNoDelay(FakePlayerMaker.INSTANCE, () -> {
+            ChatDecorator.ModernResult result = new ChatDecorator.ModernResult(Component.text(message), true, true);
+            PlayerChatMessage message1 = new PlayerChatMessage(SignedMessageLink.unsigned(Implementations.getUUID(player)), null, SignedMessageBody.unsigned(message), null, FilterMask.PASS_THROUGH, result);
+            ChatProcessor processor = new ChatProcessor(MinecraftServer.getServer(), player, message1, true);
+            processor.process();
+        }, true);
     }
 
     public static void lookAtBlock(ServerPlayer player, Vec3 v3) {

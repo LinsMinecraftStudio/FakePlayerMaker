@@ -21,11 +21,11 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.hook.protocol.FPMTempPlayerFactory;
 import org.lins.mmmjjkx.fakeplayermaker.objects.EmptyConnection;
-import su.nexmedia.engine.NexPlugin;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
@@ -57,15 +57,12 @@ public class NMSFakePlayerMaker{
 
                 runCMDs(player, connection, listener);
 
-                MinecraftUtils.preventListen(NexPlugin.class);
+                MinecraftUtils.preventListen("su.nexmedia.engine.NexPlugin");
 
                 Location location = players.get(player);
-                ServerLevel level = (ServerLevel) getHandle(MinecraftUtils.getCraftClass("CraftWorld"), location.getWorld());
-                if (level != null) {
-                    player.teleportTo(level, location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
-                }
+                player.teleportTo(player.serverLevel(), location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
             }
-        }, 0, false);
+        }, 5, false);
     }
 
     private static void runCMDs(ServerPlayer player, EmptyConnection connection, ServerGamePacketListenerImpl listener) {
@@ -126,9 +123,7 @@ public class NMSFakePlayerMaker{
 
                 new FakePlayerCreateEvent(temp, sender).callEvent();
 
-                playerJoin(handle, connection, MinecraftUtils.getGamePacketListener(connection, handle), true);
-
-                temp.teleport(realLoc);
+                playerJoin(handle, connection, MinecraftUtils.getGamePacketListener(connection, handle), true, loc);
                 return handle;
             } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
                 throw new RuntimeException(e);
@@ -142,28 +137,34 @@ public class NMSFakePlayerMaker{
             saver.syncPlayerInfo(player);
 
             new FakePlayerCreateEvent(Implementations.bukkitEntity(player), sender).callEvent();
-            playerJoin(player, connection, MinecraftUtils.getGamePacketListener(connection, player), runCMD);
 
-            player.teleportTo(level, realLoc.getX(), realLoc.getY(), realLoc.getZ(), realLoc.getYaw(), realLoc.getPitch());
+            playerJoin(player, connection, MinecraftUtils.getGamePacketListener(connection, player), runCMD, realLoc);
+
             return player;
         }
     }
 
-    private static void playerJoin(ServerPlayer player, EmptyConnection connection, ServerGamePacketListenerImpl listener, boolean runCMD) {
-        MinecraftServer.getServer().playerDataStorage.save(player);
+    private static void playerJoin(ServerPlayer player, EmptyConnection connection, ServerGamePacketListenerImpl listener, boolean runCMD, @NotNull Location realLoc) {
+        Implementations.get().setConnection(player, listener);
 
+        ServerLevel level = (ServerLevel) Objects.requireNonNull(getHandle(MinecraftUtils.getCraftClass("CraftWorld"), realLoc.getWorld()));
+        player.setLevel(level);
+
+        //TODO: Fix force-added player error
         Implementations.get().placePlayer(connection, player);
         simulateLogin(player);
 
-        Implementations.get().setConnection(player, listener);
+        player.teleportTo(level, realLoc.getX(), realLoc.getY(), realLoc.getZ(), realLoc.getYaw(), realLoc.getPitch());
 
-        MinecraftUtils.preventListen(NexPlugin.class);
+        MinecraftUtils.preventListen("su.nexmedia.engine.NexPlugin");
 
         ActionUtils.setupValues(player);
 
         if (runCMD) {
             runCMDs(player, connection, listener);
         }
+
+        saver.syncPlayerInfo(player);
     }
 
     public static void joinFakePlayer(String name){
@@ -172,7 +173,7 @@ public class NMSFakePlayerMaker{
             var connection = new EmptyConnection();
             var listener = MinecraftUtils.getGamePacketListener(connection, player);
 
-            playerJoin(player, connection, listener, true);
+            playerJoin(player, connection, listener, true, Implementations.bukkitEntity(player).getLocation());
         }
     }
 
@@ -221,7 +222,7 @@ public class NMSFakePlayerMaker{
     public static void simulateLogin(ServerPlayer p) {
         InetAddress fakeNetAddress = InetAddress.getLoopbackAddress();
 
-        MinecraftUtils.schedule(FakePlayerMaker.INSTANCE, () ->
+        MinecraftUtils.scheduleNoDelay(FakePlayerMaker.INSTANCE, () ->
                 new AsyncPlayerPreLoginEvent(
                         Implementations.getName(p),
                         fakeNetAddress,
@@ -229,7 +230,7 @@ public class NMSFakePlayerMaker{
                         Implementations.getUUID(p),
                         new CraftPlayerProfile(Implementations.get().profile(p)),
                         fakeNetAddress.getHostName()
-                ).callEvent(), 0, true);
+                ).callEvent(), true);
 
         new PlayerLoginEvent(
                 Implementations.bukkitEntity(p),

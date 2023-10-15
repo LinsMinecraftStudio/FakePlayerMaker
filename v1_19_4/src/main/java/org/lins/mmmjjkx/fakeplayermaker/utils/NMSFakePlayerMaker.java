@@ -57,7 +57,7 @@ public class NMSFakePlayerMaker {
 
                 runCMDs(player, connection, listener);
 
-                preventListen();
+                MinecraftUtils.preventListen("su.nexmedia.engine.NexPlugin");
 
                 Location location = players.get(player);
                 ServerLevel level = (ServerLevel) MinecraftUtils.getHandle(getCraftClass("CraftWorld"), location.getWorld());
@@ -65,7 +65,7 @@ public class NMSFakePlayerMaker {
                     player.teleportTo(level, location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
                 }
             }
-        }, 10, false);
+        }, 5, false);
     }
 
     private static void runCMDs(ServerPlayer player, EmptyConnection connection, ServerGamePacketListenerImpl listener) {
@@ -154,7 +154,7 @@ public class NMSFakePlayerMaker {
 
         player.connection = listener;
 
-        preventListen();
+        MinecraftUtils.preventListen("su.nexmedia.engine.NexPlugin");
 
         ActionUtils.setupValues(player);
 
@@ -223,7 +223,7 @@ public class NMSFakePlayerMaker {
     public static void simulateLogin(ServerPlayer p) {
         InetAddress fakeNetAddress = InetAddress.getLoopbackAddress();
 
-        MinecraftUtils.schedule(FakePlayerMaker.INSTANCE, () ->
+        MinecraftUtils.scheduleNoDelay(FakePlayerMaker.INSTANCE, () ->
                 new AsyncPlayerPreLoginEvent(
                         p.getName().getString(),
                         fakeNetAddress,
@@ -231,19 +231,13 @@ public class NMSFakePlayerMaker {
                         p.getUUID(),
                         new CraftPlayerProfile(p.getGameProfile()),
                         fakeNetAddress.getHostName()
-                ).callEvent(), 0, true);
+                ).callEvent(), true);
 
         new PlayerLoginEvent(
                 p.getBukkitEntity(),
                 fakeNetAddress.getHostName(),
                 fakeNetAddress
         ).callEvent();
-    }
-
-    private static void preventListen() {
-        if (Bukkit.getPluginManager().isPluginEnabled("NexEngine")) {
-            MinecraftUtils.preventListen("su.nexmedia.engine.NexPlugin");
-        }
     }
 
     public static FakePlayerController asController() {

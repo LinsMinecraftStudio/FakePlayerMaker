@@ -35,20 +35,20 @@ public class FakePlayerSaver extends SingleFileStorage {
     private final File cfgFile = new File(FakePlayerMaker.INSTANCE.getDataFolder(), "fakePlayers.yml");
 
     public FakePlayerSaver() {
-        super(FakePlayerMaker.INSTANCE);
-        configuration = handleConfig("fakePlayers.yml");
+        super(FakePlayerMaker.INSTANCE, new File(FakePlayerMaker.INSTANCE.getDataFolder(), "fakePlayers.yml"));
+        configuration = getConfiguration();
     }
 
     @Override
     public void reload() {
-        configuration = handleConfig("fakePlayers.yml");
+        configuration = getConfiguration();
         NMSFakePlayerMaker.reloadMap(getFakePlayers());
     }
 
     public void syncPlayerInfo(ServerPlayer player) {
         Player bukkit = player.getBukkitEntity();
         ConfigurationSection section = getOrElseCreate(bukkit.getName());
-        section.set("uuid", bukkit.getUniqueId());
+        section.set("uuid", bukkit.getUniqueId().toString());
         section.set("location", ObjectConverter.toLocationString(bukkit.getLocation()));
 
         {

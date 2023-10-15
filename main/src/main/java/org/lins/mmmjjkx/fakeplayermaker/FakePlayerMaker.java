@@ -65,7 +65,7 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
         fakePlayerSaver.reload();
         stressTestSaver.reload();
 
-        MinecraftUtils.schedule(this, () -> new FPMPluginLoadEvent(NMSFakePlayerMaker.asController()).callEvent(), 0, true);
+        MinecraftUtils.scheduleNoDelay(this, () -> new FPMPluginLoadEvent(NMSFakePlayerMaker.asController()).callEvent(), true);
 
         getServer().getPluginManager().registerEvents(this, this);
     }
@@ -82,7 +82,7 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
 
     @Override
     public String requireVersion() {
-        return "1.3.5";
+        return "1.4";
     }
 
     public static boolean isProtocolLibLoaded() {

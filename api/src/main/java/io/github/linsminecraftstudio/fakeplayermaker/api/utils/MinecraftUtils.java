@@ -25,6 +25,17 @@ import java.util.logging.Logger;
 
 public class MinecraftUtils {
     private static final Logger LOGGER = Logger.getLogger("FakePlayerMaker");
+    private static boolean modernSchedulers = false;
+
+    static {
+        try {
+            Class.forName("io.papermc.paper.threadedregions.scheduler.GlobalRegionScheduler");
+            Class.forName("io.papermc.paper.threadedregions.scheduler.AsyncScheduler");
+            modernSchedulers = true;
+        } catch (ClassNotFoundException ignored) {
+        }
+    }
+
     public static ServerGamePacketListenerImpl getGamePacketListener(Connection connection, ServerPlayer player) {
         if (!Bukkit.getMinecraftVersion().equals("1.20.2")) {
             try {
@@ -92,8 +103,7 @@ public class MinecraftUtils {
         try {
             Class<?> c = Class.forName(clazzName);
             preventListen(c);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ignored) {
         }
     }
 
@@ -115,9 +125,33 @@ public class MinecraftUtils {
 
     public static void schedule(JavaPlugin plugin, Runnable runnable, long delay, boolean async) {
         if (async) {
-            Bukkit.getAsyncScheduler().runDelayed(plugin, t -> runnable.run(), delay, TimeUnit.MILLISECONDS);
+            if (modernSchedulers) {
+                Bukkit.getAsyncScheduler().runDelayed(plugin, t -> runnable.run(), delay, TimeUnit.MILLISECONDS);
+            } else {
+                Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, runnable, delay * 20L);
+            }
         } else {
-            Bukkit.getGlobalRegionScheduler().runDelayed(plugin, t -> runnable.run(), delay);
+            if (modernSchedulers) {
+                Bukkit.getGlobalRegionScheduler().runDelayed(plugin, t -> runnable.run(), delay * 20L);
+            } else {
+                Bukkit.getScheduler().runTaskLater(plugin, runnable, delay * 20L);
+            }
+        }
+    }
+
+    public static void scheduleNoDelay(JavaPlugin plugin, Runnable runnable, boolean async) {
+        if (async) {
+            if (modernSchedulers) {
+                Bukkit.getAsyncScheduler().runNow(plugin, t -> runnable.run());
+            } else {
+                Bukkit.getScheduler().runTaskAsynchronously(plugin, runnable);
+            }
+        } else {
+            if (modernSchedulers) {
+                Bukkit.getGlobalRegionScheduler().run(plugin, t -> runnable.run());
+            } else {
+                Bukkit.getScheduler().runTask(plugin, runnable);
+            }
         }
     }
 }
