@@ -27,9 +27,11 @@ public final class EmptyConnection extends Connection {
             setupChannel(theChannel);
 
             this.channel = theChannel;
+            this.address = theChannel.localAddress();
         } else {
             try {
                 getClass().getField("m").set(this, theChannel);
+                getClass().getField("n").set(this, theChannel.localAddress());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

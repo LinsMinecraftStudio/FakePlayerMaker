@@ -8,6 +8,7 @@ import io.github.linsminecraftstudio.polymer.objects.plugin.PolymerPlugin;
 import io.github.linsminecraftstudio.polymer.objects.plugin.SimpleSettingsManager;
 import io.github.linsminecraftstudio.polymer.objects.plugin.message.PolymerMessageHandler;
 import io.github.linsminecraftstudio.polymer.utils.Metrics;
+import io.github.linsminecraftstudio.polymer.utils.OtherUtils;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -68,6 +69,20 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
         MinecraftUtils.scheduleNoDelay(this, () -> new FPMPluginLoadEvent(NMSFakePlayerMaker.asController()).callEvent(), true);
 
         getServer().getPluginManager().registerEvents(this, this);
+
+        if (settings.getBoolean("checkUpdate")) {
+            new OtherUtils.Updater(111767, (ver, success) -> {
+                if (success) {
+                    if (ver.equals(getPluginMeta().getVersion())) {
+                        getLogger().info("You are using the latest version!");
+                    } else {
+                        getLogger().warning("There is a new version available! New version: " + ver + " Old version: " + getPluginMeta().getVersion());
+                    }
+                } else {
+                    getLogger().warning("Failed to check for updates!");
+                }
+            });
+        }
     }
 
     @Override

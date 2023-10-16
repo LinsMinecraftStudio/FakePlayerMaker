@@ -24,6 +24,7 @@ public final class EmptyConnection extends Connection {
         theChannel.pipeline().addLast("decoder", new PacketDecoder(PacketFlow.CLIENTBOUND));
 
         this.channel = theChannel;
+        this.address = theChannel.localAddress();
     }
 
     @Override

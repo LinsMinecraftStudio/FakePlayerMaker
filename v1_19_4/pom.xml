@@ -68,6 +68,13 @@
 		</plugins>
 		<resources>
 			<resource>
+				<directory>../resources</directory>
+				<filtering>true</filtering>
+				<excludes>
+					<exclude>paper-plugin.yml</exclude>
+				</excludes>
+			</resource>
+			<resource>
 				<directory>src/main/resources</directory>
 				<filtering>true</filtering>
 			</resource>

@@ -1,6 +1,7 @@
 language: en-us
 namePrefix: "fake_"
 randomNameLength: 10
+checkUpdate: true
 player:
   invulnerable: false
   canPickupItems: false

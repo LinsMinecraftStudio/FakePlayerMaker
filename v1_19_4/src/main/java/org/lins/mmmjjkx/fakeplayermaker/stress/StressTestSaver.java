@@ -98,7 +98,7 @@ public class StressTestSaver extends SingleFileStorage {
         section.set("ignoreWorlds", ignoreWorlds);
         randomWorldStressTesterMap.put(name, new RandomWorldStressTester(false, amount, ignoreWorlds));
         try {
-            configuration.save(new File(FakePlayerMaker.INSTANCE.getDataFolder(), "stresses.yml"));
+            configuration.save(new File(FakePlayerMaker.INSTANCE.getDataFolder(), "resources/stresses.yml"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -112,7 +112,7 @@ public class StressTestSaver extends SingleFileStorage {
         section.set("amount", amount);
         areaTesterMap.put(name, new AreaStressTester(new CuboidRegion(BukkitAdapter.adapt(pos1.getWorld()), BukkitAdapter.asBlockVector(pos1), BukkitAdapter.asBlockVector(pos2)), amount));
         try {
-            configuration.save(new File(FakePlayerMaker.INSTANCE.getDataFolder(), "stresses.yml"));
+            configuration.save(new File(FakePlayerMaker.INSTANCE.getDataFolder(), "resources/stresses.yml"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
