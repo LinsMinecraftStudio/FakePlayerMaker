@@ -44,8 +44,8 @@ public class ActionUtils {
             case SOUTH -> look(player, 0, 0);
             case EAST -> look(player, -90, 0);
             case WEST -> look(player, 90, 0);
-            case UP -> look(player, player.getBukkitYaw(), -90);
-            case DOWN -> look(player, player.getBukkitYaw(), 90);
+            case UP -> look(player, player.getYRot(), -90);
+            case DOWN -> look(player, player.getYRot(), 90);
         }
     }
 

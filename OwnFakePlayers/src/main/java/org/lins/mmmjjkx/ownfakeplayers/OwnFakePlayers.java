@@ -50,6 +50,11 @@ public final class OwnFakePlayers extends PolymerPlugin {
         return "1.3.5";
     }
 
+    @Override
+    public int requireApiVersion() {
+        return 2;
+    }
+
     public static void setupValues(ServerPlayer player) {
         player.setInvulnerable(settings.getBoolean("player.invulnerable"));
         player.bukkitPickUpLoot = settings.getBoolean("player.canPickupItems");

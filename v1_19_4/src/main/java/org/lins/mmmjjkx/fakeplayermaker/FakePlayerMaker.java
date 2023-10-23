@@ -5,7 +5,6 @@ import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
 import io.github.linsminecraftstudio.polymer.command.PolymerCommand;
 import io.github.linsminecraftstudio.polymer.objects.plugin.PolymerPlugin;
 import io.github.linsminecraftstudio.polymer.objects.plugin.SimpleSettingsManager;
-import io.github.linsminecraftstudio.polymer.objects.plugin.message.PolymerMessageHandler;
 import io.github.linsminecraftstudio.polymer.utils.OtherUtils;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Bukkit;
@@ -26,7 +25,6 @@ import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftU
 import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getCraftClass;
 
 public class FakePlayerMaker extends PolymerPlugin implements Listener {
-    public static PolymerMessageHandler messageHandler;
     public static FakePlayerSaver fakePlayerSaver;
     public static FakePlayerMaker INSTANCE;
     public static SimpleSettingsManager settings;
@@ -51,8 +49,6 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
         suggestSpark();
         INSTANCE = this;
         settings = new SimpleSettingsManager(this);
-        completeLangFile("en-us", "zh-cn");
-        messageHandler = new PolymerMessageHandler(this);
         fakePlayerSaver = new FakePlayerSaver();
         stressTestSaver = new StressTestSaver();
 
@@ -98,11 +94,16 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
         return "1.4";
     }
 
+    @Override
+    public int requireApiVersion() {
+        return 2;
+    }
+
     public static boolean isProtocolLibLoaded() {
         return Bukkit.getPluginManager().isPluginEnabled("ProtocolLib");
     }
 
-    public static void reload() {
+    public void reload() {
         INSTANCE.reloadConfig();
         settings = new SimpleSettingsManager(FakePlayerMaker.INSTANCE);
         fakePlayerSaver.reload();

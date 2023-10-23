@@ -2,6 +2,8 @@ package io.github.linsminecraftstudio.fakeplayermaker.api.utils;
 
 import io.github.linsminecraftstudio.fakeplayermaker.api.objects.CraftBukkitClassNotFoundError;
 import io.github.linsminecraftstudio.fakeplayermaker.api.objects.FPMPacketListener;
+import io.github.linsminecraftstudio.polymer.objects.plugin.PolymerPlugin;
+import io.github.linsminecraftstudio.polymer.schedule.BFScheduler;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.modifier.Visibility;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
@@ -19,22 +21,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class MinecraftUtils {
     private static final Logger LOGGER = Logger.getLogger("FakePlayerMaker");
-    private static boolean modernSchedulers = false;
-
-    static {
-        try {
-            Class.forName("io.papermc.paper.threadedregions.scheduler.GlobalRegionScheduler");
-            Class.forName("io.papermc.paper.threadedregions.scheduler.AsyncScheduler");
-            modernSchedulers = true;
-        } catch (ClassNotFoundException ignored) {
-        }
-    }
 
     public static ServerGamePacketListenerImpl getGamePacketListener(Connection connection, ServerPlayer player) {
         if (!Bukkit.getMinecraftVersion().equals("1.20.2")) {
@@ -123,35 +114,21 @@ public class MinecraftUtils {
         return null;
     }
 
-    public static void schedule(JavaPlugin plugin, Runnable runnable, long delay, boolean async) {
+    public static void schedule(PolymerPlugin plugin, Runnable runnable, long delay, boolean async) {
+        BFScheduler scheduler = new BFScheduler(plugin);
         if (async) {
-            if (modernSchedulers) {
-                Bukkit.getAsyncScheduler().runDelayed(plugin, t -> runnable.run(), delay, TimeUnit.MILLISECONDS);
-            } else {
-                Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, runnable, delay * 20L);
-            }
+            scheduler.scheduleDelayAsync(runnable, delay, delay / 20L);
         } else {
-            if (modernSchedulers) {
-                Bukkit.getGlobalRegionScheduler().runDelayed(plugin, t -> runnable.run(), delay * 20L);
-            } else {
-                Bukkit.getScheduler().runTaskLater(plugin, runnable, delay * 20L);
-            }
+            scheduler.scheduleDelay(runnable, delay);
         }
     }
 
-    public static void scheduleNoDelay(JavaPlugin plugin, Runnable runnable, boolean async) {
+    public static void scheduleNoDelay(PolymerPlugin plugin, Runnable runnable, boolean async) {
+        BFScheduler scheduler = new BFScheduler(plugin);
         if (async) {
-            if (modernSchedulers) {
-                Bukkit.getAsyncScheduler().runNow(plugin, t -> runnable.run());
-            } else {
-                Bukkit.getScheduler().runTaskAsynchronously(plugin, runnable);
-            }
+            scheduler.scheduleAsync(runnable);
         } else {
-            if (modernSchedulers) {
-                Bukkit.getGlobalRegionScheduler().run(plugin, t -> runnable.run());
-            } else {
-                Bukkit.getScheduler().runTask(plugin, runnable);
-            }
+            scheduler.schedule(runnable);
         }
     }
 }

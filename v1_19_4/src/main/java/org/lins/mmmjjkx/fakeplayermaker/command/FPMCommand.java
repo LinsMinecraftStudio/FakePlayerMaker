@@ -6,8 +6,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTester;
 import io.github.linsminecraftstudio.fakeplayermaker.api.objects.WorldNotFoundException;
-import io.github.linsminecraftstudio.polymer.Polymer;
 import io.github.linsminecraftstudio.polymer.command.PolymerCommand;
+import io.github.linsminecraftstudio.polymer.command.presets.SubReloadCommand;
 import io.github.linsminecraftstudio.polymer.objects.PolymerConstants;
 import io.github.linsminecraftstudio.polymer.utils.ObjectConverter;
 import net.minecraft.core.Direction;
@@ -36,15 +36,12 @@ import static org.lins.mmmjjkx.fakeplayermaker.hook.WEHook.handleAreaCreate;
 public class FPMCommand extends PolymerCommand {
     public FPMCommand(@NotNull String name) {
         super(name, new ArrayList<>(List.of("fpm")));
+        registerSubCommand(new SubReloadCommand(FakePlayerMaker.INSTANCE));
     }
 
     @Override
     public String requirePlugin() {
         return null;
-    }
-
-    protected void sendMessage(CommandSender sender, String message, Object... args) {
-        FakePlayerMaker.messageHandler.sendMessage(sender, message, args);
     }
 
     @Override
@@ -101,15 +98,11 @@ public class FPMCommand extends PolymerCommand {
                             }
                         }
                     }
-                    case "reload" -> {
-                        FakePlayerMaker.reload();
-                        sendMessage(commandSender, "ReloadSuccess");
-                    }
                     case "removeAll" -> {
                         NMSFakePlayerMaker.removeAllFakePlayers(commandSender);
                         sendMessage(commandSender, "RemoveAllSuccess");
                     }
-                    default -> Polymer.messageHandler.sendMessage(commandSender, "Command.ArgError");
+                    default -> sendPolymerMessage(commandSender, "Command.ArgError");
                 }
             } else if (strings.length == 2) {
                 String name = strings[1];
@@ -191,7 +184,7 @@ public class FPMCommand extends PolymerCommand {
                         player.setShiftKeyDown(true);
                         player.setPose(player.isShiftKeyDown() ? Pose.CROUCHING : Pose.STANDING);
                     }
-                    default -> Polymer.messageHandler.sendMessage(commandSender, "Command.ArgError");
+                    default -> sendPolymerMessage(commandSender, "Command.ArgError");
                 }
             } else if (strings.length == 3) {
                 //function commands here
@@ -218,8 +211,6 @@ public class FPMCommand extends PolymerCommand {
                         return;
                     }
                     case "look" -> {
-                        commandSender.sendMessage("You can't use the command till a bug fixed");
-                        /*
                         ServerPlayer player = NMSFakePlayerMaker.fakePlayerMap.get(name);
                         if (player == null) {
                             sendMessage(commandSender, "PlayerNotFound");
@@ -233,9 +224,6 @@ public class FPMCommand extends PolymerCommand {
                             sendMessage(commandSender, "InvalidDirection");
                             return;
                         }
-
-                         */
-                        return;
                     }
                     case "jump" -> {
                         ServerPlayer player = NMSFakePlayerMaker.fakePlayerMap.get(name);
@@ -246,7 +234,7 @@ public class FPMCommand extends PolymerCommand {
                         try {
                             int times = Integer.parseInt(strings[2]);
                             if (times <= 0) {
-                                Polymer.messageHandler.sendMessage(commandSender, "Value.TooLow", 3);
+                                sendPolymerMessage(commandSender, "Value.TooLow", 3);
                                 return;
                             }
                             for (int i = 0; i < times; i++) {
@@ -293,7 +281,7 @@ public class FPMCommand extends PolymerCommand {
                     sendMessage(commandSender, "CreateSuccess");
                     return;
                 }
-                Polymer.messageHandler.sendMessage(commandSender, "Command.ArgError");
+                sendPolymerMessage(commandSender, "Command.ArgError");
             } else if (strings.length == 4 && strings[0].equals("stress")) {
                 if (hasCustomPermission(commandSender, "command.stress")) {
                     switch (strings[1]) {
@@ -336,7 +324,7 @@ public class FPMCommand extends PolymerCommand {
                                 }
                                 case "create" -> handleAreaCreate(commandSender, strings);
                                 case "players" -> listPlayers(commandSender, tester);
-                                default -> Polymer.messageHandler.sendMessage(commandSender, "Command.ArgError");
+                                default -> sendPolymerMessage(commandSender, "Command.ArgError");
                             }
                         }
                         case "randomworld" -> {
@@ -371,10 +359,10 @@ public class FPMCommand extends PolymerCommand {
                                     sendMessage(commandSender, "Stress.TesterCreated");
                                 }
                                 case "players" -> listPlayers(commandSender, tester);
-                                default -> Polymer.messageHandler.sendMessage(commandSender, "Command.ArgError");
+                                default -> sendPolymerMessage(commandSender, "Command.ArgError");
                             }
                         }
-                        default -> Polymer.messageHandler.sendMessage(commandSender, "Command.ArgError");
+                        default -> sendPolymerMessage(commandSender, "Command.ArgError");
                     }
                 }
             } else if (strings.length == 5) {
@@ -389,7 +377,7 @@ public class FPMCommand extends PolymerCommand {
                                             handleAreaCreate(commandSender, strings, amount);
                                         }
                                     }
-                                    Polymer.messageHandler.sendMessage(commandSender, "Command.ArgError");
+                                    sendPolymerMessage(commandSender, "Command.ArgError");
                                 }
                                 case "randomworld" -> {
                                     if (strings[2].equals("create")) {
@@ -399,9 +387,9 @@ public class FPMCommand extends PolymerCommand {
                                             return;
                                         }
                                     }
-                                    Polymer.messageHandler.sendMessage(commandSender, "Command.ArgError");
+                                    sendPolymerMessage(commandSender, "Command.ArgError");
                                 }
-                                default -> Polymer.messageHandler.sendMessage(commandSender, "Command.ArgError");
+                                default -> sendPolymerMessage(commandSender, "Command.ArgError");
                             }
                         }
                     }
@@ -417,7 +405,7 @@ public class FPMCommand extends PolymerCommand {
                             err = 5;
                             z = Double.parseDouble(strings[4]);
                         } catch (NumberFormatException e) {
-                            Polymer.messageHandler.sendMessage(commandSender, "Value.NotDouble", err);
+                            sendPolymerMessage(commandSender, "Value.NotDouble", err);
                             return;
                         }
                         if (x != PolymerConstants.ERROR_CODE && y != PolymerConstants.ERROR_CODE && z != PolymerConstants.ERROR_CODE) {
@@ -431,7 +419,7 @@ public class FPMCommand extends PolymerCommand {
                     }
                 }
             } else {
-                Polymer.messageHandler.sendMessage(commandSender, "Command.ArgError");
+                sendPolymerMessage(commandSender, "Command.ArgError");
             }
         }
     }

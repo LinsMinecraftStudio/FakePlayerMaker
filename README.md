@@ -9,7 +9,7 @@ A plugin for create fake players, make a stress tester, etc.
 + main — the main plugin
 + api — the api for other plugins (plugin includes it)
 + OwnFakerPlayers — an addon plugin for players to have their own fake players(**WIP**)
-+ v1_19_4 — a special plugin for Minecraft 1.19.4(**WIP**)
++ v1_19_4 — a special plugin for Minecraft 1.19.4
 
 ## Downloads
 

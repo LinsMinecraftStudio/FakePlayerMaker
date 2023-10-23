@@ -1,5 +1,4 @@
 SpecifyLocation: "&4请描述一个位置！位置格式：x,y,z"
-ReloadSuccess: "&a已成功重载插件！"
 RemoveAllSuccess: "&a已移除所有假人！"
 TeleportSuccess: "&a已传送至一个假人。"
 CreateSuccess: "&a已创建一个新假人。"

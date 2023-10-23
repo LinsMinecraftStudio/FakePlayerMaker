@@ -57,14 +57,14 @@ public class WEHook {
     }
 
     private static void sendMessage(CommandSender sender, String key, Object... args) {
-        FakePlayerMaker.messageHandler.sendMessage(sender, key, args);
+        FakePlayerMaker.INSTANCE.getMessageHandler().sendMessage(sender, key, args);
     }
 
     private static Player toPlayer(CommandSender cs){
         if (cs instanceof Player p){
             return p;
         }else {
-            Polymer.messageHandler.sendMessage(cs,"Command.RunAsConsole");
+            Polymer.INSTANCE.getMessageHandler().sendMessage(cs, "Command.RunAsConsole");
             return null;
         }
     }

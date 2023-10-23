@@ -92,7 +92,7 @@
 			<dependency>
 				<groupId>io.github.linsminecraftstudio</groupId>
 				<artifactId>Polymer</artifactId>
-				<version>1.4-SNAPSHOT</version>
+				<version>1.4.0-SNAPSHOT</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
@@ -111,12 +111,6 @@
 				<groupId>ca.bkaw</groupId>
 				<artifactId>paper-nms</artifactId>
 				<version>${mcVersion}-SNAPSHOT</version>
-				<scope>provided</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.lins.mmmjjkx</groupId>
-				<artifactId>FakePlayerMaker</artifactId>
-				<version>${mainVersion}</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>

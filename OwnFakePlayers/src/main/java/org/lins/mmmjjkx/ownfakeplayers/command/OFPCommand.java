@@ -20,8 +20,15 @@ public class OFPCommand extends PolymerCommand {
     }
 
     @Override
-    protected void sendMessage(CommandSender sender, String message, Object... args) {
-        OwnFakePlayers.messageHandler.sendMessage(sender, message, args);
+    public void execute(CommandSender sender, String alias) {
+        if (argSize() == 1) {
+            if (getArg(0).equals("create")) {
+                Player player = toPlayer();
+                if (player == null) {
+                    return;
+                }
+            }
+        }
     }
 
     @Override
@@ -41,19 +48,5 @@ public class OFPCommand extends PolymerCommand {
             };
         }
         return new ArrayList<>();
-    }
-
-    @Override
-    public boolean execute(@NotNull CommandSender commandSender, @NotNull String s, @NotNull String[] strings) {
-        if (strings.length == 1) {
-            if (strings[0].equals("create")) {
-                Player player = toPlayer(commandSender);
-                if (player == null) {
-                    return false;
-                }
-
-            }
-        }
-        return false;
     }
 }

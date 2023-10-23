@@ -1,5 +1,4 @@
 SpecifyLocation: "&4Please specify a location!"
-ReloadSuccess: "&aReloaded plugin successfully."
 RemoveAllSuccess: "&aRemoved all fake players."
 TeleportSuccess: "&aTeleported to a fake player."
 CreateSuccess: "&aCreated a new fake player."
