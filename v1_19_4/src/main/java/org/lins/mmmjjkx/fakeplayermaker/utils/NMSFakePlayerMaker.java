@@ -9,6 +9,7 @@ import io.github.linsminecraftstudio.fakeplayermaker.api.events.FakePlayerCreate
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.FakePlayerRemoveEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.FakePlayerController;
+import io.github.linsminecraftstudio.fakeplayermaker.api.objects.EmptyConnection;
 import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.MinecraftServer;
@@ -24,7 +25,6 @@ import org.bukkit.event.player.PlayerLoginEvent;
 import org.jetbrains.annotations.Nullable;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.hook.protocol.FPMTempPlayerFactory;
-import org.lins.mmmjjkx.fakeplayermaker.objects.EmptyConnection;
 import org.lins.mmmjjkx.fakeplayermaker.objects.FPMPacketListener;
 
 import java.lang.reflect.InvocationTargetException;
@@ -260,6 +260,11 @@ public class NMSFakePlayerMaker {
             @Override
             public @Nullable Player getFakePlayer(String name) {
                 return Implementations.bukkitEntity(fakePlayerMap.get(name));
+            }
+
+            @Override
+            public void removeFakePlayer(String name) {
+                NMSFakePlayerMaker.removeFakePlayer(name, null);
             }
         };
     }

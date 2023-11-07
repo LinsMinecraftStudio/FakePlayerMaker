@@ -30,15 +30,14 @@ import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftU
 import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getHandle;
 
 public class FakePlayerSaver extends SingleFileStorage {
-    private YamlConfiguration configuration;
+    private final YamlConfiguration configuration;
     public FakePlayerSaver(){
         super(FakePlayerMaker.INSTANCE, new File(FakePlayerMaker.INSTANCE.getDataFolder(), "fakePlayers.yml"));
         configuration = getConfiguration();
     }
 
-    @Override
     public void reload() {
-        configuration = getConfiguration();
+        super.reload(configuration);
         NMSFakePlayerMaker.reloadMap(getFakePlayers());
     }
 

@@ -1,5 +1,6 @@
 package io.github.linsminecraftstudio.fakeplayermaker.api.implementation;
 
+import com.google.common.base.Preconditions;
 import com.mojang.authlib.GameProfile;
 import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
 import net.minecraft.network.Connection;
@@ -13,7 +14,6 @@ import net.minecraft.server.players.PlayerList;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -27,6 +27,7 @@ import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftU
  */
 public abstract class Implementations {
     private static final Map<String,Implementations> map = new HashMap<>();
+    private static final Class<? extends PlayerList> playerListClass = PlayerList.class;
 
     public static void setup() {
         new v1_20_1().register();
@@ -45,9 +46,8 @@ public abstract class Implementations {
         return map.get(Bukkit.getMinecraftVersion());
     }
 
-    @Nullable
     public static Player bukkitEntity(ServerPlayer player){
-        if (player == null) return null;
+        Preconditions.checkNotNull(player);
 
         try {
             return (Player) getCraftClass("entity.CraftEntity")
@@ -71,7 +71,6 @@ public abstract class Implementations {
     public abstract void placePlayer(Connection connection, ServerPlayer player);
     public abstract ServerPlayer create(@NotNull ServerLevel level, @NotNull GameProfile profile);
 
-
     private static class v1_20_1 extends Implementations {
         @Override
         public @NotNull GameProfile profile(ServerPlayer player) {
@@ -92,7 +91,6 @@ public abstract class Implementations {
             } catch (IllegalAccessException | NoSuchFieldException e) {
                 throw new RuntimeException(e);
             }
-
              */
         }
 
@@ -115,7 +113,7 @@ public abstract class Implementations {
         public void placePlayer(Connection connection, ServerPlayer player) {
             try {
                 PlayerList list = (PlayerList) MinecraftServer.class.getMethod("ac").invoke(MinecraftUtils.getNMSServer());
-                list.getClass().getMethod("a", Connection.class, ServerPlayer.class).invoke(list, connection, player);
+                playerListClass.getMethod("a", Connection.class, ServerPlayer.class).invoke(list, connection, player);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -135,7 +133,8 @@ public abstract class Implementations {
 
         @Override
         public void placePlayer(Connection connection, ServerPlayer player) {
-            MinecraftUtils.getNMSServer().getPlayerList().placeNewPlayer(connection, player, CommonListenerCookie.createInitial(this.profile(player)));
+            PlayerList list = MinecraftUtils.getNMSServer().getPlayerList();
+            list.placeNewPlayer(connection, player, CommonListenerCookie.createInitial(this.profile(player)));
         }
 
         @Override

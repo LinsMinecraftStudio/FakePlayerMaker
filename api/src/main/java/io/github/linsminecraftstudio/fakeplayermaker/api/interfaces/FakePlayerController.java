@@ -15,4 +15,6 @@ public interface FakePlayerController {
     ServerPlayer spawnFakePlayer(@Nullable String name, Location location);
 
     @Nullable Player getFakePlayer(String name);
+
+    void removeFakePlayer(String name);
 }

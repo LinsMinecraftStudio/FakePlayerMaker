@@ -60,8 +60,8 @@ public class ActionUtils {
 
         Player bukkit = Implementations.bukkitEntity(player);
 
-        MinecraftUtils.getNMSServer().getPlayerList().broadcastAll(new ClientboundRotateHeadPacket(player, (byte) (player.getBukkitYaw() % 360 * 256 / 360)));
-        MinecraftUtils.getNMSServer().getPlayerList().broadcastAll(new ClientboundMoveEntityPacket.Rot(getID(player), (byte) (player.getBukkitYaw() % 360 * 256 / 360), (byte) (bukkit.getPitch() % 360 * 256 / 360), bukkit.isOnGround()));
+        MinecraftUtils.getNMSServer().getPlayerList().broadcastAll(new ClientboundRotateHeadPacket(player, (byte) (bukkit.getYaw() % 360 * 256 / 360)));
+        MinecraftUtils.getNMSServer().getPlayerList().broadcastAll(new ClientboundMoveEntityPacket.Rot(getID(player), (byte) (bukkit.getYaw() % 360 * 256 / 360), (byte) (bukkit.getPitch() % 360 * 256 / 360), bukkit.isOnGround()));
     }
 
     public static void mountNearest(ServerPlayer player) {

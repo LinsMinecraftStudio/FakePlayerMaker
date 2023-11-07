@@ -9,6 +9,7 @@ import io.github.linsminecraftstudio.fakeplayermaker.api.events.FakePlayerCreate
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.FakePlayerRemoveEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.FakePlayerController;
+import io.github.linsminecraftstudio.fakeplayermaker.api.objects.EmptyConnection;
 import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.MinecraftServer;
@@ -25,7 +26,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.hook.protocol.FPMTempPlayerFactory;
-import org.lins.mmmjjkx.fakeplayermaker.objects.EmptyConnection;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
@@ -115,11 +115,9 @@ public class NMSFakePlayerMaker{
                 Player temp = FPMTempPlayerFactory.createPlayer(Bukkit.getServer(), name);
                 MinimalInjector injector = TemporaryPlayerFactory.getInjectorFromPlayer(temp);
                 ServerPlayer handle = (ServerPlayer) getHandle(MinecraftUtils.getCraftClass("entity.CraftPlayer"), injector.getPlayer());
-                fakePlayerMap.put(name, handle);
 
-                if (handle != null) {
-                    saver.syncPlayerInfo(handle);
-                }
+                fakePlayerMap.put(name, handle);
+                saver.syncPlayerInfo(handle);
 
                 new FakePlayerCreateEvent(temp, sender).callEvent();
 
@@ -150,7 +148,6 @@ public class NMSFakePlayerMaker{
         ServerLevel level = (ServerLevel) Objects.requireNonNull(getHandle(MinecraftUtils.getCraftClass("CraftWorld"), realLoc.getWorld()));
         player.setLevel(level);
 
-        //TODO: Fix force-added player error
         Implementations.get().placePlayer(connection, player);
         simulateLogin(player);
 
@@ -163,8 +160,6 @@ public class NMSFakePlayerMaker{
         if (runCMD) {
             runCMDs(player, connection, listener);
         }
-
-        saver.syncPlayerInfo(player);
     }
 
     public static void joinFakePlayer(String name){
@@ -259,6 +254,11 @@ public class NMSFakePlayerMaker{
             @Override
             public @Nullable Player getFakePlayer(String name) {
                 return Implementations.bukkitEntity(fakePlayerMap.get(name));
+            }
+
+            @Override
+            public void removeFakePlayer(String name) {
+                NMSFakePlayerMaker.removeFakePlayer(name, null);
             }
         };
     }

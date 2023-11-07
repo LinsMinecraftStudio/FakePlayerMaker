@@ -1,13 +1,10 @@
 package org.lins.mmmjjkx.fakeplayermaker.command;
 
-import com.destroystokyo.paper.profile.PlayerProfile;
-import com.destroystokyo.paper.profile.ProfileProperty;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTester;
 import io.github.linsminecraftstudio.fakeplayermaker.api.objects.WorldNotFoundException;
+import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
 import io.github.linsminecraftstudio.polymer.command.PolymerCommand;
-import io.github.linsminecraftstudio.polymer.command.presets.SubReloadCommand;
+import io.github.linsminecraftstudio.polymer.command.presets.sub.SubReloadCommand;
 import io.github.linsminecraftstudio.polymer.objects.PolymerConstants;
 import io.github.linsminecraftstudio.polymer.utils.ObjectConverter;
 import net.minecraft.core.Direction;
@@ -26,8 +23,6 @@ import org.lins.mmmjjkx.fakeplayermaker.utils.ActionUtils;
 import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -194,7 +189,13 @@ public class FPMCommand extends PolymerCommand {
                         String skin = strings[2];
                         ServerPlayer player = NMSFakePlayerMaker.fakePlayerMap.get(name);
                         if (player != null) {
-                            skinChange(player, commandSender, skin);
+                            try {
+                                MinecraftUtils.skinChange(player, skin);
+                                sendMessage("SkinChanged");
+                            } catch (IOException e) {
+                                sendMessage("SkinChangeFailed");
+                            }
+                            FakePlayerMaker.fakePlayerSaver.syncPlayerInfo(player);
                             return;
                         }
                         sendMessage(commandSender, "PlayerNotFound");
@@ -396,18 +397,9 @@ public class FPMCommand extends PolymerCommand {
                     case "lookat" -> {
                         double x, y, z;
                         String name = strings[1];
-                        int err = 0;
-                        try {
-                            err = 3;
-                            x = Double.parseDouble(strings[2]);
-                            err = 4;
-                            y = Double.parseDouble(strings[3]);
-                            err = 5;
-                            z = Double.parseDouble(strings[4]);
-                        } catch (NumberFormatException e) {
-                            sendPolymerMessage(commandSender, "Value.NotDouble", err);
-                            return;
-                        }
+                        x = getArgAsDoubleOrInt(2, false, true);
+                        y = getArgAsDoubleOrInt(3, false, true);
+                        z = getArgAsDoubleOrInt(4, false, true);
                         if (x != PolymerConstants.ERROR_CODE && y != PolymerConstants.ERROR_CODE && z != PolymerConstants.ERROR_CODE) {
                             ServerPlayer player = NMSFakePlayerMaker.fakePlayerMap.get(name);
                             if (player != null) {
@@ -431,30 +423,5 @@ public class FPMCommand extends PolymerCommand {
         }
         Set<String> names = tester.get().getTempPlayers().keySet();
         commandSender.sendMessage(names.toString());
-    }
-
-    private void skinChange(ServerPlayer player, CommandSender operator, String targetName) {
-        Player bukkit = player.getBukkitEntity();
-        PlayerProfile playerProfile = bukkit.getPlayerProfile();
-        try {
-            URL url = new URL("https://api.mojang.com/users/profiles/minecraft/" + targetName);
-            InputStreamReader reader = new InputStreamReader(url.openStream());
-            String uuid = JsonParser.parseReader(reader).getAsJsonObject().get("id").getAsString();
-            URL url1 = new URL("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid + "?unsigned=false");
-            InputStreamReader reader1 = new InputStreamReader(url1.openStream());
-            JsonObject properties = JsonParser.parseReader(reader1).getAsJsonObject().get("properties").getAsJsonArray().get(0).getAsJsonObject();
-
-            String value = properties.get("value").getAsString();
-            String signature = properties.get("signature").getAsString();
-
-            playerProfile.setProperty(new ProfileProperty("textures", value, signature));
-            bukkit.setPlayerProfile(playerProfile);
-
-            FakePlayerMaker.fakePlayerSaver.syncPlayerInfo(player);
-
-            sendMessage(operator, "SkinChanged");
-        } catch (IllegalStateException | IOException | NullPointerException exception) {
-            sendMessage(operator, "SkinChangeFailed");
-        }
     }
 }

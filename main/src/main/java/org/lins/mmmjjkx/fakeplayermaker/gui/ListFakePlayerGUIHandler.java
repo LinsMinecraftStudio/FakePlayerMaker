@@ -1,0 +1,58 @@
+package org.lins.mmmjjkx.fakeplayermaker.gui;
+
+import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
+import io.github.linsminecraftstudio.polymer.gui.MultiPageInventoryHandler;
+import io.github.linsminecraftstudio.polymer.itemstack.ItemStackBuilder;
+import io.github.linsminecraftstudio.polymer.objects.array.ObjectArray;
+import io.github.linsminecraftstudio.polymer.objects.plugin.PolymerPlugin;
+import net.kyori.adventure.text.Component;
+import net.minecraft.server.level.ServerPlayer;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+
+public class ListFakePlayerGUIHandler extends MultiPageInventoryHandler<ServerPlayer> {
+    private final PolymerPlugin fpm;
+
+    public ListFakePlayerGUIHandler(PolymerPlugin plugin, List<ServerPlayer> data) {
+        super(data);
+        this.fpm = plugin;
+    }
+
+    @Override
+    public Component title(Player p) {
+        return fpm.getMessageHandler().getColored(p, "GUI.Title");
+    }
+
+    @Override
+    public Component search(Player p) {
+        return fpm.getMessageHandler().getColored(p, "GUI.SearchInput");
+    }
+
+    @Override
+    public void buttonHandle(Player p, int slot, ServerPlayer data) {
+        OperateFakePlayerGUI gui = new OperateFakePlayerGUI(data);
+        gui.open(p);
+    }
+
+    @Override
+    public ItemStack getItemStackButton(Player p, int slot, ServerPlayer data) {
+        ItemStackBuilder builder = new ItemStackBuilder(Material.PLAYER_HEAD, 1);
+        Player bukkit = Implementations.bukkitEntity(data);
+        Date d = new Date(bukkit.getFirstPlayed());
+        builder.name(Component.text(Implementations.getName(data)))
+                .head(bukkit.getPlayerProfile().getTextures().getSkin().toString())
+                .lore(fpm.getMessageHandler().getColoredMessages(p, "GUI.Info", new ObjectArray(bukkit.getUniqueId().toString())
+                        , new ObjectArray(new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(d))));
+        return builder.build();
+    }
+
+    @Override
+    public String toSearchableText(ServerPlayer data) {
+        return Implementations.getName(data);
+    }
+}

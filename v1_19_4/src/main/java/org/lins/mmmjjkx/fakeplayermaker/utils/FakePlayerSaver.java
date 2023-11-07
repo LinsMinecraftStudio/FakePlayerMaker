@@ -31,7 +31,7 @@ import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftU
 import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getCraftClass;
 
 public class FakePlayerSaver extends SingleFileStorage {
-    private YamlConfiguration configuration;
+    private final YamlConfiguration configuration;
     private final File cfgFile = new File(FakePlayerMaker.INSTANCE.getDataFolder(), "fakePlayers.yml");
 
     public FakePlayerSaver() {
@@ -39,9 +39,8 @@ public class FakePlayerSaver extends SingleFileStorage {
         configuration = getConfiguration();
     }
 
-    @Override
     public void reload() {
-        configuration = getConfiguration();
+        super.reload(configuration);
         NMSFakePlayerMaker.reloadMap(getFakePlayers());
     }
 

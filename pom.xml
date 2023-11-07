@@ -15,7 +15,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<mcVersion>1.20.2</mcVersion>
 		<mainVersion>1.2.4</mainVersion>
-		<apiVersion>1.2.0.1-SNAPSHOT</apiVersion>
+		<apiVersion>1.2.0.3-SNAPSHOT</apiVersion>
 	</properties>
 
 	<modules>

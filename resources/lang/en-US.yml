@@ -17,3 +17,18 @@ Stress:
   TesterCreated: "&aThe stress tester has been created successfully, please go to stresses.yml to modify the relevant settings!"
   SelectRegion: "&4You must select a region!"
   AreaNotEnabled: "&4You should enable areaStressTesters in config.yml!"
+GUI:
+  Title: "&b&lFake Players"
+  SearchInput: "&a&lInput the name of the fake player to search for:"
+  SkinInput: "&a&lInput the name of the skin:"
+  EachPlayerTitle: "&6&lOperate %s"
+  Info:
+    - "&a&lUUID: %s"
+    - "&b&lCreation time: %s"
+  Button:
+    TP: "&dTeleport to him"
+    TPHere: "&dTeleport here"
+    Remove: "&4&lRemove"
+    Skin: "&dChange the skin"
+    Inventory: "&dOpen inventory"
+    Sneak: "&b&lSwitch sneaking"

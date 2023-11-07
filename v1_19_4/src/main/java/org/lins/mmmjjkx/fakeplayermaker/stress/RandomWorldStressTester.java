@@ -6,6 +6,7 @@ import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStop
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTester;
 import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.network.protocol.game.ClientboundAddPlayerPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -17,18 +18,14 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
-import org.lins.mmmjjkx.fakeplayermaker.objects.EmptyConnection;
-import org.lins.mmmjjkx.fakeplayermaker.objects.FPMPacketListener;
 import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 
 import java.util.*;
 
 import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getCraftClass;
-import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.simulateLogin;
 
 public class RandomWorldStressTester implements IStressTester {
     private final Map<String, ServerPlayer> tempPlayers = new HashMap<>();
-    private final MinecraftServer server = MinecraftServer.getServer();
     private int amount;
     private long lastStartTimestamp;
     private final boolean isAmountPerWorld;
@@ -91,15 +88,9 @@ public class RandomWorldStressTester implements IStressTester {
 
             ServerPlayer player = new ServerPlayer(MinecraftServer.getServer(), level, new GameProfile(uuid, finalName));
 
-            var connection = new EmptyConnection();
-            var listener = new FPMPacketListener(connection, player);
+            ClientboundAddPlayerPacket playerPacket = new ClientboundAddPlayerPacket(player);
+            MinecraftServer.getServer().getPlayerList().broadcastAll(playerPacket);
 
-            connection.setListener(listener);
-
-            MinecraftServer.getServer().getPlayerList().placeNewPlayer(connection, player);
-            simulateLogin(player);
-
-            player.connection = listener;
             player.teleportTo(level, location.getX(), location.getY(), location.getZ(), 0, 0);
 
             tempPlayers.put(finalName, player);
@@ -109,7 +100,7 @@ public class RandomWorldStressTester implements IStressTester {
     @Override
     public void stop() {
         new StressTesterStopEvent(this).callEvent();
-        tempPlayers.values().forEach(server.getPlayerList()::remove);
+        tempPlayers.values().forEach(ServerPlayer::disconnect);
         tempPlayers.clear();
         HandlerList.unregisterAll(listener);
     }

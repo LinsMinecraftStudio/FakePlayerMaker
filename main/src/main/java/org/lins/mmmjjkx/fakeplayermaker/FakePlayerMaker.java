@@ -11,6 +11,7 @@ import io.github.linsminecraftstudio.polymer.utils.OtherUtils;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -88,7 +89,7 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
 
     @Override
     public List<PolymerCommand> registerCommands() {
-        return List.of(new FPMCommand("fakeplayermaker"));
+        return List.of(new FPMCommand());
     }
 
     @Override
@@ -131,10 +132,12 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
-        ServerPlayer player = (ServerPlayer) getHandle(getCraftClass("entity.CraftPlayer"), e.getPlayer());
-        if (player != null && NMSFakePlayerMaker.fakePlayerMap.containsKey(Implementations.getName(player))) {
-            if (e.getPlayer().isDead()) {
-                e.getPlayer().spigot().respawn();
+        Player player = e.getPlayer();
+        getLogger().info(player.getVelocity().toString());
+        ServerPlayer nms = (ServerPlayer) getHandle(getCraftClass("entity.CraftPlayer"), e.getPlayer());
+        if (nms != null && NMSFakePlayerMaker.fakePlayerMap.containsKey(Implementations.getName(nms))) {
+            if (player.isDead()) {
+                player.spigot().respawn();
             }
         }
     }

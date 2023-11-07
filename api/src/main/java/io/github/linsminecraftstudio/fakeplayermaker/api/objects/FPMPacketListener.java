@@ -3,14 +3,11 @@ package io.github.linsminecraftstudio.fakeplayermaker.api.objects;
 import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
 import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
 import net.minecraft.network.Connection;
-import net.minecraft.network.PacketSendListener;
-import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.entity.RelativeMovement;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Set;
 
@@ -20,14 +17,6 @@ import java.util.Set;
 public class FPMPacketListener extends ServerGamePacketListenerImpl {
     public FPMPacketListener(Connection connection, ServerPlayer player) {
         super(MinecraftUtils.getNMSServer(), connection, player, CommonListenerCookie.createInitial(Implementations.get().profile(player)));
-    }
-
-    @Override
-    public void send(Packet<?> packet) {
-    }
-
-    @Override
-    public void send(Packet<?> packet, @Nullable PacketSendListener callbacks) {
     }
 
     @Override

@@ -4,6 +4,7 @@ import com.comphenix.protocol.events.NetworkMarker;
 import com.comphenix.protocol.injector.temporary.MinimalInjector;
 import com.mojang.authlib.GameProfile;
 import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
+import io.github.linsminecraftstudio.fakeplayermaker.api.objects.EmptyConnection;
 import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.protocol.Packet;
@@ -11,7 +12,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.entity.Player;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
-import org.lins.mmmjjkx.fakeplayermaker.objects.EmptyConnection;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;

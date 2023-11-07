@@ -1,5 +1,10 @@
 package io.github.linsminecraftstudio.fakeplayermaker.api.utils;
 
+import com.destroystokyo.paper.profile.PlayerProfile;
+import com.destroystokyo.paper.profile.ProfileProperty;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
 import io.github.linsminecraftstudio.fakeplayermaker.api.objects.CraftBukkitClassNotFoundError;
 import io.github.linsminecraftstudio.fakeplayermaker.api.objects.FPMPacketListener;
 import io.github.linsminecraftstudio.polymer.objects.plugin.PolymerPlugin;
@@ -16,16 +21,21 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 public class MinecraftUtils {
-    private static final Logger LOGGER = Logger.getLogger("FakePlayerMaker");
+    public static final Logger LOGGER = LogManager.getLogManager().getLogger("FakePlayerMaker");
 
     public static ServerGamePacketListenerImpl getGamePacketListener(Connection connection, ServerPlayer player) {
         if (!Bukkit.getMinecraftVersion().equals("1.20.2")) {
@@ -36,7 +46,7 @@ public class MinecraftUtils {
 
                 Constructor<? extends ServerGamePacketListenerImpl> constructor = new ByteBuddy()
                         .subclass(ServerGamePacketListenerImpl.class)
-                        .name(MinecraftUtils.class.getPackage().getName() + ".FPMGamePacketListenerBEFORE1202V")
+                        .name(MinecraftUtils.class.getPackage().getName() + ".FPMGamePacketListenerV1201")
 
                         .defineField("pl", ServerPlayer.class, Visibility.PRIVATE)
                         .constructor(ElementMatchers.any())
@@ -130,5 +140,22 @@ public class MinecraftUtils {
         } else {
             scheduler.schedule(runnable);
         }
+    }
+
+    public static void skinChange(ServerPlayer player, String targetName) throws IOException {
+        Player bukkit = Implementations.bukkitEntity(player);
+        PlayerProfile playerProfile = bukkit.getPlayerProfile();
+        URL url = new URL("https://api.mojang.com/users/profiles/minecraft/" + targetName);
+        InputStreamReader reader = new InputStreamReader(url.openStream());
+        String uuid = JsonParser.parseReader(reader).getAsJsonObject().get("id").getAsString();
+        URL url1 = new URL("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid + "?unsigned=false");
+        InputStreamReader reader1 = new InputStreamReader(url1.openStream());
+        JsonObject properties = JsonParser.parseReader(reader1).getAsJsonObject().get("properties").getAsJsonArray().get(0).getAsJsonObject();
+
+        String value = properties.get("value").getAsString();
+        String signature = properties.get("signature").getAsString();
+
+        playerProfile.setProperty(new ProfileProperty("textures", value, signature));
+        bukkit.setPlayerProfile(playerProfile);
     }
 }

@@ -8,6 +8,7 @@ import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStar
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStopEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTester;
+import io.github.linsminecraftstudio.fakeplayermaker.api.objects.EmptyConnection;
 import io.github.linsminecraftstudio.fakeplayermaker.api.objects.WorldNotFoundException;
 import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
 import net.minecraft.core.UUIDUtil;
@@ -22,7 +23,6 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
-import org.lins.mmmjjkx.fakeplayermaker.objects.EmptyConnection;
 import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 
 import java.util.*;
