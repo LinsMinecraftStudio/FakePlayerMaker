@@ -20,28 +20,26 @@ import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 
 import javax.annotation.Nonnull;
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Level;
 
+import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils.getCraftClass;
 import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils.getHandle;
-import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getCraftClass;
 
 public class FakePlayerSaver extends SingleFileStorage {
     private final YamlConfiguration configuration;
-    private final File cfgFile = new File(FakePlayerMaker.INSTANCE.getDataFolder(), "fakePlayers.yml");
 
     public FakePlayerSaver() {
         super(FakePlayerMaker.INSTANCE, new File(FakePlayerMaker.INSTANCE.getDataFolder(), "fakePlayers.yml"));
         configuration = getConfiguration();
     }
 
-    public void reload() {
+    public void reload(boolean removeAll) {
         super.reload(configuration);
-        NMSFakePlayerMaker.reloadMap(getFakePlayers());
+        NMSFakePlayerMaker.reloadMap(removeAll, getFakePlayers());
     }
 
     public void syncPlayerInfo(ServerPlayer player) {
@@ -60,20 +58,19 @@ public class FakePlayerSaver extends SingleFileStorage {
             }
         }
 
-        try {
-            configuration.save(cfgFile);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        reload(false);
     }
 
     public void removeFakePlayer(String name) {
         configuration.set(name, null);
-        try {
-            configuration.save(cfgFile);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        reload(false);
+    }
+
+    public void removeAllFakePlayers() {
+        for (String key : configuration.getKeys(false)) {
+            configuration.set(key, null);
         }
+        reload(true);
     }
 
     public Map<ServerPlayer, Location> getFakePlayers() {
@@ -110,11 +107,7 @@ public class FakePlayerSaver extends SingleFileStorage {
         ConfigurationSection section = configuration.getConfigurationSection(path);
         if (section == null) {
             section = configuration.createSection(path);
-            try {
-                configuration.save(cfgFile);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            reload(false);
         }
         return section;
     }

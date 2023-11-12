@@ -2,6 +2,7 @@ package io.github.linsminecraftstudio.fakeplayermaker.api.implementation;
 
 import com.google.common.base.Preconditions;
 import com.mojang.authlib.GameProfile;
+import io.github.linsminecraftstudio.fakeplayermaker.api.objects.EmptyConnection;
 import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
 import net.minecraft.network.Connection;
 import net.minecraft.server.MinecraftServer;
@@ -16,6 +17,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -28,6 +30,9 @@ import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftU
 public abstract class Implementations {
     private static final Map<String,Implementations> map = new HashMap<>();
     private static final Class<? extends PlayerList> playerListClass = PlayerList.class;
+
+    private Implementations() {
+    }
 
     public static void setup() {
         new v1_20_1().register();
@@ -69,9 +74,21 @@ public abstract class Implementations {
     public abstract void setConnection(ServerPlayer player, ServerGamePacketListenerImpl connection);
     public abstract @NotNull String[] minecraftVersion();
     public abstract void placePlayer(Connection connection, ServerPlayer player);
+
+    public abstract PlayerList getPlayerList();
     public abstract ServerPlayer create(@NotNull ServerLevel level, @NotNull GameProfile profile);
 
     private static class v1_20_1 extends Implementations {
+        private final Method placePlayer;
+
+        public v1_20_1() {
+            try {
+                placePlayer = playerListClass.getMethod("a", Connection.class, ServerPlayer.class);
+            } catch (NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
         @Override
         public @NotNull GameProfile profile(ServerPlayer player) {
             try {
@@ -82,7 +99,7 @@ public abstract class Implementations {
         }
 
         @Override
-        public void setConnection(ServerPlayer player, ServerGamePacketListenerImpl connection) {
+        public void setConnection(ServerPlayer player, @NotNull ServerGamePacketListenerImpl connection) {
             player.connection = connection;
             /*
             Save code for future versions
@@ -102,8 +119,10 @@ public abstract class Implementations {
         @Override
         public ServerPlayer create(@NotNull ServerLevel level, @NotNull GameProfile profile) {
             try {
-                return ServerPlayer.class.getDeclaredConstructor(MinecraftServer.class, ServerLevel.class, GameProfile.class)
+                ServerPlayer player = ServerPlayer.class.getDeclaredConstructor(MinecraftServer.class, ServerLevel.class, GameProfile.class)
                         .newInstance(MinecraftUtils.getNMSServer(), level, profile);
+                setConnection(player, MinecraftUtils.getGamePacketListener(new EmptyConnection(), player));
+                return player;
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -112,9 +131,17 @@ public abstract class Implementations {
         @Override
         public void placePlayer(Connection connection, ServerPlayer player) {
             try {
-                PlayerList list = (PlayerList) MinecraftServer.class.getMethod("ac").invoke(MinecraftUtils.getNMSServer());
-                playerListClass.getMethod("a", Connection.class, ServerPlayer.class).invoke(list, connection, player);
+                placePlayer.invoke(this.getPlayerList(), connection, player);
             } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public PlayerList getPlayerList() {
+            try {
+                return (PlayerList) MinecraftServer.class.getMethod("ac").invoke(MinecraftUtils.getNMSServer());
+            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -139,7 +166,14 @@ public abstract class Implementations {
 
         @Override
         public ServerPlayer create(@NotNull ServerLevel level, @NotNull GameProfile profile) {
-            return new ServerPlayer(MinecraftUtils.getNMSServer(), level, profile, ClientInformation.createDefault());
+            ServerPlayer player = new ServerPlayer(MinecraftUtils.getNMSServer(), level, profile, ClientInformation.createDefault());
+            setConnection(player, MinecraftUtils.getGamePacketListener(new EmptyConnection(), player));
+            return player;
+        }
+
+        @Override
+        public PlayerList getPlayerList() {
+            return MinecraftUtils.getNMSServer().getPlayerList();
         }
     }
 }

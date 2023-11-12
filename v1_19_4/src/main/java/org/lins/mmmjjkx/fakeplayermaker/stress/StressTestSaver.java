@@ -16,12 +16,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class StressTestSaver extends SingleFileStorage {
-    private YamlConfiguration configuration;
+    private final YamlConfiguration configuration;
     private final Map<String, AreaStressTester> areaTesterMap = new HashMap<>();
     private final Map<String, RandomWorldStressTester> randomWorldStressTesterMap = new HashMap<>();
 
     public StressTestSaver() {
-        super(FakePlayerMaker.INSTANCE, new File(FakePlayerMaker.INSTANCE.getDataFolder(), "stress"));
+        super(FakePlayerMaker.INSTANCE, new File(FakePlayerMaker.INSTANCE.getDataFolder(), "stresses.yml"));
         configuration = getConfiguration();
         loadStressTesters();
     }
@@ -98,7 +98,7 @@ public class StressTestSaver extends SingleFileStorage {
         section.set("ignoreWorlds", ignoreWorlds);
         randomWorldStressTesterMap.put(name, new RandomWorldStressTester(false, amount, ignoreWorlds));
         try {
-            configuration.save(new File(FakePlayerMaker.INSTANCE.getDataFolder(), "resources/stresses.yml"));
+            configuration.save(new File(FakePlayerMaker.INSTANCE.getDataFolder(), "stresses.yml"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -112,7 +112,7 @@ public class StressTestSaver extends SingleFileStorage {
         section.set("amount", amount);
         areaTesterMap.put(name, new AreaStressTester(new CuboidRegion(BukkitAdapter.adapt(pos1.getWorld()), BukkitAdapter.asBlockVector(pos1), BukkitAdapter.asBlockVector(pos2)), amount));
         try {
-            configuration.save(new File(FakePlayerMaker.INSTANCE.getDataFolder(), "resources/stresses.yml"));
+            configuration.save(new File(FakePlayerMaker.INSTANCE.getDataFolder(), "stresses.yml"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -133,10 +133,9 @@ public class StressTestSaver extends SingleFileStorage {
         return areaTesterMap.keySet();
     }
 
-    @Override
     public void reload() {
-        configuration = getConfiguration();
         stopAll();
+        super.reload(configuration);
         loadStressTesters();
     }
 }

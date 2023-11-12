@@ -27,18 +27,19 @@ import java.util.UUID;
 import java.util.logging.Level;
 
 import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils.getCraftClass;
-import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getHandle;
+import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils.getHandle;
 
 public class FakePlayerSaver extends SingleFileStorage {
     private final YamlConfiguration configuration;
+
     public FakePlayerSaver(){
         super(FakePlayerMaker.INSTANCE, new File(FakePlayerMaker.INSTANCE.getDataFolder(), "fakePlayers.yml"));
         configuration = getConfiguration();
     }
 
-    public void reload() {
+    public void reload(boolean removeAll) {
         super.reload(configuration);
-        NMSFakePlayerMaker.reloadMap(getFakePlayers());
+        NMSFakePlayerMaker.reloadMap(removeAll, getFakePlayers());
     }
 
     public void syncPlayerInfo(ServerPlayer player) {
@@ -56,16 +57,23 @@ public class FakePlayerSaver extends SingleFileStorage {
             }
         }
 
-        reload();
+        reload(false);
     }
 
     public void removeFakePlayer(String name) {
         configuration.set(name, null);
-        reload();
+        reload(false);
+    }
+
+    public void removeAllFakePlayers() {
+        for (String key : configuration.getKeys(false)) {
+            configuration.set(key, null);
+        }
+        reload(true);
     }
 
     public Map<ServerPlayer, Location> getFakePlayers() {
-        Map<ServerPlayer,Location> players = new HashMap<>();
+        Map<ServerPlayer, Location> players = new HashMap<>();
         for (String sectionName : configuration.getKeys(false)) {
             ConfigurationSection section = configuration.getConfigurationSection(sectionName);
             if (section == null) continue;
@@ -98,7 +106,7 @@ public class FakePlayerSaver extends SingleFileStorage {
         ConfigurationSection section = configuration.getConfigurationSection(path);
         if (section == null) {
             section = configuration.createSection(path);
-            reload();
+            reload(false);
         }
         return section;
     }

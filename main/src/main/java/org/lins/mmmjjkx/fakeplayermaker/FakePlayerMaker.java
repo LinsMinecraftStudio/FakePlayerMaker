@@ -17,6 +17,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.lins.mmmjjkx.fakeplayermaker.command.FPMCommand;
+import org.lins.mmmjjkx.fakeplayermaker.gui.ListFakePlayerGUIHandler;
 import org.lins.mmmjjkx.fakeplayermaker.stress.StressTestSaver;
 import org.lins.mmmjjkx.fakeplayermaker.utils.ActionUtils;
 import org.lins.mmmjjkx.fakeplayermaker.utils.FakePlayerSaver;
@@ -31,6 +32,7 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
     public static FakePlayerSaver fakePlayerSaver;
     public static FakePlayerMaker INSTANCE;
     public static SimpleSettingsManager settings;
+    public static ListFakePlayerGUIHandler guiHandler;
     public static volatile int randomNameLength;
     public static volatile Location defaultSpawnLocation;
     public static StressTestSaver stressTestSaver;
@@ -60,12 +62,14 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
         randomNameLength = settings.getInt("randomNameLength");
         defaultSpawnLocation = settings.getLocation("defaultSpawnLocation");
 
-        fakePlayerSaver.reload();
+        fakePlayerSaver.reload(false);
         stressTestSaver.reload();
 
         MinecraftUtils.scheduleNoDelay(this, () -> new FPMPluginLoadEvent(NMSFakePlayerMaker.asController()).callEvent(), true);
 
         getServer().getPluginManager().registerEvents(this, this);
+
+        guiHandler = new ListFakePlayerGUIHandler(fakePlayerSaver.getFakePlayers().keySet().stream().toList());
 
         if (settings.getBoolean("checkUpdate")) {
             new OtherUtils.Updater(111767, (ver, success) -> {
@@ -109,7 +113,7 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
     public void reload() {
         INSTANCE.reloadConfig();
         settings = new SimpleSettingsManager(FakePlayerMaker.INSTANCE);
-        fakePlayerSaver.reload();
+        fakePlayerSaver.reload(false);
         stressTestSaver.reload();
 
         randomNameLength = settings.getInt("randomNameLength");
@@ -133,7 +137,6 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
         Player player = e.getPlayer();
-        getLogger().info(player.getVelocity().toString());
         ServerPlayer nms = (ServerPlayer) getHandle(getCraftClass("entity.CraftPlayer"), e.getPlayer());
         if (nms != null && NMSFakePlayerMaker.fakePlayerMap.containsKey(Implementations.getName(nms))) {
             if (player.isDead()) {

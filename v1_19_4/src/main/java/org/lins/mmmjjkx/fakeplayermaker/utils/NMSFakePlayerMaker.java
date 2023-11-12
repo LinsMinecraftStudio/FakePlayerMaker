@@ -11,6 +11,7 @@ import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implemen
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.FakePlayerController;
 import io.github.linsminecraftstudio.fakeplayermaker.api.objects.EmptyConnection;
 import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
+import net.kyori.adventure.text.Component;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -31,39 +32,43 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.security.SecureRandom;
 import java.util.*;
-import java.util.logging.Level;
+
+import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils.getCraftClass;
+import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils.getHandle;
 
 public class NMSFakePlayerMaker {
     public static Map<String, ServerPlayer> fakePlayerMap = new HashMap<>();
     private static final FakePlayerSaver saver = FakePlayerMaker.fakePlayerSaver;
     private static final MinecraftServer server = MinecraftServer.getServer();
 
-    static void reloadMap(Map<ServerPlayer, Location> players) {
+    static void reloadMap(boolean removeAll, Map<ServerPlayer, Location> players) {
         MinecraftUtils.schedule(FakePlayerMaker.INSTANCE, () -> {
+            if (removeAll) {
+                for (ServerPlayer player : players.keySet()) {
+                    if (Implementations.get().getPlayerList().getPlayer(Implementations.getUUID(player)) != null) {
+                        Implementations.get().getPlayerList().remove(player);
+                    }
+                }
+                fakePlayerMap.clear();
+                return;
+            }
+
             fakePlayerMap.clear();
             for (ServerPlayer player : players.keySet()) {
-                if (server.getPlayerList().getPlayers().contains(player)) {
-                    server.getPlayerList().remove(player);
+                if (server.getPlayerList().getPlayer(player.getUUID()) == null) {
+                    EmptyConnection connection = new EmptyConnection();
+                    playerJoin(player, connection, MinecraftUtils.getGamePacketListener(connection, player), true, null);
                 }
 
                 fakePlayerMap.put(player.getName().getString(), player);
-                var connection = new EmptyConnection();
-                var listener = new FPMPacketListener(connection, player);
-
-                MinecraftServer.getServer().getPlayerList().placeNewPlayer(connection, player);
-                simulateLogin(player);
 
                 ActionUtils.setupValues(player);
-
-                runCMDs(player, connection, listener);
 
                 MinecraftUtils.preventListen("su.nexmedia.engine.NexPlugin");
 
                 Location location = players.get(player);
-                ServerLevel level = (ServerLevel) MinecraftUtils.getHandle(getCraftClass("CraftWorld"), location.getWorld());
-                if (level != null) {
-                    player.teleportTo(level, location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
-                }
+                ServerLevel level = (ServerLevel) getHandle(getCraftClass("CraftWorld"), location.getWorld());
+                player.teleportTo(Objects.requireNonNull(level), location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
             }
         }, 5, false);
     }
@@ -114,7 +119,7 @@ public class NMSFakePlayerMaker {
             try {
                 Player temp = FPMTempPlayerFactory.createPlayer(Bukkit.getServer(), name);
                 MinimalInjector injector = TemporaryPlayerFactory.getInjectorFromPlayer(temp);
-                ServerPlayer handle = (ServerPlayer) MinecraftUtils.getHandle(getCraftClass("entity.CraftPlayer"), injector.getPlayer());
+                ServerPlayer handle = (ServerPlayer) getHandle(getCraftClass("entity.CraftPlayer"), injector.getPlayer());
                 fakePlayerMap.put(name, handle);
 
                 if (handle != null) {
@@ -123,36 +128,44 @@ public class NMSFakePlayerMaker {
 
                 new FakePlayerCreateEvent(temp, sender).callEvent();
                 var connection = new EmptyConnection();
-                playerJoin(handle, connection, new FPMPacketListener(connection, handle), true);
+                playerJoin(handle, connection, new FPMPacketListener(connection, handle), true, loc);
 
-                temp.teleport(realLoc);
+                FakePlayerMaker.guiHandler.setData(fakePlayerMap.values().stream().toList());
+
+                playerJoin(handle, connection, MinecraftUtils.getGamePacketListener(connection, handle), true, loc);
                 return handle;
             } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
         } else {
-            ServerLevel level = (ServerLevel) Objects.requireNonNull(MinecraftUtils.getHandle(getCraftClass("CraftWorld"), realLoc.getWorld()));
+            ServerLevel level = (ServerLevel) Objects.requireNonNull(getHandle(getCraftClass("CraftWorld"), realLoc.getWorld()));
             ServerPlayer player = new ServerPlayer(MinecraftServer.getServer(), level, profile);
             var connection = new EmptyConnection();
 
             fakePlayerMap.put(name, player);
             saver.syncPlayerInfo(player);
 
-            new FakePlayerCreateEvent(player.getBukkitEntity(), sender).callEvent();
-            playerJoin(player, connection, new FPMPacketListener(connection, player), runCMD);
+            new FakePlayerCreateEvent(Implementations.bukkitEntity(player), sender).callEvent();
 
-            player.teleportTo(level, realLoc.getX(), realLoc.getY(), realLoc.getZ(), realLoc.getYaw(), realLoc.getPitch());
+            FakePlayerMaker.guiHandler.setData(fakePlayerMap.values().stream().toList());
+
+            playerJoin(player, connection, MinecraftUtils.getGamePacketListener(connection, player), runCMD, realLoc);
             return player;
         }
     }
 
-    private static void playerJoin(ServerPlayer player, EmptyConnection connection, ServerGamePacketListenerImpl listener, boolean runCMD) {
-        MinecraftServer.getServer().playerDataStorage.save(player);
+    private static void playerJoin(ServerPlayer player, EmptyConnection connection, ServerGamePacketListenerImpl listener, boolean runCMD, @Nullable Location realLoc) {
+        if (realLoc == null) {
+            realLoc = FakePlayerMaker.settings.getLocation("defaultSpawnLocation");
+        }
 
-        MinecraftServer.getServer().getPlayerList().placeNewPlayer(connection, player);
+        ServerLevel level = (ServerLevel) Objects.requireNonNull(getHandle(getCraftClass("CraftWorld"), realLoc.getWorld()));
+        player.setLevel(level);
+
+        server.getPlayerList().placeNewPlayer(connection, player);
         simulateLogin(player);
 
-        player.connection = listener;
+        player.teleportTo(level, realLoc.getX(), realLoc.getY(), realLoc.getZ(), realLoc.getYaw(), realLoc.getPitch());
 
         MinecraftUtils.preventListen("su.nexmedia.engine.NexPlugin");
 
@@ -169,7 +182,7 @@ public class NMSFakePlayerMaker {
             var connection = new EmptyConnection();
             var listener = new FPMPacketListener(connection, player);
 
-            playerJoin(player, connection, listener, true);
+            playerJoin(player, connection, listener, true, Implementations.bukkitEntity(player).getLocation());
         }
     }
 
@@ -185,15 +198,35 @@ public class NMSFakePlayerMaker {
 
             fakePlayerMap.remove(name);
             saver.removeFakePlayer(name);
-            server.getPlayerList().remove(player);
+
+            Player bukkit = Implementations.bukkitEntity(player);
+            bukkit.kick(Component.translatable("multiplayer.player.left"));
+
+            FakePlayerMaker.guiHandler.setData(fakePlayerMap.values().stream().toList());
         }
     }
 
     public static void removeAllFakePlayers(@Nullable CommandSender sender) {
         Set<String> set = new HashSet<>(fakePlayerMap.keySet());
         for (String name : set) {
-            removeFakePlayer(name, sender);
+            ServerPlayer player = fakePlayerMap.get(name);
+            if (player != null) {
+                new FakePlayerRemoveEvent(Implementations.getName(player), sender).callEvent();
+
+                for (String cmd : FakePlayerMaker.settings.getStrList("runCMDAfterRemove")) {
+                    cmd = cmd.replaceAll("%player%", name);
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+                }
+
+                Player bukkit = Implementations.bukkitEntity(player);
+                bukkit.kick(Component.translatable("multiplayer.player.left"));
+
+                FakePlayerMaker.guiHandler.setData(fakePlayerMap.values().stream().toList());
+            }
         }
+
+        fakePlayerMap.clear();
+        saver.removeAllFakePlayers();
     }
 
     public static String getRandomName(int length) {
@@ -204,20 +237,6 @@ public class NMSFakePlayerMaker {
             builder.append(characters[random.nextInt(length)]);
         }
         return builder.toString();
-    }
-
-    public static Class<?> getCraftClass(String name) {
-        String version = Bukkit.getServer().getClass().getName().split("\\.")[3];
-        String className = "org.bukkit.craftbukkit." + version + "." + name;
-        Class<?> c = null;
-        try {
-            c = Class.forName(className);
-        } catch (Exception e) {
-            FakePlayerMaker.INSTANCE.getLogger().log(Level.WARNING, "Could not find CraftBukkit class for " + name + " .\n" +
-                    "Maybe your server minecraft version is not compatible with the plugin or an error occurred while executing the remap task, " +
-                    "you should open a issue in our github repo!(Please confirm that you are using an official plugin)", e);
-        }
-        return c;
     }
 
     public static void simulateLogin(ServerPlayer p) {

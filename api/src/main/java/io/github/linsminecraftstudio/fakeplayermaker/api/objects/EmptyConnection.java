@@ -54,7 +54,7 @@ public final class EmptyConnection extends Connection {
             configureSerialization(pipeline, PacketFlow.SERVERBOUND, new BandwidthDebugMonitor(new SampleLogger()));
         } else {
             try {
-                Connection.class.getMethod("configureSerialization", ChannelPipeline.class, PacketFlow.class)
+                Connection.class.getMethod("a", ChannelPipeline.class, PacketFlow.class)
                         .invoke(null, pipeline, PacketFlow.SERVERBOUND);
             } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
                 throw new RuntimeException(e);

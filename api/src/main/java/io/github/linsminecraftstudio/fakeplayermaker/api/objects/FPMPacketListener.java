@@ -3,6 +3,7 @@ package io.github.linsminecraftstudio.fakeplayermaker.api.objects;
 import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
 import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
 import net.minecraft.network.Connection;
+import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
@@ -25,7 +26,9 @@ public class FPMPacketListener extends ServerGamePacketListenerImpl {
 
         if (player.serverLevel().getPlayerByUUID(player.getUUID()) != null) {
             resetPosition();
-            player.serverLevel().getChunkSource().move(player);
+            ServerChunkCache source = player.serverLevel().getChunkSource();
+            source.chunkMap.nearbyPlayers.addPlayer(player);
+            source.move(player);
         }
     }
 }

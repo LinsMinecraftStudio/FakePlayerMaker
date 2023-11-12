@@ -29,8 +29,8 @@ import java.util.stream.Collectors;
 import static org.lins.mmmjjkx.fakeplayermaker.hook.WEHook.handleAreaCreate;
 
 public class FPMCommand extends PolymerCommand {
-    public FPMCommand(@NotNull String name) {
-        super(name, new ArrayList<>(List.of("fpm")));
+    public FPMCommand() {
+        super("fakeplayermaker", new ArrayList<>(List.of("fpm")));
         registerSubCommand(new SubReloadCommand(FakePlayerMaker.INSTANCE));
     }
 
@@ -44,7 +44,7 @@ public class FPMCommand extends PolymerCommand {
         if (args.length == 1) {
             return copyPartialMatches(args[0], List.of(
                     "add", "reload", "removeAll", "remove", "stress", "join", "chat", "teleport",
-                    "tp", "skin", "lookat", "jump", "mount", "unmount", "pose", "inventory", "sneak", "look"));
+                    "tp", "skin", "lookat", "jump", "mount", "unmount", "pose", "inventory", "sneak", "look", "gui"));
         } else if (args.length == 2) {
             return switch (args[0]) {
                 case "remove", "teleport", "tp", "join", "chat", "skin", "lookat", "jump", "mount", "unmount", "pose", "inventory", "sneak", "look" ->
@@ -96,6 +96,12 @@ public class FPMCommand extends PolymerCommand {
                     case "removeAll" -> {
                         NMSFakePlayerMaker.removeAllFakePlayers(commandSender);
                         sendMessage(commandSender, "RemoveAllSuccess");
+                    }
+                    case "gui" -> {
+                        Player p = toPlayer();
+                        if (p != null) {
+                            FakePlayerMaker.guiHandler.openInventory(p);
+                        }
                     }
                     default -> sendPolymerMessage(commandSender, "Command.ArgError");
                 }
@@ -157,6 +163,7 @@ public class FPMCommand extends PolymerCommand {
                         ServerPlayer player = NMSFakePlayerMaker.fakePlayerMap.get(name);
                         if (player == null) {
                             sendMessage(commandSender, "PlayerNotFound");
+                            return;
                         }
                         ActionUtils.unmount(player);
                     }
@@ -164,6 +171,7 @@ public class FPMCommand extends PolymerCommand {
                         ServerPlayer player = NMSFakePlayerMaker.fakePlayerMap.get(name);
                         if (player == null) {
                             sendMessage(commandSender, "PlayerNotFound");
+                            return;
                         }
                         Player p1 = toPlayer();
                         if (p1 == null) return;
@@ -198,14 +206,14 @@ public class FPMCommand extends PolymerCommand {
                             FakePlayerMaker.fakePlayerSaver.syncPlayerInfo(player);
                             return;
                         }
-                        sendMessage(commandSender, "PlayerNotFound");
+                        sendMessage("PlayerNotFound");
                         return;
                     }
                     case "chat" -> {
                         String chat = strings[2];
                         ServerPlayer player = NMSFakePlayerMaker.fakePlayerMap.get(name);
                         if (player == null) {
-                            sendMessage(commandSender, "PlayerNotFound");
+                            sendMessage("PlayerNotFound");
                             return;
                         }
                         ActionUtils.chat(player, chat);
@@ -298,6 +306,7 @@ public class FPMCommand extends PolymerCommand {
                                         sendMessage(commandSender, "Stress.NotFound");
                                         return;
                                     }
+
                                     AreaStressTester stressTester = tester.get();
                                     try {
                                         stressTester.run();
@@ -316,6 +325,7 @@ public class FPMCommand extends PolymerCommand {
                                         sendMessage(commandSender, "Stress.NotFound");
                                         return;
                                     }
+
                                     AreaStressTester stressTester = tester.get();
                                     if (!stressTester.isStarted()) {
                                         sendMessage(commandSender, "Stress.NotStarted");
@@ -369,8 +379,8 @@ public class FPMCommand extends PolymerCommand {
             } else if (strings.length == 5) {
                 switch (strings[0]) {
                     case "stress" -> {
-                        int amount = (int) getArgAsDoubleOrInt(4, true, false);
                         if (hasCustomPermission(commandSender, "command.stress")) {
+                            int amount = (int) getArgAsDoubleOrInt(4, true, false);
                             switch (strings[1]) {
                                 case "area" -> {
                                     if (strings[2].equals("create")) {
@@ -394,6 +404,7 @@ public class FPMCommand extends PolymerCommand {
                             }
                         }
                     }
+
                     case "lookat" -> {
                         double x, y, z;
                         String name = strings[1];

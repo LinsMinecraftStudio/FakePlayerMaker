@@ -14,6 +14,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.lins.mmmjjkx.fakeplayermaker.command.FPMCommand;
+import org.lins.mmmjjkx.fakeplayermaker.gui.ListFakePlayerGUIHandler;
 import org.lins.mmmjjkx.fakeplayermaker.stress.StressTestSaver;
 import org.lins.mmmjjkx.fakeplayermaker.utils.ActionUtils;
 import org.lins.mmmjjkx.fakeplayermaker.utils.FakePlayerSaver;
@@ -21,8 +22,8 @@ import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 
 import java.util.List;
 
+import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils.getCraftClass;
 import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils.getHandle;
-import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.getCraftClass;
 
 public class FakePlayerMaker extends PolymerPlugin implements Listener {
     public static FakePlayerSaver fakePlayerSaver;
@@ -31,6 +32,7 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
     public static volatile int randomNameLength;
     public static volatile Location defaultSpawnLocation;
     public static StressTestSaver stressTestSaver;
+    public static ListFakePlayerGUIHandler guiHandler;
 
     @Override
     public void onPlEnable() {
@@ -57,12 +59,14 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
         randomNameLength = settings.getInt("randomNameLength");
         defaultSpawnLocation = settings.getLocation("defaultSpawnLocation");
 
-        fakePlayerSaver.reload();
+        fakePlayerSaver.reload(false);
         stressTestSaver.reload();
 
         MinecraftUtils.scheduleNoDelay(this, () -> new FPMPluginLoadEvent(NMSFakePlayerMaker.asController()).callEvent(), true);
 
         getServer().getPluginManager().registerEvents(this, this);
+
+        guiHandler = new ListFakePlayerGUIHandler(fakePlayerSaver.getFakePlayers().keySet().stream().toList());
 
         if (settings.getBoolean("checkUpdate")) {
             new OtherUtils.Updater(111767, (ver, success) -> {
@@ -106,7 +110,7 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
     public void reload() {
         INSTANCE.reloadConfig();
         settings = new SimpleSettingsManager(FakePlayerMaker.INSTANCE);
-        fakePlayerSaver.reload();
+        fakePlayerSaver.reload(false);
         stressTestSaver.reload();
 
         randomNameLength = settings.getInt("randomNameLength");

@@ -44,28 +44,31 @@ public class FPMCommand extends PolymerCommand {
     public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) {
         if (args.length == 1) {
             return copyPartialMatches(args[0], List.of(
-                    "add","reload","removeAll","remove","stress","join","chat","teleport",
-                    "tp","skin","lookat","jump","mount","unmount","pose","inventory","sneak","look"));
+                    "add", "reload", "removeAll", "remove", "stress", "join", "chat", "teleport",
+                    "tp", "skin", "lookat", "jump", "mount", "unmount", "pose", "inventory", "sneak", "look", "gui"));
         } else if (args.length == 2) {
             return switch (args[0]) {
-                case "remove","teleport","tp","join","chat","skin","lookat","jump","mount","unmount","pose","inventory","sneak","look"
-                        -> copyPartialMatches(args[1], NMSFakePlayerMaker.fakePlayerMap.keySet());
-                case "stress" -> copyPartialMatches(args[1], List.of("area","randomworld"));
+                case "remove", "teleport", "tp", "join", "chat", "skin", "lookat", "jump", "mount", "unmount", "pose", "inventory", "sneak", "look" ->
+                        copyPartialMatches(args[1], NMSFakePlayerMaker.fakePlayerMap.keySet());
+                case "stress" -> copyPartialMatches(args[1], List.of("area", "randomworld"));
                 default -> new ArrayList<>();
             };
-        } else if (args.length==3) {
+        } else if (args.length == 3) {
             return switch (args[0]) {
-                case "stress" -> copyPartialMatches(args[2], List.of("start","stop","players","create"));
-                case "skin" -> copyPartialMatches(args[2], Bukkit.getOnlinePlayers().stream().map(Player::getName).filter(n -> !NMSFakePlayerMaker.fakePlayerMap.containsKey(n)).collect(Collectors.toList()));
-                case "look" -> copyPartialMatches(args[2], Arrays.stream(Direction.values()).map(d -> d.getName().toUpperCase()).collect(Collectors.toList()));
-                case "jump" -> copyPartialMatches(args[2], List.of("1","2","3","4","5","hold","stop"));
-                case "pose" -> copyPartialMatches(args[2], Arrays.stream(Pose.values()).map(Pose::toString).collect(Collectors.toList()));
+                case "stress" -> copyPartialMatches(args[2], List.of("start", "stop", "players", "create"));
+                case "skin" ->
+                        copyPartialMatches(args[2], Bukkit.getOnlinePlayers().stream().map(Player::getName).filter(n -> !NMSFakePlayerMaker.fakePlayerMap.containsKey(n)).collect(Collectors.toList()));
+                case "look" ->
+                        copyPartialMatches(args[2], Arrays.stream(Direction.values()).map(d -> d.getName().toUpperCase()).collect(Collectors.toList()));
+                case "jump" -> copyPartialMatches(args[2], List.of("1", "2", "3", "4", "5", "hold", "stop"));
+                case "pose" ->
+                        copyPartialMatches(args[2], Arrays.stream(Pose.values()).map(Pose::toString).collect(Collectors.toList()));
                 default -> new ArrayList<>();
             };
         } else if (args.length == 4 && args[0].equals("stress") && !args[2].equals("create")) {
             if (args[1].equalsIgnoreCase("area")) {
                 return copyPartialMatches(args[3], FakePlayerMaker.stressTestSaver.getAreaTesterNames());
-            } else if (args[1].equalsIgnoreCase("randomworld")){
+            } else if (args[1].equalsIgnoreCase("randomworld")) {
                 return copyPartialMatches(args[3], FakePlayerMaker.stressTestSaver.getRWTesterNames());
             }
         }
@@ -94,6 +97,12 @@ public class FPMCommand extends PolymerCommand {
                     case "removeAll" -> {
                         NMSFakePlayerMaker.removeAllFakePlayers(commandSender);
                         sendMessage(commandSender, "RemoveAllSuccess");
+                    }
+                    case "gui" -> {
+                        Player p = toPlayer();
+                        if (p != null) {
+                            FakePlayerMaker.guiHandler.openInventory(p);
+                        }
                     }
                     default -> sendPolymerMessage(commandSender, "Command.ArgError");
                 }
@@ -198,7 +207,7 @@ public class FPMCommand extends PolymerCommand {
                             FakePlayerMaker.fakePlayerSaver.syncPlayerInfo(player);
                             return;
                         }
-                        sendMessage(commandSender, "PlayerNotFound");
+                        sendMessage("PlayerNotFound");
                         return;
                     }
                     case "chat" -> {

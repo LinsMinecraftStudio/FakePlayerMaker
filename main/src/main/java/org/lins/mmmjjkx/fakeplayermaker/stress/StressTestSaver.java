@@ -16,31 +16,32 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class StressTestSaver extends SingleFileStorage {
-    private YamlConfiguration configuration;
+    private final YamlConfiguration configuration;
     private final Map<String, AreaStressTester> areaTesterMap = new HashMap<>();
     private final Map<String, RandomWorldStressTester> randomWorldStressTesterMap = new HashMap<>();
+
     public StressTestSaver() {
         super(FakePlayerMaker.INSTANCE, new File(FakePlayerMaker.INSTANCE.getDataFolder(), "stresses.yml"));
         configuration = getConfiguration();
         loadStressTesters();
     }
 
-    private void loadStressTesters(){
+    private void loadStressTesters() {
         Logger logger = FakePlayerMaker.INSTANCE.getLogger();
         for (String key : configuration.getKeys(false)) {
             ConfigurationSection section = configuration.getConfigurationSection(key);
             if (section == null) {
-                logger.log(Level.WARNING,"""
+                logger.log(Level.WARNING, """
                         Failed to load stress tester {} from configuration,
                         because it isn't present.
-                        """.replace("{}",key));
+                        """.replace("{}", key));
                 continue;
             }
-            String type = section.getString("type","").toLowerCase();
+            String type = section.getString("type", "").toLowerCase();
 
             int amount = section.getInt("amount");
             if (amount <= 1) {
-                logger.log(Level.WARNING, "Stress tester "+ key +" hasn't set the amount or that's too low, default set to 100.");
+                logger.log(Level.WARNING, "Stress tester " + key + " hasn't set the amount or that's too low, default set to 100.");
                 amount = 100;
             }
 
@@ -54,7 +55,7 @@ public class StressTestSaver extends SingleFileStorage {
                     logger.log(Level.WARNING, """
                             Failed to load stress tester {} from configuration,
                             because it has no starting or ending locations.
-                            """.replace("{}",key));
+                            """.replace("{}", key));
                     continue;
                 }
                 areaTesterMap.put(key, new AreaStressTester(new CuboidRegion(
@@ -126,11 +127,9 @@ public class StressTestSaver extends SingleFileStorage {
         return areaTesterMap.keySet();
     }
 
-    @Override
     public void reload() {
-        super.reload();
-        configuration = getConfiguration();
         stopAll();
+        super.reload(configuration);
         loadStressTesters();
     }
 }
