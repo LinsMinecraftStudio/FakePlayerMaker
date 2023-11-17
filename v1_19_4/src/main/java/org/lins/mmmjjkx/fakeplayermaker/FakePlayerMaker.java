@@ -90,7 +90,7 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
 
     @Override
     public List<PolymerCommand> registerCommands() {
-        return List.of(new FPMCommand("fakeplayermaker"));
+        return List.of(new FPMCommand());
     }
 
     @Override

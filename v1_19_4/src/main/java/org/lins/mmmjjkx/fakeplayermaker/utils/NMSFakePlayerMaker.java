@@ -26,7 +26,6 @@ import org.bukkit.event.player.PlayerLoginEvent;
 import org.jetbrains.annotations.Nullable;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.hook.protocol.FPMTempPlayerFactory;
-import org.lins.mmmjjkx.fakeplayermaker.objects.FPMPacketListener;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
@@ -128,7 +127,6 @@ public class NMSFakePlayerMaker {
 
                 new FakePlayerCreateEvent(temp, sender).callEvent();
                 var connection = new EmptyConnection();
-                playerJoin(handle, connection, new FPMPacketListener(connection, handle), true, loc);
 
                 FakePlayerMaker.guiHandler.setData(fakePlayerMap.values().stream().toList());
 
@@ -180,7 +178,7 @@ public class NMSFakePlayerMaker {
         ServerPlayer player = fakePlayerMap.get(name);
         if (player != null) {
             var connection = new EmptyConnection();
-            var listener = new FPMPacketListener(connection, player);
+            var listener = MinecraftUtils.getGamePacketListener(connection, player);
 
             playerJoin(player, connection, listener, true, Implementations.bukkitEntity(player).getLocation());
         }
