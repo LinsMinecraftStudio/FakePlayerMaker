@@ -114,10 +114,9 @@ public class RandomWorldStressTester implements IStressTester {
     }
 
     private Location generate(World world) {
-        Random random = new Random();
-        int x = random.nextInt(-20000, 20000);
-        int z = random.nextInt(-20000, 20000);
-        return getHighestBlock(world, x, z);
+        int x = new Random().nextInt(-20000, 20001);
+        int z = new Random().nextInt(-20000, 20001);
+        return getHighestBlock(world, x, z).add(0, 1, 0);
     }
 
     private class AutoRespawn implements Listener {

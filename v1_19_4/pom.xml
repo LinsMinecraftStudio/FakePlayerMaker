@@ -122,15 +122,6 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- Unregister handlers-->
-		<dependency>
-			<groupId>com.github.nulli0n</groupId>
-			<artifactId>NexEngine-spigot</artifactId>
-			<version>v2.2.11</version>
-			<scope>system</scope>
-			<systemPath>${basedir}/lib/NexEngine.jar</systemPath>
-		</dependency>
-
 		<!-- external dependencies-->
 		<dependency>
 			<groupId>net.bytebuddy</groupId>

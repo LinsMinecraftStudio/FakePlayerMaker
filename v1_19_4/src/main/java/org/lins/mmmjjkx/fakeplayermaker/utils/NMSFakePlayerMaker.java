@@ -7,7 +7,6 @@ import com.google.common.base.Strings;
 import com.mojang.authlib.GameProfile;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.FakePlayerCreateEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.FakePlayerRemoveEvent;
-import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.FakePlayerController;
 import io.github.linsminecraftstudio.fakeplayermaker.api.objects.EmptyConnection;
 import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
@@ -46,8 +45,8 @@ public class NMSFakePlayerMaker {
         MinecraftUtils.schedule(FakePlayerMaker.INSTANCE, () -> {
             if (removeAll) {
                 for (ServerPlayer player : players.keySet()) {
-                    if (Implementations.get().getPlayerList().getPlayer(Implementations.getUUID(player)) != null) {
-                        Implementations.get().getPlayerList().remove(player);
+                    if (MinecraftServer.getServer().getPlayerList().getPlayer(player.getUUID()) != null) {
+                        MinecraftServer.getServer().getPlayerList().remove(player);
                     }
                 }
                 fakePlayerMap.clear();
@@ -175,7 +174,7 @@ public class NMSFakePlayerMaker {
             var connection = new EmptyConnection();
             var listener = MinecraftUtils.getGamePacketListener(connection, player);
 
-            playerJoin(player, connection, listener, true, Implementations.bukkitEntity(player).getLocation());
+            playerJoin(player, connection, listener, true, player.getBukkitEntity().getLocation());
         }
     }
 
@@ -192,7 +191,7 @@ public class NMSFakePlayerMaker {
             fakePlayerMap.remove(name);
             saver.removeFakePlayer(name);
 
-            Player bukkit = Implementations.bukkitEntity(player);
+            Player bukkit = player.getBukkitEntity();
             bukkit.kick(Component.translatable("multiplayer.player.left"));
 
             FakePlayerMaker.guiHandler.setData(fakePlayerMap.values().stream().toList());
@@ -204,14 +203,14 @@ public class NMSFakePlayerMaker {
         for (String name : set) {
             ServerPlayer player = fakePlayerMap.get(name);
             if (player != null) {
-                new FakePlayerRemoveEvent(Implementations.getName(player), sender).callEvent();
+                new FakePlayerRemoveEvent(player.getName().getString(), sender).callEvent();
 
                 for (String cmd : FakePlayerMaker.settings.getStrList("runCMDAfterRemove")) {
                     cmd = cmd.replaceAll("%player%", name);
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
                 }
 
-                Player bukkit = Implementations.bukkitEntity(player);
+                Player bukkit = player.getBukkitEntity();
                 bukkit.kick(Component.translatable("multiplayer.player.left"));
 
                 FakePlayerMaker.guiHandler.setData(fakePlayerMap.values().stream().toList());
@@ -271,7 +270,7 @@ public class NMSFakePlayerMaker {
 
             @Override
             public @Nullable Player getFakePlayer(String name) {
-                return Implementations.bukkitEntity(fakePlayerMap.get(name));
+                return fakePlayerMap.get(name).getBukkitEntity();
             }
 
             @Override

@@ -5,11 +5,11 @@ import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStartEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStopEvent;
-import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTester;
 import io.github.linsminecraftstudio.fakeplayermaker.api.objects.EmptyConnection;
 import io.github.linsminecraftstudio.fakeplayermaker.api.objects.WorldNotFoundException;
 import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import org.apache.commons.lang3.tuple.Pair;
@@ -79,7 +79,7 @@ public class AreaStressTester implements IStressTester {
 
             Pair<Location, ServerPlayer> player = NMSFakePlayerMaker.createSimple(loc, finalName);
 
-            Implementations.get().placePlayer(new EmptyConnection(), player.getRight());
+            MinecraftServer.getServer().getPlayerList().placeNewPlayer(new EmptyConnection(), player.getRight());
             player.getRight().teleportTo(level, loc.getX(), loc.getY(), loc.getZ(), 0, 0);
 
             simulateLogin(player.getRight());

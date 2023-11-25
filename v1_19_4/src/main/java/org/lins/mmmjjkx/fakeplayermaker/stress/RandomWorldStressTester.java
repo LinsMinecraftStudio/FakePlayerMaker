@@ -2,10 +2,10 @@ package org.lins.mmmjjkx.fakeplayermaker.stress;
 
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStartEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStopEvent;
-import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTester;
 import io.github.linsminecraftstudio.fakeplayermaker.api.objects.EmptyConnection;
 import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import org.apache.commons.lang3.tuple.Pair;
@@ -91,7 +91,7 @@ public class RandomWorldStressTester implements IStressTester {
             Pair<Location, ServerPlayer> pair = NMSFakePlayerMaker.createSimple(location, finalName);
             ServerPlayer player = pair.getRight();
 
-            Implementations.get().placePlayer(new EmptyConnection(), player);
+            MinecraftServer.getServer().getPlayerList().placeNewPlayer(new EmptyConnection(), player);
             simulateLogin(player);
 
             player.teleportTo(level, location.getX(), location.getY(), location.getZ(), 0, 0);
@@ -114,10 +114,9 @@ public class RandomWorldStressTester implements IStressTester {
     }
 
     private Location generate(World world) {
-        Random random = new Random();
-        int x = random.nextInt(-20000, 20000);
-        int z = random.nextInt(-20000, 20000);
-        return getHighestBlock(world, x, z);
+        int x = new Random().nextInt(-20000, 20001);
+        int z = new Random().nextInt(-20000, 20001);
+        return getHighestBlock(world, x, z).add(0, 1, 0);
     }
 
     private class AutoRespawn implements Listener {

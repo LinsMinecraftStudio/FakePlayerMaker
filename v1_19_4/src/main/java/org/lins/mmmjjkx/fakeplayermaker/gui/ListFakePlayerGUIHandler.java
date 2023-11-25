@@ -1,6 +1,5 @@
 package org.lins.mmmjjkx.fakeplayermaker.gui;
 
-import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
 import io.github.linsminecraftstudio.polymer.gui.MultiPageInventoryHandler;
 import io.github.linsminecraftstudio.polymer.itemstack.ItemStackBuilder;
 import io.github.linsminecraftstudio.polymer.objects.array.ObjectArray;
@@ -42,10 +41,10 @@ public class ListFakePlayerGUIHandler extends MultiPageInventoryHandler<ServerPl
     @Override
     public ItemStack getItemStackButton(Player p, int slot, ServerPlayer data) {
         ItemStackBuilder builder = new ItemStackBuilder(Material.PLAYER_HEAD, 1);
-        Player bukkit = Implementations.bukkitEntity(data);
+        Player bukkit = data.getBukkitEntity();
         Date d = new Date(bukkit.getFirstPlayed());
 
-        builder = builder.name(Component.text(Implementations.getName(data)))
+        builder = builder.name(Component.text(data.getName().getString()))
                 .lore(fpm.getMessageHandler().getColoredMessages(p, "GUI.Info",
                         new ObjectArray(bukkit.getUniqueId().toString()),
                         new ObjectArray(new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(d))));
@@ -59,6 +58,6 @@ public class ListFakePlayerGUIHandler extends MultiPageInventoryHandler<ServerPl
 
     @Override
     public String toSearchableText(ServerPlayer data) {
-        return Implementations.getName(data);
+        return data.getName().getString();
     }
 }

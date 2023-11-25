@@ -1,15 +1,10 @@
 package io.github.linsminecraftstudio.fakeplayermaker.api.interfaces;
 
-import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.players.PlayerList;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 public interface IStressTester extends Runnable{
@@ -34,22 +29,11 @@ public interface IStressTester extends Runnable{
         int i = 319;
         Location location = new Location(world, x, i, z);
         while(i > 0){
-            if(location.getBlock().getType() != Material.AIR)
-                return location.add(0, 1, 0);
-            i--;
-            location.setY(i);
-        }
-        return new Location(world, x, 1, z);
-    }
-
-    default PlayerList getPlayerList() {
-        if (Bukkit.getMinecraftVersion().equals("1.20.1")) {
-            try {
-                return (PlayerList) MinecraftServer.class.getMethod("ac").invoke(MinecraftUtils.getNMSServer());
-            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                throw new RuntimeException(e);
+            if (location.getBlock().getType() != Material.AIR) {
+                return location.set(x, i, z);
             }
+            i--;
         }
-        return MinecraftUtils.getNMSServer().getPlayerList();
+        return new Location(world, x, 100, z);
     }
 }

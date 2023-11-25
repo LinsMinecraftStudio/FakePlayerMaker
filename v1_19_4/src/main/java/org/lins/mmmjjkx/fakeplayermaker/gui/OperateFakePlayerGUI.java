@@ -1,6 +1,5 @@
 package org.lins.mmmjjkx.fakeplayermaker.gui;
 
-import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
 import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
 import io.github.linsminecraftstudio.polymer.gui.InventoryActionType;
 import io.github.linsminecraftstudio.polymer.gui.SimpleInventoryHandler;
@@ -31,10 +30,10 @@ class OperateFakePlayerGUI extends SimpleInventoryHandler {
 
     @Override
     public void placeButtons(Player p, Inventory inv) {
-        Player bukkit = Implementations.bukkitEntity(data);
+        Player bukkit = data.getBukkitEntity();
         Date d = new Date(bukkit.getFirstPlayed());
         ItemStackBuilder infoBuilder = new ItemStackBuilder(Material.PLAYER_HEAD, 1)
-                .name(Component.text(Implementations.getName(data)))
+                .name(Component.text(data.getName().getString()))
                 .lore(fpm.getMessageHandler().getColoredMessages(p, "GUI.Info", new ObjectArray(bukkit.getUniqueId().toString())
                         , new ObjectArray(new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(d))));
 
@@ -78,12 +77,12 @@ class OperateFakePlayerGUI extends SimpleInventoryHandler {
 
     @Override
     public Component title(Player p) {
-        return fpm.getMessageHandler().getColored(p, "GUI.EachPlayerTitle", Implementations.getName(data));
+        return fpm.getMessageHandler().getColored(p, "GUI.EachPlayerTitle", data.getName().getString());
     }
 
     @Override
     public void doListen(InventoryActionType type, Player p, int slot, Inventory inventory) {
-        Player bukkit = Implementations.bukkitEntity(data);
+        Player bukkit = data.getBukkitEntity();
         if (type == InventoryActionType.CLICK) {
             switch (slot) {
                 case 19:
