@@ -13,9 +13,12 @@ import io.github.linsminecraftstudio.fakeplayermaker.api.objects.EmptyConnection
 import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
 import net.kyori.adventure.text.Component;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
@@ -89,22 +92,9 @@ public class NMSFakePlayerMaker{
         }
     }
 
-    @Nullable
-    public static ServerPlayer spawnFakePlayer(Location loc, String name, @Nullable CommandSender sender) {
-        return spawnFakePlayer(loc, name, sender, true);
-    }
-
-    @Nullable
-    public static ServerPlayer spawnFakePlayer(Location loc, String name, @Nullable CommandSender sender, boolean runCMD) {
+    public static Pair<Location, ServerPlayer> createSimple(Location loc, String name) {
         if (name == null || name.isBlank()) {
             name = getRandomName(FakePlayerMaker.randomNameLength);
-        }
-
-        Location realLoc = loc != null ? loc : FakePlayerMaker.settings.getLocation("defaultSpawnLocation");
-
-        if (realLoc == null) {
-            FakePlayerMaker.INSTANCE.getLogger().warning("Failed to create a fake player, the default spawn location is null");
-            return null;
         }
 
         if (!Strings.isNullOrEmpty(FakePlayerMaker.settings.getString("namePrefix"))) {
@@ -112,40 +102,48 @@ public class NMSFakePlayerMaker{
         }
 
         GameProfile profile = new GameProfile(UUIDUtil.createOfflinePlayerUUID(name), name);
-        var connection = new EmptyConnection();
+        Location realLoc = loc != null ? loc : FakePlayerMaker.settings.getLocation("defaultSpawnLocation");
+
+        if (realLoc == null) {
+            return ImmutablePair.right(Implementations.get().create(MinecraftServer.getServer().overworld(), profile));
+        }
 
         if (FakePlayerMaker.isProtocolLibLoaded()) {
             try {
                 Player temp = FPMTempPlayerFactory.createPlayer(Bukkit.getServer(), name);
                 MinimalInjector injector = TemporaryPlayerFactory.getInjectorFromPlayer(temp);
-                ServerPlayer handle = (ServerPlayer) getHandle(MinecraftUtils.getCraftClass("entity.CraftPlayer"), injector.getPlayer());
 
-                fakePlayerMap.put(name, handle);
-                saver.syncPlayerInfo(handle);
-
-                new FakePlayerCreateEvent(temp, sender).callEvent();
-
-                FakePlayerMaker.guiHandler.setData(fakePlayerMap.values().stream().toList());
-
-                playerJoin(handle, connection, MinecraftUtils.getGamePacketListener(connection, handle), true, loc);
-                return handle;
+                return new ImmutablePair<>(realLoc, (ServerPlayer) getHandle(MinecraftUtils.getCraftClass("entity.CraftPlayer"), injector.getPlayer()));
             } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
         } else {
             ServerLevel level = (ServerLevel) Objects.requireNonNull(getHandle(MinecraftUtils.getCraftClass("CraftWorld"), realLoc.getWorld()));
-            ServerPlayer player = Implementations.get().create(level, profile);
 
-            fakePlayerMap.put(name, player);
-            saver.syncPlayerInfo(player);
-
-            new FakePlayerCreateEvent(Implementations.bukkitEntity(player), sender).callEvent();
-
-            FakePlayerMaker.guiHandler.setData(fakePlayerMap.values().stream().toList());
-
-            playerJoin(player, connection, MinecraftUtils.getGamePacketListener(connection, player), runCMD, realLoc);
-            return player;
+            return new ImmutablePair<>(realLoc, Implementations.get().create(level, profile));
         }
+    }
+
+    @Nullable
+    public static ServerPlayer spawnFakePlayer(Location loc, String name, @Nullable CommandSender sender) {
+        return spawnFakePlayer(loc, name, sender, true);
+    }
+
+    @Nullable
+    public static ServerPlayer spawnFakePlayer(Location loc, String name, @Nullable CommandSender sender, boolean runCMD) {
+        Pair<Location, ServerPlayer> player = createSimple(loc, name);
+
+        var connection = new EmptyConnection();
+
+        fakePlayerMap.put(name, player.getValue());
+        saver.syncPlayerInfo(player.getValue());
+
+        new FakePlayerCreateEvent(Implementations.bukkitEntity(player.getValue()), sender).callEvent();
+
+        FakePlayerMaker.guiHandler.setData(fakePlayerMap.values().stream().toList());
+
+        playerJoin(player.getValue(), connection, MinecraftUtils.getGamePacketListener(connection, player.getValue()), runCMD, player.getKey());
+        return player.getValue();
     }
 
     private static void playerJoin(ServerPlayer player, EmptyConnection connection, ServerGamePacketListenerImpl listener, boolean runCMD, @Nullable Location realLoc) {

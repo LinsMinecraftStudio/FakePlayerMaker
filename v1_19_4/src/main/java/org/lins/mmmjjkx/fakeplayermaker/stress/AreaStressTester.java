@@ -1,19 +1,18 @@
 package org.lins.mmmjjkx.fakeplayermaker.stress;
 
-import com.mojang.authlib.GameProfile;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStartEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStopEvent;
+import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTester;
+import io.github.linsminecraftstudio.fakeplayermaker.api.objects.EmptyConnection;
 import io.github.linsminecraftstudio.fakeplayermaker.api.objects.WorldNotFoundException;
 import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
-import net.minecraft.core.UUIDUtil;
-import net.minecraft.network.protocol.game.ClientboundAddPlayerPacket;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -27,6 +26,7 @@ import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 import java.util.*;
 
 import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils.getCraftClass;
+import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.simulateLogin;
 
 public class AreaStressTester implements IStressTester {
     private final Map<String, ServerPlayer> tempPlayers = new HashMap<>();
@@ -69,22 +69,22 @@ public class AreaStressTester implements IStressTester {
 
         for (int i = 0; i < amount; i++) {
             String finalName = randomNamePrefix + (i + 1);
-            UUID uuid = UUIDUtil.createOfflinePlayerUUID(finalName);
             BlockVector3 flatLocation = list.get(random.nextInt(list.size()));
+            Location loc = getHighestBlock(world, flatLocation.getX(), flatLocation.getZ());
 
             if (level == null) {
                 stop();
                 return;
             }
 
-            ServerPlayer player = new ServerPlayer(MinecraftServer.getServer(), level, new GameProfile(uuid, finalName));
+            Pair<Location, ServerPlayer> player = NMSFakePlayerMaker.createSimple(loc, finalName);
 
-            ClientboundAddPlayerPacket playerPacket = new ClientboundAddPlayerPacket(player);
-            getPlayerList().broadcastAll(playerPacket);
-            Location loc = getHighestBlock(world, flatLocation.getX(), flatLocation.getZ());
-            player.teleportTo(level, loc.getX(), loc.getY(), loc.getZ(), 0, 0);
+            Implementations.get().placePlayer(new EmptyConnection(), player.getRight());
+            player.getRight().teleportTo(level, loc.getX(), loc.getY(), loc.getZ(), 0, 0);
 
-            tempPlayers.put(player.getName().getString(), player);
+            simulateLogin(player.getRight());
+
+            tempPlayers.put(player.getValue().getName().getString(), player.getValue());
         }
 
         lastStartTimestamp = currentTimestamp;

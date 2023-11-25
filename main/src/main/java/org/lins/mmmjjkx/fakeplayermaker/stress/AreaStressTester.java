@@ -1,6 +1,5 @@
 package org.lins.mmmjjkx.fakeplayermaker.stress;
 
-import com.mojang.authlib.GameProfile;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
@@ -11,10 +10,10 @@ import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTeste
 import io.github.linsminecraftstudio.fakeplayermaker.api.objects.EmptyConnection;
 import io.github.linsminecraftstudio.fakeplayermaker.api.objects.WorldNotFoundException;
 import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
-import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -71,7 +70,6 @@ public class AreaStressTester implements IStressTester {
 
         for (int i = 0; i < amount; i++) {
             String finalName = randomNamePrefix + (i + 1);
-            UUID uuid = UUIDUtil.createOfflinePlayerUUID(finalName);
             BlockVector3 flatLocation = list.get(random.nextInt(list.size()));
 
             if (level == null) {
@@ -79,15 +77,11 @@ public class AreaStressTester implements IStressTester {
                 return;
             }
 
-            ServerPlayer player = Implementations.get().create(level, new GameProfile(uuid, finalName));
-
-            var connection = new EmptyConnection();
-            var listener = MinecraftUtils.getGamePacketListener(connection, player);
-
-            connection.setListener(listener);
-
-            Implementations.get().placePlayer(connection, player);
             Location loc = getHighestBlock(world, flatLocation.getX(), flatLocation.getZ());
+            Pair<Location, ServerPlayer> pair = NMSFakePlayerMaker.createSimple(loc, finalName);
+            ServerPlayer player = pair.getValue();
+
+            Implementations.get().placePlayer(new EmptyConnection(), player);
             player.teleportTo(level, loc.getX(), loc.getY(), loc.getZ(), 0, 0);
 
             simulateLogin(player);

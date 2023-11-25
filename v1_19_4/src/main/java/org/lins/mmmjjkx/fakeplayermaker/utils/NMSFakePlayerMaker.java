@@ -17,6 +17,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
@@ -90,6 +92,39 @@ public class NMSFakePlayerMaker {
         }
     }
 
+    public static Pair<Location, ServerPlayer> createSimple(Location loc, String name) {
+        if (name == null || name.isBlank()) {
+            name = getRandomName(FakePlayerMaker.randomNameLength);
+        }
+
+        if (!Strings.isNullOrEmpty(FakePlayerMaker.settings.getString("namePrefix"))) {
+            name = FakePlayerMaker.settings.getString("namePrefix") + name;
+        }
+
+        Location realLoc = loc != null ? loc : FakePlayerMaker.settings.getLocation("defaultSpawnLocation");
+        GameProfile profile = new GameProfile(UUIDUtil.createOfflinePlayerUUID(name), name);
+
+        if (realLoc == null) {
+            return ImmutablePair.right(new ServerPlayer(MinecraftServer.getServer(), MinecraftServer.getServer().overworld(), profile));
+        }
+
+
+        if (FakePlayerMaker.isProtocolLibLoaded()) {
+            try {
+                Player temp = FPMTempPlayerFactory.createPlayer(Bukkit.getServer(), name);
+                MinimalInjector injector = TemporaryPlayerFactory.getInjectorFromPlayer(temp);
+
+                return new ImmutablePair<>(realLoc, (ServerPlayer) getHandle(getCraftClass("entity.CraftPlayer"), injector.getPlayer()));
+            } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            ServerLevel level = (ServerLevel) Objects.requireNonNull(getHandle(getCraftClass("CraftWorld"), realLoc.getWorld()));
+
+            return new ImmutablePair<>(realLoc, new ServerPlayer(MinecraftServer.getServer(), level, profile));
+        }
+    }
+
     @Nullable
     public static ServerPlayer spawnFakePlayer(Location loc, String name, @Nullable CommandSender sender) {
         return spawnFakePlayer(loc, name, sender, true);
@@ -97,59 +132,19 @@ public class NMSFakePlayerMaker {
 
     @Nullable
     public static ServerPlayer spawnFakePlayer(Location loc, String name, @Nullable CommandSender sender, boolean runCMD) {
-        if (name == null || name.isBlank()) {
-            name = getRandomName(FakePlayerMaker.randomNameLength);
-        }
+        Pair<Location, ServerPlayer> player = createSimple(loc, name);
 
-        Location realLoc = loc != null ? loc : FakePlayerMaker.settings.getLocation("defaultSpawnLocation");
+        var connection = new EmptyConnection();
 
-        if (realLoc == null) {
-            FakePlayerMaker.INSTANCE.getLogger().warning("Failed to create a fake player, the default spawn location is null");
-            return null;
-        }
+        fakePlayerMap.put(name, player.getValue());
+        saver.syncPlayerInfo(player.getValue());
 
-        if (!Strings.isNullOrEmpty(FakePlayerMaker.settings.getString("namePrefix"))) {
-            name = FakePlayerMaker.settings.getString("namePrefix") + name;
-        }
+        new FakePlayerCreateEvent(player.getValue().getBukkitEntity(), sender).callEvent();
 
-        GameProfile profile = new GameProfile(UUIDUtil.createOfflinePlayerUUID(name), name);
+        FakePlayerMaker.guiHandler.setData(fakePlayerMap.values().stream().toList());
 
-        if (FakePlayerMaker.isProtocolLibLoaded()) {
-            try {
-                Player temp = FPMTempPlayerFactory.createPlayer(Bukkit.getServer(), name);
-                MinimalInjector injector = TemporaryPlayerFactory.getInjectorFromPlayer(temp);
-                ServerPlayer handle = (ServerPlayer) getHandle(getCraftClass("entity.CraftPlayer"), injector.getPlayer());
-                fakePlayerMap.put(name, handle);
-
-                if (handle != null) {
-                    saver.syncPlayerInfo(handle);
-                }
-
-                new FakePlayerCreateEvent(temp, sender).callEvent();
-                var connection = new EmptyConnection();
-
-                FakePlayerMaker.guiHandler.setData(fakePlayerMap.values().stream().toList());
-
-                playerJoin(handle, connection, MinecraftUtils.getGamePacketListener(connection, handle), true, loc);
-                return handle;
-            } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            ServerLevel level = (ServerLevel) Objects.requireNonNull(getHandle(getCraftClass("CraftWorld"), realLoc.getWorld()));
-            ServerPlayer player = new ServerPlayer(MinecraftServer.getServer(), level, profile);
-            var connection = new EmptyConnection();
-
-            fakePlayerMap.put(name, player);
-            saver.syncPlayerInfo(player);
-
-            new FakePlayerCreateEvent(Implementations.bukkitEntity(player), sender).callEvent();
-
-            FakePlayerMaker.guiHandler.setData(fakePlayerMap.values().stream().toList());
-
-            playerJoin(player, connection, MinecraftUtils.getGamePacketListener(connection, player), runCMD, realLoc);
-            return player;
-        }
+        playerJoin(player.getValue(), connection, MinecraftUtils.getGamePacketListener(connection, player.getValue()), runCMD, player.getKey());
+        return player.getValue();
     }
 
     private static void playerJoin(ServerPlayer player, EmptyConnection connection, ServerGamePacketListenerImpl listener, boolean runCMD, @Nullable Location realLoc) {
@@ -285,4 +280,6 @@ public class NMSFakePlayerMaker {
             }
         };
     }
+
+
 }

@@ -1,15 +1,14 @@
 package org.lins.mmmjjkx.fakeplayermaker.stress;
 
-import com.mojang.authlib.GameProfile;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStartEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStopEvent;
+import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTester;
+import io.github.linsminecraftstudio.fakeplayermaker.api.objects.EmptyConnection;
 import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
-import net.minecraft.core.UUIDUtil;
-import net.minecraft.network.protocol.game.ClientboundAddPlayerPacket;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -20,9 +19,13 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils.getCraftClass;
+import static org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker.simulateLogin;
 
 public class RandomWorldStressTester implements IStressTester {
     private final Map<String, ServerPlayer> tempPlayers = new HashMap<>();
@@ -83,13 +86,13 @@ public class RandomWorldStressTester implements IStressTester {
     private void placePlayer(String randomNamePrefix, ServerLevel level, int amount) {
         for (int i = 0; i < amount; i++) {
             String finalName = randomNamePrefix + (i + 1);
-            UUID uuid = UUIDUtil.createOfflinePlayerUUID(finalName);
             Location location = generate(level.getWorld());
 
-            ServerPlayer player = new ServerPlayer(MinecraftServer.getServer(), level, new GameProfile(uuid, finalName));
+            Pair<Location, ServerPlayer> pair = NMSFakePlayerMaker.createSimple(location, finalName);
+            ServerPlayer player = pair.getRight();
 
-            ClientboundAddPlayerPacket playerPacket = new ClientboundAddPlayerPacket(player);
-            MinecraftServer.getServer().getPlayerList().broadcastAll(playerPacket);
+            Implementations.get().placePlayer(new EmptyConnection(), player);
+            simulateLogin(player);
 
             player.teleportTo(level, location.getX(), location.getY(), location.getZ(), 0, 0);
 
