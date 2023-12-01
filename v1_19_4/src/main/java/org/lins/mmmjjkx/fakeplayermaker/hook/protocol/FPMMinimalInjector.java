@@ -5,7 +5,6 @@ import com.comphenix.protocol.injector.temporary.MinimalInjector;
 import com.mojang.authlib.GameProfile;
 import io.github.linsminecraftstudio.fakeplayermaker.api.objects.EmptyConnection;
 import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
-import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -16,6 +15,7 @@ import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Objects;
+import java.util.UUID;
 
 import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils.getCraftClass;
 import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils.getHandle;
@@ -45,7 +45,7 @@ public class FPMMinimalInjector implements MinimalInjector {
     @Override
     public Player getPlayer() {
         ServerLevel level = (ServerLevel) Objects.requireNonNull(getHandle(getCraftClass("CraftWorld"), Objects.requireNonNull(FakePlayerMaker.settings.getLocation("defaultSpawnLocation")).getWorld()));
-        ServerPlayer player = new ServerPlayer(MinecraftServer.getServer(), level, new GameProfile(UUIDUtil.createOfflinePlayerUUID(name), name));
+        ServerPlayer player = new ServerPlayer(MinecraftServer.getServer(), level, new GameProfile(UUID.randomUUID(), name));
         var connection = new EmptyConnection();
         player.connection = MinecraftUtils.getGamePacketListener(connection, player);
         return player.getBukkitEntity();

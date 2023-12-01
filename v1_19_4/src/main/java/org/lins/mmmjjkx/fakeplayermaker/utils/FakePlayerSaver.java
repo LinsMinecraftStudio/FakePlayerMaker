@@ -2,13 +2,12 @@ package org.lins.mmmjjkx.fakeplayermaker.utils;
 
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
+import com.google.common.base.Strings;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import io.github.linsminecraftstudio.polymer.objects.plugin.file.SingleFileStorage;
 import io.github.linsminecraftstudio.polymer.utils.ListUtil;
 import io.github.linsminecraftstudio.polymer.utils.ObjectConverter;
-import joptsimple.internal.Strings;
-import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -78,7 +77,7 @@ public class FakePlayerSaver extends SingleFileStorage {
         for (String sectionName : configuration.getKeys(false)) {
             ConfigurationSection section = configuration.getConfigurationSection(sectionName);
             if (section == null) continue;
-            UUID uuid = UUID.fromString(section.getString("uuid", String.valueOf(UUIDUtil.createOfflinePlayerUUID(sectionName))));
+            UUID uuid = UUID.fromString(section.getString("uuid", String.valueOf(UUID.randomUUID())));
             Location location = ObjectConverter.toLocation(section.getString("location", ""));
             if (location == null) continue;
             String skin = null, signature = null;

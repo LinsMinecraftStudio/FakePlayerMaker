@@ -79,13 +79,12 @@ public abstract class Implementations {
     public abstract ServerPlayer create(@NotNull ServerLevel level, @NotNull GameProfile profile);
 
     private static class v1_20_1 extends Implementations {
-        private final Method placePlayer;
+        private Method placePlayer;
 
         public v1_20_1() {
             try {
                 placePlayer = playerListClass.getMethod("a", Connection.class, ServerPlayer.class);
-            } catch (NoSuchMethodException e) {
-                throw new RuntimeException(e);
+            } catch (NoSuchMethodException ignored) {
             }
         }
 

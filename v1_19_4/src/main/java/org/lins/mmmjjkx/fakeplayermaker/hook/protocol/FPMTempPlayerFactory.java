@@ -19,7 +19,6 @@ import net.bytebuddy.matcher.ElementMatchers;
 import net.bytebuddy.utility.nullability.AlwaysNull;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
@@ -105,9 +104,10 @@ public class FPMTempPlayerFactory {
                     case "getName" -> {
                         return name;
                     }
-                    case "getUniqueId" -> {
-                        return UUIDUtil.createOfflinePlayerUUID(name);
-                    }
+                }
+
+                if (methodName.equals("getUniqueId")) {
+                    return getNMSPlayer(player).getUUID();
                 }
 
                 //new methods

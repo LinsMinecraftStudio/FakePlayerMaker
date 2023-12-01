@@ -11,7 +11,6 @@ import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.FakePlayerCo
 import io.github.linsminecraftstudio.fakeplayermaker.api.objects.EmptyConnection;
 import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
 import net.kyori.adventure.text.Component;
-import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -101,7 +100,7 @@ public class NMSFakePlayerMaker {
         }
 
         Location realLoc = loc != null ? loc : FakePlayerMaker.settings.getLocation("defaultSpawnLocation");
-        GameProfile profile = new GameProfile(UUIDUtil.createOfflinePlayerUUID(name), name);
+        GameProfile profile = new GameProfile(UUID.randomUUID(), name);
 
         if (realLoc == null) {
             return ImmutablePair.right(new ServerPlayer(MinecraftServer.getServer(), MinecraftServer.getServer().overworld(), profile));

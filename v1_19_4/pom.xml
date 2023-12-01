@@ -47,6 +47,15 @@
 							<goal>shade</goal>
 						</goals>
 						<configuration>
+							<filters>
+								<filter>
+									<artifact>*:*</artifact>
+									<excludes>
+										<exclude>io/github/linsminecraftstudio/fakeplayermaker/api/implementation/**
+										</exclude>
+									</excludes>
+								</filter>
+							</filters>
 							<createDependencyReducedPom>false</createDependencyReducedPom>
 						</configuration>
 					</execution>
@@ -101,13 +110,13 @@
 		<dependency>
 			<groupId>ca.bkaw</groupId>
 			<artifactId>paper-nms</artifactId>
-			<version>1.19.4-SNAPSHOT</version>
+			<version>1.18.2-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.papermc.paper</groupId>
 			<artifactId>paper-api</artifactId>
-			<version>1.19.4-R0.1-SNAPSHOT</version>
+			<version>1.18.2-R0.1-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -119,6 +128,19 @@
 			<groupId>com.comphenix.protocol</groupId>
 			<artifactId>ProtocolLib</artifactId>
 			<version>5.1.0</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>ca.bkaw</groupId>
+			<artifactId>paper-nms</artifactId>
+			<version>1.19.4-SNAPSHOT</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.papermc.paper</groupId>
+			<artifactId>paper-api</artifactId>
+			<version>1.19.4-R0.1-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 

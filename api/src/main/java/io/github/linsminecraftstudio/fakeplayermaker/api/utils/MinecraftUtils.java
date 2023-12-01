@@ -37,6 +37,9 @@ import java.util.logging.Logger;
 public class MinecraftUtils {
     public static final Logger LOGGER = LogManager.getLogManager().getLogger("FakePlayerMaker");
 
+    private MinecraftUtils() {
+    }
+
     public static ServerGamePacketListenerImpl getGamePacketListener(Connection connection, ServerPlayer player) {
         if (!Bukkit.getMinecraftVersion().equals("1.20.2")) {
             try {
