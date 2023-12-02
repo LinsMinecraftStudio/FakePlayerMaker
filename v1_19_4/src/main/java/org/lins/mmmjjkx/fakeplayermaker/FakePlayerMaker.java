@@ -54,7 +54,7 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
         fakePlayerSaver = new FakePlayerSaver();
         stressTestSaver = new StressTestSaver();
 
-        startMetrics(19435);
+        startMetrics(19345);
 
         randomNameLength = settings.getInt("randomNameLength");
         defaultSpawnLocation = settings.getLocation("defaultSpawnLocation");
@@ -95,7 +95,7 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
 
     @Override
     public String requireVersion() {
-        return "1.4";
+        return "1.4.1";
     }
 
     @Override

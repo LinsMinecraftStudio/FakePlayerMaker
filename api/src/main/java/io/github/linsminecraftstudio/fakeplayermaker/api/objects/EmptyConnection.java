@@ -1,14 +1,14 @@
 package io.github.linsminecraftstudio.fakeplayermaker.api.objects;
 
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.embedded.EmbeddedChannel;
+import io.netty.channel.*;
+import io.netty.util.internal.SocketUtils;
 import net.minecraft.network.BandwidthDebugMonitor;
 import net.minecraft.network.Connection;
 import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.util.SampleLogger;
 import org.bukkit.Bukkit;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
@@ -20,8 +20,12 @@ public final class EmptyConnection extends Connection {
     public EmptyConnection() {
         super(PacketFlow.SERVERBOUND);
 
-        ModifiedEmbeddedChannel theChannel = new ModifiedEmbeddedChannel();
+        EmptyChannel theChannel = new EmptyChannel();
+        EventLoopGroup loop = new DefaultEventLoopGroup();
+        loop.register(theChannel);
+
         theChannel.bind(new InetSocketAddress(InetAddress.getLoopbackAddress(), 60000));
+
         configSerialization(theChannel.pipeline());
 
         if (Bukkit.getMinecraftVersion().equals("1.20.2")) {
@@ -62,19 +66,84 @@ public final class EmptyConnection extends Connection {
         }
     }
 
-    private static class ModifiedEmbeddedChannel extends EmbeddedChannel {
-        public ModifiedEmbeddedChannel() {
-            super();
+    private static class EmptyChannel extends AbstractChannel {
+        private final static EventLoop EVENT_LOOP = new DefaultEventLoop();
+        private final DefaultChannelConfig config = new DefaultChannelConfig(this);
+
+        public EmptyChannel() {
+            super(null);
+        }
+
+        @Override
+        public ChannelConfig config() {
+            config.setAutoRead(true);
+            return config;
+        }
+
+        @Override
+        protected void doBeginRead() {
+        }
+
+        @Override
+        protected void doBind(@NotNull SocketAddress arg0) throws Exception {
+            SocketUtils.bind(java.nio.channels.SocketChannel.open(), arg0);
+        }
+
+        @Override
+        protected void doClose() {
+        }
+
+        @Override
+        protected void doDisconnect() {
+        }
+
+        @Override
+        protected void doWrite(ChannelOutboundBuffer arg0) {
+        }
+
+        @Override
+        public boolean isActive() {
+            return true;
+        }
+
+        @Override
+        protected boolean isCompatible(EventLoop arg0) {
+            return true;
+        }
+
+        @Override
+        public boolean isOpen() {
+            return true;
+        }
+
+        @Override
+        protected SocketAddress localAddress0() {
+            return new InetSocketAddress(60000);
+        }
+
+        @Override
+        public ChannelMetadata metadata() {
+            return new ChannelMetadata(true);
+        }
+
+        @Override
+        protected AbstractUnsafe newUnsafe() {
+            return new AbstractUnsafe() {
+                @Override
+                public void connect(SocketAddress remoteAddress, SocketAddress localAddress, ChannelPromise promise) {
+                    safeSetSuccess(promise);
+                }
+            };
         }
 
         @Override
         protected SocketAddress remoteAddress0() {
-            return InetSocketAddress.createUnresolved("127.0.0.1", 60000);
+            return new InetSocketAddress(60000);
         }
 
         @Override
-        public SocketAddress remoteAddress() {
-            return remoteAddress0();
+        public EventLoop eventLoop() {
+            return EVENT_LOOP;
         }
     }
 }
