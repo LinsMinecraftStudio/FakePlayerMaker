@@ -20,18 +20,41 @@ import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.entity.vehicle.Minecart;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.bukkit.Bukkit;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 public class ActionUtils {
+    private static Constructor<ChatProcessor> chatProcessorConstructor;
+
+    static {
+        try {
+            chatProcessorConstructor = ChatProcessor.class.getDeclaredConstructor(MinecraftServer.class, ServerPlayer.class, String.class, boolean.class);
+        } catch (Exception ignored) {
+        }
+    }
+
     public static void chat(ServerPlayer player, String message) {
-        MinecraftUtils.scheduleNoDelay(FakePlayerMaker.INSTANCE, () -> {
-            ChatDecorator.ModernResult result = new ChatDecorator.ModernResult(Component.text(message), true, true);
-            PlayerChatMessage message1 = new PlayerChatMessage(SignedMessageLink.unsigned(player.getUUID()), null, SignedMessageBody.unsigned(message), null, FilterMask.PASS_THROUGH, result);
-            ChatProcessor processor = new ChatProcessor(MinecraftServer.getServer(), player, message1, true);
-            processor.process();
-        }, true);
+        if (Bukkit.getMinecraftVersion().equals("1.19.4")) {
+            MinecraftUtils.scheduleNoDelay(FakePlayerMaker.INSTANCE, () -> {
+                ChatDecorator.ModernResult result = new ChatDecorator.ModernResult(Component.text(message), true, true);
+                PlayerChatMessage message1 = new PlayerChatMessage(SignedMessageLink.unsigned(player.getUUID()), null, SignedMessageBody.unsigned(message), null, FilterMask.PASS_THROUGH, result);
+                ChatProcessor processor = new ChatProcessor(MinecraftServer.getServer(), player, message1, true);
+                processor.process();
+            }, true);
+        } else {
+            MinecraftUtils.scheduleNoDelay(FakePlayerMaker.INSTANCE, () -> {
+                try {
+                    ChatProcessor processor = chatProcessorConstructor.newInstance(MinecraftServer.getServer(), player, message, true);
+                    processor.process();
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                    throw new RuntimeException(e);
+                }
+            }, true);
+        }
     }
 
     public static void lookAtBlock(ServerPlayer player, Vec3 v3) {

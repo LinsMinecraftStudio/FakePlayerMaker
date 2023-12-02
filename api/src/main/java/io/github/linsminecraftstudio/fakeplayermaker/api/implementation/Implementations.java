@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils.getCraftClass;
+import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils.handleLuckPerms;
 
 /**
  * Just an implementation in different versions of Minecraft.
@@ -131,7 +132,8 @@ public abstract class Implementations {
         public void placePlayer(Connection connection, ServerPlayer player) {
             try {
                 placePlayer.invoke(this.getPlayerList(), connection, player);
-            } catch (Exception e) {
+                handleLuckPerms(bukkitEntity(player));
+            } catch (IllegalAccessException | InvocationTargetException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -161,6 +163,7 @@ public abstract class Implementations {
         public void placePlayer(Connection connection, ServerPlayer player) {
             PlayerList list = MinecraftUtils.getNMSServer().getPlayerList();
             list.placeNewPlayer(connection, player, CommonListenerCookie.createInitial(this.profile(player)));
+            handleLuckPerms(bukkitEntity(player));
         }
 
         @Override

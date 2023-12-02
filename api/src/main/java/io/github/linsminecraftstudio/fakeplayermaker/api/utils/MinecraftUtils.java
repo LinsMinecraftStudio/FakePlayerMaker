@@ -16,6 +16,8 @@ import net.bytebuddy.implementation.FieldAccessor;
 import net.bytebuddy.implementation.MethodCall;
 import net.bytebuddy.implementation.MethodDelegation;
 import net.bytebuddy.matcher.ElementMatchers;
+import net.luckperms.api.LuckPermsProvider;
+import net.luckperms.api.model.user.UserManager;
 import net.minecraft.network.Connection;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -30,6 +32,7 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -160,5 +163,19 @@ public class MinecraftUtils {
 
         playerProfile.setProperty(new ProfileProperty("textures", value, signature));
         bukkit.setPlayerProfile(playerProfile);
+    }
+
+    public static void handleLuckPerms(Player p) {
+        if (Bukkit.getPluginManager().isPluginEnabled("LuckPerms")) {
+            UserManager um = LuckPermsProvider.get().getUserManager();
+            if (!um.isLoaded(p.getUniqueId())) {
+                try {
+                    um.savePlayerData(p.getUniqueId(), p.getName()).get();
+                    um.loadUser(p.getUniqueId(), p.getName()).get();
+                } catch (InterruptedException | ExecutionException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
     }
 }

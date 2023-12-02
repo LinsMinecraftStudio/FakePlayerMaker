@@ -18,8 +18,6 @@ Spigotmc: https://www.spigotmc.org/resources/fakeplayermaker.111767/
 
 ## API
 
-![](https://img.shields.io/nexus/s/io.github.linsminecraftstudio/FakePlayerMakerAPI?server=https%3A%2F%2Fs01.oss.sonatype.org%2F&style=flat&label=Version&color=blue)
-
 ```xml
 <repositories>
     <repository>

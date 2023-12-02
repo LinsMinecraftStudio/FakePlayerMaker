@@ -269,7 +269,7 @@ public class NMSFakePlayerMaker {
 
             @Override
             public @Nullable Player getFakePlayer(String name) {
-                return fakePlayerMap.get(name).getBukkitEntity();
+                return fakePlayerMap.get(name) != null ? fakePlayerMap.get(name).getBukkitEntity() : null;
             }
 
             @Override
