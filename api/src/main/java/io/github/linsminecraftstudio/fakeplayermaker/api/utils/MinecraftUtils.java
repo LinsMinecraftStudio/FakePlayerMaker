@@ -165,7 +165,7 @@ public class MinecraftUtils {
         bukkit.setPlayerProfile(playerProfile);
     }
 
-    public static void handleLuckPerms(Player p) {
+    public static void handlePlugins(Player p) {
         if (Bukkit.getPluginManager().isPluginEnabled("LuckPerms")) {
             UserManager um = LuckPermsProvider.get().getUserManager();
             if (!um.isLoaded(p.getUniqueId())) {

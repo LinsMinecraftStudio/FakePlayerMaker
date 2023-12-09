@@ -21,9 +21,11 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils.getCraftClass;
-import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils.handleLuckPerms;
+import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils.handlePlugins;
 
 /**
  * Just an implementation in different versions of Minecraft.
@@ -131,9 +133,15 @@ public abstract class Implementations {
         @Override
         public void placePlayer(Connection connection, ServerPlayer player) {
             try {
-                placePlayer.invoke(this.getPlayerList(), connection, player);
-                handleLuckPerms(bukkitEntity(player));
-            } catch (IllegalAccessException | InvocationTargetException e) {
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        placePlayer.invoke(this.getPlayerList(), connection, player);
+                    } catch (IllegalAccessException | InvocationTargetException e) {
+                        throw new RuntimeException(e);
+                    }
+                    handlePlugins(bukkitEntity(player));
+                }).get();
+            } catch (InterruptedException | ExecutionException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -161,9 +169,15 @@ public abstract class Implementations {
 
         @Override
         public void placePlayer(Connection connection, ServerPlayer player) {
-            PlayerList list = MinecraftUtils.getNMSServer().getPlayerList();
-            list.placeNewPlayer(connection, player, CommonListenerCookie.createInitial(this.profile(player)));
-            handleLuckPerms(bukkitEntity(player));
+            try {
+                CompletableFuture.runAsync(() -> {
+                    PlayerList list = MinecraftUtils.getNMSServer().getPlayerList();
+                    list.placeNewPlayer(connection, player, CommonListenerCookie.createInitial(this.profile(player)));
+                }).get();
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException(e);
+            }
+            handlePlugins(bukkitEntity(player));
         }
 
         @Override

@@ -1,6 +1,6 @@
 language: en-us
-namePrefix: "fake_"
-randomNameLength: 10
+namePrefix: "fak_"
+randomNameLength: 8
 checkUpdate: true
 player:
   invulnerable: false

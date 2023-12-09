@@ -106,7 +106,6 @@ public class NMSFakePlayerMaker {
             return ImmutablePair.right(new ServerPlayer(MinecraftServer.getServer(), MinecraftServer.getServer().overworld(), profile));
         }
 
-
         if (FakePlayerMaker.isProtocolLibLoaded()) {
             try {
                 Player temp = FPMTempPlayerFactory.createPlayer(Bukkit.getServer(), name);
@@ -155,6 +154,7 @@ public class NMSFakePlayerMaker {
 
         server.getPlayerList().placeNewPlayer(connection, player);
         simulateLogin(player);
+        MinecraftUtils.handlePlugins(player.getBukkitEntity());
 
         player.teleportTo(level, realLoc.getX(), realLoc.getY(), realLoc.getZ(), realLoc.getYaw(), realLoc.getPitch());
 

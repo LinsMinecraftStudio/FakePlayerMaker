@@ -155,11 +155,12 @@ public class NMSFakePlayerMaker{
         player.setLevel(level);
 
         Implementations.get().placePlayer(connection, player);
+
+        MinecraftUtils.preventListen("su.nexmedia.engine.NexPlugin");
+
         simulateLogin(player);
 
         player.teleportTo(level, realLoc.getX(), realLoc.getY(), realLoc.getZ(), realLoc.getYaw(), realLoc.getPitch());
-
-        MinecraftUtils.preventListen("su.nexmedia.engine.NexPlugin");
 
         ActionUtils.setupValues(player);
 
