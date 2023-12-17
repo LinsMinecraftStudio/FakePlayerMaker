@@ -1,6 +1,7 @@
 package org.lins.mmmjjkx.fakeplayermaker;
 
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.FPMPluginLoadEvent;
+import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.ActionImpl;
 import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
 import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
 import io.github.linsminecraftstudio.polymer.command.PolymerCommand;
@@ -18,8 +19,12 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.lins.mmmjjkx.fakeplayermaker.command.FPMCommand;
 import org.lins.mmmjjkx.fakeplayermaker.gui.ListFakePlayerGUIHandler;
+import org.lins.mmmjjkx.fakeplayermaker.impl_1182.V1182ActionImpl;
+import org.lins.mmmjjkx.fakeplayermaker.impl_1182.V1182Impl;
+import org.lins.mmmjjkx.fakeplayermaker.impl_1194.V1194ActionImpl;
+import org.lins.mmmjjkx.fakeplayermaker.impl_1194.V1194Impl;
 import org.lins.mmmjjkx.fakeplayermaker.stress.StressTestSaver;
-import org.lins.mmmjjkx.fakeplayermaker.utils.ActionUtils;
+import org.lins.mmmjjkx.fakeplayermaker.utils.V120ActionImpl;
 import org.lins.mmmjjkx.fakeplayermaker.utils.FakePlayerSaver;
 import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 
@@ -50,10 +55,12 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
                                                    |___/                                     \s
                                                                  
                  version %s by mmmjjkx
-                """.formatted(getPluginMeta().getVersion()));
+                """.formatted(getDescription().getVersion()));
         suggestSpark();
         INSTANCE = this;
-        Implementations.setup();
+
+        handleImplementations();
+
         settings = new SimpleSettingsManager(this);
         fakePlayerSaver = new FakePlayerSaver();
         stressTestSaver = new StressTestSaver();
@@ -74,7 +81,7 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
         if (settings.getBoolean("checkUpdate")) {
             new OtherUtils.Updater(111767, (ver, success) -> {
                 if (success) {
-                    if (ver.equals(getPluginMeta().getVersion())) {
+                    if (ver.equals(getDescription().getVersion())) {
                         getLogger().info("You are using the latest version!");
                     } else {
                         getLogger().warning("There is a new version available! New version: " + ver + " Old version: " + getPluginMeta().getVersion());
@@ -84,6 +91,18 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
                 }
             });
         }
+    }
+
+    private void handleImplementations() {
+        Implementations.setup();
+
+        new V120ActionImpl();
+
+        new V1194Impl();
+        new V1194ActionImpl();
+
+        new V1182Impl();
+        new V1182ActionImpl();
     }
 
     @Override
@@ -127,7 +146,7 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
         if (player != null && NMSFakePlayerMaker.fakePlayerMap.containsKey(Implementations.getName(player))) {
             Location loc = e.getPlayer().getLocation();
             e.getPlayer().spigot().respawn();
-            ActionUtils.setupValues(player);
+            ActionImpl.setupValues(settings, player);
             if (settings.getBoolean("player.respawnBack")) {
                 e.getPlayer().teleport(loc);
             }

@@ -1,5 +1,6 @@
 package org.lins.mmmjjkx.fakeplayermaker.command;
 
+import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.ActionImpl;
 import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTester;
 import io.github.linsminecraftstudio.fakeplayermaker.api.objects.WorldNotFoundException;
@@ -20,7 +21,6 @@ import org.jetbrains.annotations.NotNull;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.stress.AreaStressTester;
 import org.lins.mmmjjkx.fakeplayermaker.stress.RandomWorldStressTester;
-import org.lins.mmmjjkx.fakeplayermaker.utils.ActionUtils;
 import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 
 import java.io.IOException;
@@ -158,7 +158,7 @@ public class FPMCommand extends PolymerCommand {
                             sendMessage(commandSender, "PlayerNotFound");
                             return;
                         }
-                        ActionUtils.mountNearest(player);
+                        ActionImpl.get().mountNearest(player);
                     }
                     case "unmount" -> {
                         ServerPlayer player = NMSFakePlayerMaker.fakePlayerMap.get(name);
@@ -166,7 +166,7 @@ public class FPMCommand extends PolymerCommand {
                             sendMessage(commandSender, "PlayerNotFound");
                             return;
                         }
-                        ActionUtils.unmount(player);
+                        ActionImpl.get().unmount(player);
                     }
                     case "inventory" -> {
                         ServerPlayer player = NMSFakePlayerMaker.fakePlayerMap.get(name);
@@ -217,7 +217,7 @@ public class FPMCommand extends PolymerCommand {
                             sendMessage("PlayerNotFound");
                             return;
                         }
-                        ActionUtils.chat(player, chat);
+                        ActionImpl.get().chat(FakePlayerMaker.INSTANCE, player, chat);
                         return;
                     }
                     case "look" -> {
@@ -228,7 +228,7 @@ public class FPMCommand extends PolymerCommand {
                         }
                         try {
                             Direction direction = Direction.valueOf(strings[2].toUpperCase());
-                            ActionUtils.look(player, direction);
+                            ActionImpl.get().look(player, direction);
                             return;
                         } catch (IllegalArgumentException e) {
                             sendMessage(commandSender, "InvalidDirection");
@@ -415,7 +415,7 @@ public class FPMCommand extends PolymerCommand {
                         if (x != PolymerConstants.ERROR_CODE && y != PolymerConstants.ERROR_CODE && z != PolymerConstants.ERROR_CODE) {
                             ServerPlayer player = NMSFakePlayerMaker.fakePlayerMap.get(name);
                             if (player != null) {
-                                ActionUtils.lookAtBlock(player, new Vec3(x, y, z));
+                                ActionImpl.get().lookAtBlock(player, new Vec3(x, y, z));
                             } else {
                                 sendMessage(commandSender, "PlayerNotFound");
                             }

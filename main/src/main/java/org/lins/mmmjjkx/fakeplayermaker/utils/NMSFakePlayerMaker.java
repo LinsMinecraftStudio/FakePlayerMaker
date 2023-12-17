@@ -7,6 +7,7 @@ import com.google.common.base.Strings;
 import com.mojang.authlib.GameProfile;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.FakePlayerCreateEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.events.FakePlayerRemoveEvent;
+import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.ActionImpl;
 import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.FakePlayerController;
 import io.github.linsminecraftstudio.fakeplayermaker.api.objects.EmptyConnection;
@@ -61,7 +62,7 @@ public class NMSFakePlayerMaker{
 
                 fakePlayerMap.put(Implementations.getName(player), player);
 
-                ActionUtils.setupValues(player);
+                ActionImpl.setupValues(FakePlayerMaker.settings, player);
 
                 MinecraftUtils.preventListen("su.nexmedia.engine.NexPlugin");
 
@@ -81,7 +82,7 @@ public class NMSFakePlayerMaker{
                 cmd = cmd.replaceAll("%player%", p.getName());
             }
             if (cmd.startsWith("chat:")) {
-                ActionUtils.chat(player,  cmd.replace("chat:", ""));
+                ActionImpl.get().chat(FakePlayerMaker.INSTANCE, player,  cmd.replace("chat:", ""));
                 continue;
             }
             Bukkit.dispatchCommand(p, cmd);
@@ -162,7 +163,7 @@ public class NMSFakePlayerMaker{
 
         player.teleportTo(level, realLoc.getX(), realLoc.getY(), realLoc.getZ(), realLoc.getYaw(), realLoc.getPitch());
 
-        ActionUtils.setupValues(player);
+        ActionImpl.setupValues(FakePlayerMaker.settings, player);
 
         if (runCMD) {
             runCMDs(player, connection, listener);
