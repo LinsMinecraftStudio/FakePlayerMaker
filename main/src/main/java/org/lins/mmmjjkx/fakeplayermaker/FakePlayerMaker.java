@@ -19,12 +19,15 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.lins.mmmjjkx.fakeplayermaker.command.FPMCommand;
 import org.lins.mmmjjkx.fakeplayermaker.gui.ListFakePlayerGUIHandler;
+import org.lins.mmmjjkx.fakeplayermaker.impl.V1202ActionImpl;
+import org.lins.mmmjjkx.fakeplayermaker.impl.V1202Impl;
 import org.lins.mmmjjkx.fakeplayermaker.impl_1182.V1182ActionImpl;
 import org.lins.mmmjjkx.fakeplayermaker.impl_1182.V1182Impl;
 import org.lins.mmmjjkx.fakeplayermaker.impl_1194.V1194ActionImpl;
 import org.lins.mmmjjkx.fakeplayermaker.impl_1194.V1194Impl;
+import org.lins.mmmjjkx.fakeplayermaker.impl_1201.V1201ActionImpl;
+import org.lins.mmmjjkx.fakeplayermaker.impl_1201.V1201Impl;
 import org.lins.mmmjjkx.fakeplayermaker.stress.StressTestSaver;
-import org.lins.mmmjjkx.fakeplayermaker.utils.V120ActionImpl;
 import org.lins.mmmjjkx.fakeplayermaker.utils.FakePlayerSaver;
 import org.lins.mmmjjkx.fakeplayermaker.utils.NMSFakePlayerMaker;
 
@@ -94,15 +97,17 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
     }
 
     private void handleImplementations() {
-        Implementations.setup();
+        Implementations.register(new V1202Impl());
+        ActionImpl.register(new V1202ActionImpl());
 
-        new V120ActionImpl();
+        Implementations.register(new V1201Impl());
+        ActionImpl.register(new V1201ActionImpl());
 
-        new V1194Impl();
-        new V1194ActionImpl();
+        Implementations.register(new V1194Impl());
+        ActionImpl.register(new V1194ActionImpl());
 
-        new V1182Impl();
-        new V1182ActionImpl();
+        Implementations.register(new V1182Impl());
+        ActionImpl.register(new V1182ActionImpl());
     }
 
     @Override

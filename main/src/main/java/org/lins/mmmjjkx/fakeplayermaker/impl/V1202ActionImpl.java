@@ -1,4 +1,4 @@
-package org.lins.mmmjjkx.fakeplayermaker.utils;
+package org.lins.mmmjjkx.fakeplayermaker.impl;
 
 import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.ActionImpl;
 import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
@@ -22,14 +22,12 @@ import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.entity.vehicle.Minecart;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
-public class V120ActionImpl extends ActionImpl {
-    private static final Class<ServerPlayer> clazz = ServerPlayer.class;
+public class V1202ActionImpl extends ActionImpl {
+
     public void chat(PolymerPlugin plugin, ServerPlayer player, String message) {
         MinecraftUtils.scheduleNoDelay(plugin, () -> {
             ChatDecorator.ModernResult result = new ChatDecorator.ModernResult(Component.text(message), true, true);
@@ -49,8 +47,8 @@ public class V120ActionImpl extends ActionImpl {
             case SOUTH -> look(player, 0, 0);
             case EAST  -> look(player, -90, 0);
             case WEST  -> look(player, 90, 0);
-            case UP    -> look(player, getYRot(player), -90);
-            case DOWN  -> look(player, getYRot(player), 90);
+            case UP -> look(player, player.getYRot(), -90);
+            case DOWN -> look(player, player.getYRot(), 90);
         }
     }
 
@@ -60,22 +58,13 @@ public class V120ActionImpl extends ActionImpl {
 
         Player bukkit = Implementations.bukkitEntity(player);
 
-        MinecraftUtils.getNMSServer().getPlayerList().broadcastAll(new ClientboundRotateHeadPacket(player, (byte) (getYRot(player) % 360 * 256 / 360)));
-        MinecraftUtils.getNMSServer().getPlayerList().broadcastAll(new ClientboundMoveEntityPacket.Rot(getID(player), (byte) (getYRot(player) % 360 * 256 / 360), (byte) (bukkit.getPitch() % 360 * 256 / 360), bukkit.isOnGround()));
+        MinecraftUtils.getNMSServer().getPlayerList().broadcastAll(new ClientboundRotateHeadPacket(player, (byte) (player.getYRot() % 360 * 256 / 360)));
+        MinecraftUtils.getNMSServer().getPlayerList().broadcastAll(new ClientboundMoveEntityPacket.Rot(player.getId(), (byte) (player.getYRot() % 360 * 256 / 360), (byte) (bukkit.getPitch() % 360 * 256 / 360), bukkit.isOnGround()));
     }
 
     public void mountNearest(ServerPlayer player) {
         ServerLevel level = player.serverLevel();
-        AABB boundingBox = switch (Bukkit.getMinecraftVersion()) {
-            case "1.20.1" -> {
-                try {
-                    yield (AABB) clazz.getMethod("cE").invoke(player);
-                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            default -> player.getBoundingBox();
-        };
+        AABB boundingBox = player.getBoundingBox();
         List<Entity> rideable = ListUtil.getAllMatches(level.getEntities(player, boundingBox.inflate(3,2,3)), e ->
                 e instanceof Minecart || e instanceof AbstractHorse || e instanceof Boat);
         if (!rideable.isEmpty()) {
@@ -85,43 +74,11 @@ public class V120ActionImpl extends ActionImpl {
     }
 
     public void unmount(ServerPlayer player) {
-        try {
-            switch (Bukkit.getMinecraftVersion()) {
-                case "1.20.1" -> clazz.getMethod("Y").invoke(player);
-                case "1.20.2" -> clazz.getMethod("aa").invoke(player);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        player.stopRiding();
     }
-
-    private static int getID(ServerPlayer player) {
-        try {
-            return switch (Bukkit.getMinecraftVersion()) {
-                case "1.20.1" -> (int) clazz.getMethod("af").invoke(player);
-                case "1.20.2" -> player.getId();
-                default -> 0;
-            };
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private float getYRot(ServerPlayer player) {
-        try {
-            return switch (Bukkit.getMinecraftVersion()) {
-                case "1.20.1" -> (float) clazz.getMethod("dy").invoke(player);
-                case "1.20.2" -> player.getYRot();
-                default -> 0;
-            };
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
 
     @Override
     public String[] minecraftVersion() {
-        return new String[]{"1.20.1", "1.20.2"};
+        return new String[]{"1.20.2"};
     }
 }

@@ -120,5 +120,10 @@
 			<artifactId>Impl1182</artifactId>
 			<version>1.0</version>
 		</dependency>
+		<dependency>
+			<groupId>org.lins.mmmjjkx</groupId>
+			<artifactId>Impl1201</artifactId>
+			<version>1.0</version>
+		</dependency>
 	</dependencies>
 </project>

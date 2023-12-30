@@ -23,6 +23,7 @@
 		<module>common</module>
 		<module>v1_19_4</module>
 		<module>v1_18_2</module>
+		<module>v1_20_1</module>
 	</modules>
 
 	<pluginRepositories>

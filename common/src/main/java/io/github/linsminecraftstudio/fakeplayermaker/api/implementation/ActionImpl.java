@@ -13,14 +13,10 @@ import java.util.Map;
 public abstract class ActionImpl {
     private static final Map<String, ActionImpl> map = new HashMap<>();
 
-    protected ActionImpl() {
-        register();
-    }
-
-    public final void register() {
-        for (String version : minecraftVersion()) {
+    public static void register(ActionImpl impl) {
+        for (String version : impl.minecraftVersion()) {
             if (!map.containsKey(version)) {
-                map.put(version, this);
+                map.put(version, impl);
             }
         }
     }
