@@ -1,7 +1,5 @@
 package org.lins.mmmjjkx.fakeplayermaker.stress;
 
-import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStartEvent;
-import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStopEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTester;
 import io.github.linsminecraftstudio.fakeplayermaker.api.objects.EmptyConnection;
@@ -53,8 +51,6 @@ public class RandomWorldStressTester implements IStressTester {
 
         Bukkit.getPluginManager().registerEvents(listener, FakePlayerMaker.INSTANCE);
 
-        new StressTesterStartEvent(this).callEvent();
-
         Random random = new Random();
         List<World> worlds = Bukkit.getWorlds();
 
@@ -102,7 +98,6 @@ public class RandomWorldStressTester implements IStressTester {
 
     @Override
     public void stop() {
-        new StressTesterStopEvent(this).callEvent();
         tempPlayers.values().forEach(server.getPlayerList()::remove);
         tempPlayers.clear();
         HandlerList.unregisterAll(listener);

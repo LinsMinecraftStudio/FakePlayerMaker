@@ -22,6 +22,17 @@
 		<version>1.0</version>
 	</parent>
 
+	<pluginRepositories>
+		<pluginRepository>
+			<id>central</id>
+			<url>https://repo1.maven.org/maven2/</url>
+		</pluginRepository>
+		<pluginRepository>
+			<id>bytecode.space</id>
+			<url>https://repo.bytecode.space/repository/maven-public/</url>
+		</pluginRepository>
+	</pluginRepositories>
+
 	<build>
 		<plugins>
 			<plugin>

@@ -50,7 +50,7 @@ public class V1182ActionImpl extends ActionImpl {
         player.setYRot(yaw % 360); //set yaw
         player.setXRot(Mth.clamp(pitch, -90, 90)); // set pitch
 
-        MinecraftServer server = MinecraftServer.getServer();
+        MinecraftServer server = MinecraftUtils.getNMSServer();
 
         server.getPlayerList().broadcastAll(new ClientboundRotateHeadPacket(player, (byte) (player.getYRot() % 360 * 256 / 360)));
         server.getPlayerList().broadcastAll(new ClientboundMoveEntityPacket.Rot(player.getId(), (byte) (player.getYRot() % 360 * 256 / 360), (byte) (player.getXRot() % 360 * 256 / 360), player.onGround));

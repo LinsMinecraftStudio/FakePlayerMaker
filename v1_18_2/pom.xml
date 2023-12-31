@@ -19,23 +19,19 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
+	<repositories>
+		<repository>
+			<id>minecraft-libraries</id>
+			<name>Minecraft Libraries</name>
+			<url>https://libraries.minecraft.net</url>
+		</repository>
+	</repositories>
+
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-			</plugin>
-			<plugin>
 				<groupId>ca.bkaw</groupId>
 				<artifactId>paper-nms-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>remap</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>
@@ -51,6 +47,13 @@
 			<version>3.17.30</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.mojang</groupId>
+			<artifactId>brigadier</artifactId>
+			<version>1.0.18</version>
+			<scope>provided</scope>
+		</dependency>
+
 		<dependency>
 			<groupId>io.github.linsminecraftstudio</groupId>
 			<artifactId>fpm-common</artifactId>

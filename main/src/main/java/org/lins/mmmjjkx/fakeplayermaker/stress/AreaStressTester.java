@@ -3,8 +3,6 @@ package org.lins.mmmjjkx.fakeplayermaker.stress;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
-import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStartEvent;
-import io.github.linsminecraftstudio.fakeplayermaker.api.events.StressTesterStopEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTester;
 import io.github.linsminecraftstudio.fakeplayermaker.api.objects.EmptyConnection;
@@ -60,8 +58,6 @@ public class AreaStressTester implements IStressTester {
 
         Bukkit.getPluginManager().registerEvents(listener, FakePlayerMaker.INSTANCE);
 
-        new StressTesterStartEvent(this).callEvent();
-
         World world = BukkitAdapter.adapt(spawnRegion.getWorld());
         List<BlockVector3> list = getAreaBlocks();
         Random random = new Random();
@@ -94,7 +90,6 @@ public class AreaStressTester implements IStressTester {
 
     @Override
     public void stop() {
-        new StressTesterStopEvent(this).callEvent();
         tempPlayers.values().forEach(server.getPlayerList()::remove);
         tempPlayers.clear();
         HandlerList.unregisterAll(listener);
