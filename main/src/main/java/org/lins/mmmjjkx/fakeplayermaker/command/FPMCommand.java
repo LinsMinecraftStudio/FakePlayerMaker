@@ -83,11 +83,11 @@ public class FPMCommand extends PolymerCommand {
                 switch (strings[0]) {
                     case "add" -> {
                         if (commandSender instanceof Player p) {
-                            NMSFakePlayerMaker.spawnFakePlayer(p.getLocation(), null, commandSender);
+                            NMSFakePlayerMaker.spawnFakePlayer(p.getLocation(), null);
                             sendMessage(commandSender, "CreateSuccess");
                         } else {
                             if (FakePlayerMaker.defaultSpawnLocation != null) {
-                                NMSFakePlayerMaker.spawnFakePlayer(FakePlayerMaker.defaultSpawnLocation, null, commandSender);
+                                NMSFakePlayerMaker.spawnFakePlayer(FakePlayerMaker.defaultSpawnLocation, null);
                                 sendMessage(commandSender, "CreateSuccess");
                             } else {
                                 sendMessage(commandSender, "SpecifyLocation");
@@ -95,7 +95,7 @@ public class FPMCommand extends PolymerCommand {
                         }
                     }
                     case "removeAll" -> {
-                        NMSFakePlayerMaker.removeAllFakePlayers(commandSender);
+                        NMSFakePlayerMaker.removeAllFakePlayers();
                         sendMessage(commandSender, "RemoveAllSuccess");
                     }
                     case "gui" -> {
@@ -115,16 +115,16 @@ public class FPMCommand extends PolymerCommand {
                                 sendMessage(commandSender, "SpecifyLocation");
                                 return;
                             }
-                            NMSFakePlayerMaker.spawnFakePlayer(FakePlayerMaker.defaultSpawnLocation, name, commandSender);
+                            NMSFakePlayerMaker.spawnFakePlayer(FakePlayerMaker.defaultSpawnLocation, name);
                             sendMessage(commandSender, "CreateSuccess");
                             return;
                         }
-                        NMSFakePlayerMaker.spawnFakePlayer(p.getLocation(), name, commandSender);
+                        NMSFakePlayerMaker.spawnFakePlayer(p.getLocation(), name);
                         sendMessage(commandSender, "CreateSuccess");
                     }
                     case "remove" -> {
                         if (NMSFakePlayerMaker.fakePlayerMap.containsKey(name)) {
-                            NMSFakePlayerMaker.removeFakePlayer(name, commandSender);
+                            NMSFakePlayerMaker.removeFakePlayer(name);
                             sendMessage(commandSender, "RemoveSuccess");
                         } else {
                             sendMessage(commandSender, "PlayerNotFound");
@@ -287,7 +287,7 @@ public class FPMCommand extends PolymerCommand {
                         sendMessage(commandSender, "SpecifyLocation");
                         return;
                     }
-                    NMSFakePlayerMaker.spawnFakePlayer(location, name, commandSender);
+                    NMSFakePlayerMaker.spawnFakePlayer(location, name);
                     sendMessage(commandSender, "CreateSuccess");
                     return;
                 }

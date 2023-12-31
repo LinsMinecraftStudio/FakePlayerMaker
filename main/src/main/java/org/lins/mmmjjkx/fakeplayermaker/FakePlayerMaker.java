@@ -1,9 +1,7 @@
 package org.lins.mmmjjkx.fakeplayermaker;
 
-import io.github.linsminecraftstudio.fakeplayermaker.api.events.FPMPluginLoadEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.ActionImpl;
 import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
-import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
 import io.github.linsminecraftstudio.polymer.command.PolymerCommand;
 import io.github.linsminecraftstudio.polymer.objects.plugin.PolymerPlugin;
 import io.github.linsminecraftstudio.polymer.objects.plugin.SimpleSettingsManager;
@@ -74,8 +72,6 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
 
         fakePlayerSaver.reload(false);
         stressTestSaver.reload();
-
-        MinecraftUtils.scheduleNoDelay(this, () -> new FPMPluginLoadEvent(NMSFakePlayerMaker.asController()).callEvent(), true);
 
         getServer().getPluginManager().registerEvents(this, this);
 

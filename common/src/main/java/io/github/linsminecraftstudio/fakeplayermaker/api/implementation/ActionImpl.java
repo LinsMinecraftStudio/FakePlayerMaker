@@ -13,6 +13,9 @@ import java.util.Map;
 public abstract class ActionImpl {
     private static final Map<String, ActionImpl> map = new HashMap<>();
 
+    public ActionImpl() {
+    }
+
     public static void register(ActionImpl impl) {
         for (String version : impl.minecraftVersion()) {
             if (!map.containsKey(version)) {

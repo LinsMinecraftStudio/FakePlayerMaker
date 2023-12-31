@@ -5,11 +5,8 @@ import com.comphenix.protocol.injector.temporary.TemporaryPlayerFactory;
 import com.destroystokyo.paper.profile.CraftPlayerProfile;
 import com.google.common.base.Strings;
 import com.mojang.authlib.GameProfile;
-import io.github.linsminecraftstudio.fakeplayermaker.api.events.FakePlayerCreateEvent;
-import io.github.linsminecraftstudio.fakeplayermaker.api.events.FakePlayerRemoveEvent;
 import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.ActionImpl;
 import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
-import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.FakePlayerController;
 import io.github.linsminecraftstudio.fakeplayermaker.api.objects.EmptyConnection;
 import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
 import net.kyori.adventure.text.Component;
@@ -22,7 +19,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
@@ -126,20 +122,18 @@ public class NMSFakePlayerMaker{
     }
 
     @Nullable
-    public static ServerPlayer spawnFakePlayer(Location loc, String name, @Nullable CommandSender sender) {
-        return spawnFakePlayer(loc, name, sender, true);
+    public static ServerPlayer spawnFakePlayer(Location loc, String name) {
+        return spawnFakePlayer(loc, name, true);
     }
 
     @Nullable
-    public static ServerPlayer spawnFakePlayer(Location loc, String name, @Nullable CommandSender sender, boolean runCMD) {
+    public static ServerPlayer spawnFakePlayer(Location loc, String name, boolean runCMD) {
         Pair<Location, ServerPlayer> player = createSimple(loc, name);
 
         var connection = new EmptyConnection();
 
         fakePlayerMap.put(name, player.getValue());
         saver.syncPlayerInfo(player.getValue());
-
-        new FakePlayerCreateEvent(Implementations.bukkitEntity(player.getValue()), sender).callEvent();
 
         FakePlayerMaker.guiHandler.setData(fakePlayerMap.values().stream().toList());
 
@@ -180,10 +174,9 @@ public class NMSFakePlayerMaker{
         }
     }
 
-    public static void removeFakePlayer(String name,@Nullable CommandSender sender){
+    public static void removeFakePlayer(String name) {
         ServerPlayer player = fakePlayerMap.get(name);
         if (player != null) {
-            new FakePlayerRemoveEvent(Implementations.getName(player), sender).callEvent();
 
             for (String cmd : FakePlayerMaker.settings.getStrList("runCMDAfterRemove")) {
                 cmd = cmd.replaceAll("%player%", name);
@@ -200,12 +193,11 @@ public class NMSFakePlayerMaker{
         }
     }
 
-    public static void removeAllFakePlayers(@Nullable CommandSender sender) {
+    public static void removeAllFakePlayers() {
         Set<String> set = new HashSet<>(fakePlayerMap.keySet());
         for (String name : set) {
             ServerPlayer player = fakePlayerMap.get(name);
             if (player != null) {
-                new FakePlayerRemoveEvent(Implementations.getName(player), sender).callEvent();
 
                 for (String cmd : FakePlayerMaker.settings.getStrList("runCMDAfterRemove")) {
                     cmd = cmd.replaceAll("%player%", name);
@@ -251,34 +243,5 @@ public class NMSFakePlayerMaker{
                 fakeNetAddress.getHostName(),
                 fakeNetAddress
         ).callEvent();
-    }
-
-    public static FakePlayerController asController() {
-        return new FakePlayerController() {
-            @Override
-            public boolean isFakePlayer(String name) {
-                return fakePlayerMap.get(name) != null;
-            }
-
-            @Override
-            public List<ServerPlayer> getAllFakePlayers() {
-                return fakePlayerMap.values().stream().toList();
-            }
-
-            @Override
-            public ServerPlayer spawnFakePlayer(@Nullable String name, Location location) {
-                return NMSFakePlayerMaker.spawnFakePlayer(location, name, null);
-            }
-
-            @Override
-            public @Nullable Player getFakePlayer(String name) {
-                return Implementations.bukkitEntity(fakePlayerMap.get(name));
-            }
-
-            @Override
-            public void removeFakePlayer(String name) {
-                NMSFakePlayerMaker.removeFakePlayer(name, null);
-            }
-        };
     }
 }

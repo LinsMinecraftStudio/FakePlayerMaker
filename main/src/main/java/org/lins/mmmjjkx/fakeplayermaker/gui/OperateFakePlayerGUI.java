@@ -95,7 +95,7 @@ class OperateFakePlayerGUI extends SimpleInventoryHandler {
                     bukkit.teleport(p);
                     break;
                 case 23:
-                    NMSFakePlayerMaker.removeFakePlayer(bukkit.getName(), null);
+                    NMSFakePlayerMaker.removeFakePlayer(bukkit.getName());
                     p.closeInventory();
                     break;
                 case 25:
