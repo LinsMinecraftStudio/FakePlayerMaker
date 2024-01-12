@@ -147,7 +147,6 @@ public class NMSFakePlayerMaker{
         }
 
         ServerLevel level = (ServerLevel) Objects.requireNonNull(getHandle(MinecraftUtils.getCraftClass("CraftWorld"), realLoc.getWorld()));
-        player.setLevel(level);
 
         Implementations.get().placePlayer(connection, player);
 

@@ -9,6 +9,7 @@ import io.github.linsminecraftstudio.fakeplayermaker.api.objects.CraftBukkitClas
 import io.github.linsminecraftstudio.fakeplayermaker.api.objects.FPMPacketListener;
 import io.github.linsminecraftstudio.polymer.objects.plugin.PolymerPlugin;
 import io.github.linsminecraftstudio.polymer.schedule.BFScheduler;
+import me.lucko.luckperms.bukkit.loader.BukkitLoaderPlugin;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.modifier.Visibility;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
@@ -17,7 +18,6 @@ import net.bytebuddy.implementation.MethodCall;
 import net.bytebuddy.implementation.MethodDelegation;
 import net.bytebuddy.matcher.ElementMatchers;
 import net.luckperms.api.LuckPermsProvider;
-import net.luckperms.api.model.user.UserManager;
 import net.minecraft.network.Connection;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -30,9 +30,12 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
-import java.util.concurrent.ExecutionException;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -166,16 +169,53 @@ public class MinecraftUtils {
     }
 
     public static void handlePlugins(Player p) {
+        //inject permissible base and load User
         if (Bukkit.getPluginManager().isPluginEnabled("LuckPerms")) {
-            UserManager um = LuckPermsProvider.get().getUserManager();
-            if (!um.isLoaded(p.getUniqueId())) {
+            if (!LuckPermsProvider.get().getUserManager().isLoaded(p.getUniqueId())) {
                 try {
-                    um.savePlayerData(p.getUniqueId(), p.getName()).get();
-                    um.loadUser(p.getUniqueId(), p.getName()).get();
-                } catch (InterruptedException | ExecutionException e) {
+                    Object lpBukkitPlugin = getLuckPermsInstance();
+                    Object storage = lpBukkitPlugin.getClass().getMethod("getStorage").invoke(lpBukkitPlugin);
+                    Method method = storage.getClass().getDeclaredMethod("savePlayerData", UUID.class, String.class);
+                    Method method1 = storage.getClass().getDeclaredMethod("loadUser", UUID.class, String.class);
+
+                    //savePlayerData
+                    CompletableFuture<?> future = (CompletableFuture<?>) method.invoke(storage, p.getUniqueId(), p.getName());
+                    future.get();
+
+                    //loadUser
+                    CompletableFuture<?> future1 = (CompletableFuture<?>) method1.invoke(storage, p.getUniqueId(), p.getName());
+
+                    //common model User
+                    Object user = future1.get();
+
+                    //LuckPerms using different class loader
+                    ClassLoader loader = lpBukkitPlugin.getClass().getClassLoader();
+                    Class<?> LuckPermsPermissible = loader.loadClass("me.lucko.luckperms.bukkit.inject.permissible.LuckPermsPermissible");
+                    Object permissible = LuckPermsPermissible.getDeclaredConstructors()[0].newInstance(p, user, lpBukkitPlugin);
+
+                    Class<?> craftPlayer = getCraftClass("entity.CraftHumanEntity");
+                    Field permissibleField = craftPlayer.getDeclaredField("perm");
+                    permissibleField.setAccessible(true);
+                    permissibleField.set(p, permissible);
+                } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
             }
+        }
+    }
+
+    private static Object getLuckPermsInstance() {
+        try {
+            Field field = BukkitLoaderPlugin.class.getDeclaredField("plugin");
+            field.setAccessible(true);
+            BukkitLoaderPlugin loaderPlugin = JavaPlugin.getPlugin(BukkitLoaderPlugin.class);
+            Object bootstrap = field.get(loaderPlugin);
+            LOGGER.warning(bootstrap.getClass().getName());
+            Field plugin = bootstrap.getClass().getDeclaredField("plugin");
+            plugin.setAccessible(true);
+            return plugin.get(bootstrap);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }

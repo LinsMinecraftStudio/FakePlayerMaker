@@ -1,4 +1,4 @@
-package org.lins.mmmjjkx.fakeplayermaker.impl;
+package org.lins.mmmjjkx.fakeplayermaker.impl_1202;
 
 import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.ActionImpl;
 import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;

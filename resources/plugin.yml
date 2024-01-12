@@ -1,0 +1,21 @@
+name: FakePlayerMaker
+version: '${project.version}'
+main: org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker
+api-version: "1.18"
+website: https://github.com/LinsMinecraftStudio/FakePlayerMaker
+
+depend: [ "Polymer" ]
+softdepend: [ "FastAsyncWorldEdit", "WorldEdit", "ProtocolLib", "LuckPerms" ]
+
+permissions:
+  fakeplayermaker.command:
+    description: allows you to use /fakeplayermaker command
+    default: op
+  fakeplayermaker.command.stress:
+    description: allows you to use /fakeplayermaker stress command
+    default: op
+
+commands:
+  fakeplayermaker:
+    aliases: [ "fpm" ]
+    description: the main command

@@ -1,4 +1,4 @@
-package org.lins.mmmjjkx.fakeplayermaker.impl;
+package org.lins.mmmjjkx.fakeplayermaker.impl_1202;
 
 import com.mojang.authlib.GameProfile;
 import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;

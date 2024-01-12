@@ -95,6 +95,21 @@
 			<groupId>io.github.linsminecraftstudio</groupId>
 			<artifactId>Polymer</artifactId>
 		</dependency>
+
+		<dependency>
+			<groupId>net.luckperms</groupId>
+			<artifactId>luckperms-bukkit</artifactId>
+			<version>5.4</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/lib/luckperms-bukkit.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>net.luckperms</groupId>
+			<artifactId>luckperms-bukkit-all</artifactId>
+			<version>5.4</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/lib/LuckPerms-Bukkit-5.4.116.jar</systemPath>
+		</dependency>
 		<dependency>
 			<groupId>net.luckperms</groupId>
 			<artifactId>api</artifactId>

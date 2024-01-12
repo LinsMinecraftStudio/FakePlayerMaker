@@ -10,6 +10,9 @@ import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.server.players.PlayerList;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+
 public class V1201Impl extends Implementations {
     @Override
     public GameProfile profile(ServerPlayer player) {
@@ -28,7 +31,12 @@ public class V1201Impl extends Implementations {
 
     @Override
     public void placePlayer(Connection connection, ServerPlayer player) {
-        getPlayerList().placeNewPlayer(connection, player);
+        try {
+            getPlayerList().placeNewPlayer(connection, player);
+            CompletableFuture.runAsync(() -> MinecraftUtils.handlePlugins(bukkitEntity(player))).get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

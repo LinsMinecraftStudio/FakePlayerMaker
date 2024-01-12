@@ -32,10 +32,8 @@ public class V1194Impl extends Implementations {
     @Override
     public void placePlayer(Connection connection, ServerPlayer player) {
         try {
-            CompletableFuture.runAsync(() -> {
-                getPlayerList().placeNewPlayer(connection, player);
-                MinecraftUtils.handlePlugins(bukkitEntity(player));
-            }).get();
+            getPlayerList().placeNewPlayer(connection, player);
+            CompletableFuture.runAsync(() -> MinecraftUtils.handlePlugins(bukkitEntity(player))).get();
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
         }
