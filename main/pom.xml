@@ -45,7 +45,7 @@
 		</plugins>
 		<resources>
 			<resource>
-				<directory>../resources</directory>
+				<directory>src/main/resources</directory>
 				<filtering>true</filtering>
 			</resource>
 		</resources>
@@ -118,11 +118,6 @@
 		<dependency>
 			<groupId>org.lins.mmmjjkx</groupId>
 			<artifactId>Impl1194</artifactId>
-			<version>1.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.lins.mmmjjkx</groupId>
-			<artifactId>Impl1182</artifactId>
 			<version>1.0</version>
 		</dependency>
 		<dependency>

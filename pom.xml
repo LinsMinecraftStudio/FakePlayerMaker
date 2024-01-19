@@ -22,7 +22,6 @@
 	<modules>
 		<module>main</module>
 		<module>common</module>
-		<module>implementations/v1_18_2</module>
 		<module>implementations/v1_19_4</module>
 		<module>implementations/v1_20_1</module>
 	</modules>
