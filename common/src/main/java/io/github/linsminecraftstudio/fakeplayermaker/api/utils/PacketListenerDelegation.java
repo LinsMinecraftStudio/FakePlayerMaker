@@ -16,20 +16,14 @@ public class PacketListenerDelegation {
     public Object delegate(@This ServerGamePacketListenerImpl o, @Origin Method method, @FieldValue("pl") ServerPlayer player,
                            @SuperMethod Method superMethod, @AllArguments Object... args) {
         try {
-            switch (method.getName()) {
-                case "a" -> {
-                    return null;
+            if (method.getName().equals("internalTeleport")) {
+                superMethod.invoke(o, args);
+                if (player.serverLevel().getPlayerByUUID(Implementations.getUUID(player)) != null) {
+                    ServerGamePacketListenerImpl.class.getMethod("d").invoke(o);
+                    ServerChunkCache source = player.serverLevel().getChunkSource();
+                    source.move(player);
                 }
-
-                case "internalTeleport" -> {
-                    superMethod.invoke(o, args);
-                    if (player.serverLevel().getPlayerByUUID(Implementations.getUUID(player)) != null) {
-                        ServerGamePacketListenerImpl.class.getMethod("d").invoke(o);
-                        ServerChunkCache source = player.serverLevel().getChunkSource();
-                        source.move(player);
-                    }
-                    return null;
-                }
+                return null;
             }
 
             return method.invoke(o, args);

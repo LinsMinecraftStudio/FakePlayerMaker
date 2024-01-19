@@ -9,9 +9,9 @@ import io.github.linsminecraftstudio.fakeplayermaker.api.objects.CraftBukkitClas
 import io.github.linsminecraftstudio.fakeplayermaker.api.objects.FPMPacketListener;
 import io.github.linsminecraftstudio.polymer.objects.plugin.PolymerPlugin;
 import io.github.linsminecraftstudio.polymer.schedule.BFScheduler;
-import me.lucko.luckperms.bukkit.loader.BukkitLoaderPlugin;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.modifier.Visibility;
+import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import net.bytebuddy.implementation.FieldAccessor;
 import net.bytebuddy.implementation.MethodCall;
@@ -25,6 +25,7 @@ import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
@@ -34,8 +35,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -48,19 +47,18 @@ public class MinecraftUtils {
 
     public static ServerGamePacketListenerImpl getGamePacketListener(Connection connection, ServerPlayer player) {
         if (!Bukkit.getMinecraftVersion().equals("1.20.2")) {
-            try {
-                final MethodDelegation delegation = MethodDelegation.to(new PacketListenerDelegation());
+            final MethodDelegation delegation = MethodDelegation.to(new PacketListenerDelegation());
 
-                Constructor<ServerGamePacketListenerImpl> connectionConstructor = ServerGamePacketListenerImpl.class.getDeclaredConstructor(MinecraftServer.class, Connection.class, ServerPlayer.class);
-
-                Constructor<? extends ServerGamePacketListenerImpl> constructor = new ByteBuddy()
+            try (DynamicType.Unloaded<ServerGamePacketListenerImpl> unloaded = new ByteBuddy()
                         .subclass(ServerGamePacketListenerImpl.class)
                         .name(MinecraftUtils.class.getPackage().getName() + ".FPMGamePacketListenerV1201")
 
                         .defineField("pl", ServerPlayer.class, Visibility.PRIVATE)
                         .constructor(ElementMatchers.any())
 
-                        .intercept(MethodCall.invoke(connectionConstructor)
+                    .intercept(MethodCall.invoke(
+                                            ServerGamePacketListenerImpl.class.getDeclaredConstructor(MinecraftServer.class, Connection.class, ServerPlayer.class)
+                                    )
                                 .withArgument(0, 1, 2)
                                 .andThen(FieldAccessor.ofField("pl").setsArgumentAt(2))
                         )
@@ -68,8 +66,9 @@ public class MinecraftUtils {
                         .method((ElementMatchers.named("a").or(ElementMatchers.named("internalTeleport"))))
                         .intercept(delegation)
 
-                        .make()
-                        .load(MinecraftUtils.class.getClassLoader(), ClassLoadingStrategy.Default.WRAPPER)
+                    .make()) {
+
+                Constructor<? extends ServerGamePacketListenerImpl> constructor = unloaded.load(MinecraftUtils.class.getClassLoader(), ClassLoadingStrategy.Default.WRAPPER)
                         .getLoaded()
                         .getDeclaredConstructor(MinecraftServer.class, Connection.class, ServerPlayer.class);
 
@@ -170,33 +169,33 @@ public class MinecraftUtils {
 
     public static void handlePlugins(Player p) {
         //inject permissible base and load User
-        if (Bukkit.getPluginManager().isPluginEnabled("LuckPerms")) {
+        Object lpBukkitPlugin = getLuckPermsInstance();
+        if (lpBukkitPlugin != null) {
             if (!LuckPermsProvider.get().getUserManager().isLoaded(p.getUniqueId())) {
                 try {
-                    Object lpBukkitPlugin = getLuckPermsInstance();
+                    Object lpBootStrap = lpBukkitPlugin.getClass().getMethod("getBootstrap").invoke(lpBukkitPlugin);
                     Object storage = lpBukkitPlugin.getClass().getMethod("getStorage").invoke(lpBukkitPlugin);
-                    Method method = storage.getClass().getDeclaredMethod("savePlayerData", UUID.class, String.class);
-                    Method method1 = storage.getClass().getDeclaredMethod("loadUser", UUID.class, String.class);
-
-                    //savePlayerData
-                    CompletableFuture<?> future = (CompletableFuture<?>) method.invoke(storage, p.getUniqueId(), p.getName());
-                    future.get();
-
-                    //loadUser
-                    CompletableFuture<?> future1 = (CompletableFuture<?>) method1.invoke(storage, p.getUniqueId(), p.getName());
-
-                    //common model User
-                    Object user = future1.get();
+                    Method method = storage.getClass().getDeclaredMethod("saveUser");
 
                     //LuckPerms using different class loader
                     ClassLoader loader = lpBukkitPlugin.getClass().getClassLoader();
-                    Class<?> LuckPermsPermissible = loader.loadClass("me.lucko.luckperms.bukkit.inject.permissible.LuckPermsPermissible");
-                    Object permissible = LuckPermsPermissible.getDeclaredConstructors()[0].newInstance(p, user, lpBukkitPlugin);
 
-                    Class<?> craftPlayer = getCraftClass("entity.CraftHumanEntity");
-                    Field permissibleField = craftPlayer.getDeclaredField("perm");
-                    permissibleField.setAccessible(true);
-                    permissibleField.set(p, permissible);
+                    //saveUser
+                    Object user = loader.loadClass("me.lucko.luckperms.common.model.User").getDeclaredConstructors()[0].newInstance(p.getUniqueId(), lpBukkitPlugin);
+                    method.invoke(storage, p.getUniqueId(), user);
+
+                    Field humanEntityPermissibleField = getCraftClass("entity.CraftHumanEntity").getDeclaredField("perm");
+                    humanEntityPermissibleField.setAccessible(true);
+                    Object currentPermissible = humanEntityPermissibleField.get(p);
+                    Class<?> LuckPermsPermissible = loader.loadClass("me.lucko.luckperms.bukkit.inject.permissible.LuckPermsPermissible");
+
+                    if (currentPermissible.getClass().equals(LuckPermsPermissible)) return;
+
+                    Object permissible = LuckPermsPermissible.getDeclaredConstructors()[0].newInstance(p, user, lpBukkitPlugin);
+                    Object pluginLogger = lpBootStrap.getClass().getMethod("getPluginLogger").invoke(lpBootStrap);
+
+                    Class<?> PermissibleInjector = loader.loadClass("me.lucko.luckperms.bukkit.inject.permissible.PermissibleInjector");
+                    PermissibleInjector.getMethod("inject").invoke(null, p, permissible, pluginLogger);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -206,16 +205,17 @@ public class MinecraftUtils {
 
     private static Object getLuckPermsInstance() {
         try {
-            Field field = BukkitLoaderPlugin.class.getDeclaredField("plugin");
+            Plugin loaderPlugin = Bukkit.getPluginManager().getPlugin("LuckPerms");
+            if (loaderPlugin == null) return null;
+            Field field = loaderPlugin.getClass().getDeclaredField("plugin");
             field.setAccessible(true);
-            BukkitLoaderPlugin loaderPlugin = JavaPlugin.getPlugin(BukkitLoaderPlugin.class);
             Object bootstrap = field.get(loaderPlugin);
             LOGGER.warning(bootstrap.getClass().getName());
             Field plugin = bootstrap.getClass().getDeclaredField("plugin");
             plugin.setAccessible(true);
             return plugin.get(bootstrap);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return null;
         }
     }
 }

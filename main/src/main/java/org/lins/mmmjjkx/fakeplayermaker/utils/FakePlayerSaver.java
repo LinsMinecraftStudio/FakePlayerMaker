@@ -6,7 +6,7 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
 import io.github.linsminecraftstudio.polymer.objects.plugin.file.SingleFileStorage;
-import io.github.linsminecraftstudio.polymer.utils.ListUtil;
+import io.github.linsminecraftstudio.polymer.utils.IterableUtil;
 import io.github.linsminecraftstudio.polymer.utils.ObjectConverter;
 import joptsimple.internal.Strings;
 import net.minecraft.core.UUIDUtil;
@@ -50,7 +50,7 @@ public class FakePlayerSaver extends SingleFileStorage {
         {
             Player bukkit = Implementations.bukkitEntity(player);
             PlayerProfile playerProfile = bukkit.getPlayerProfile();
-            Optional<ProfileProperty> skin = ListUtil.getIf(playerProfile.getProperties(), p -> p.getName().equals("textures"));
+            Optional<ProfileProperty> skin = IterableUtil.getIf(playerProfile.getProperties(), p -> p.getName().equals("textures"));
             if (skin.isPresent()) {
                 section.set("skin", skin.get().getValue());
                 section.set("skin-signature", skin.get().getSignature());

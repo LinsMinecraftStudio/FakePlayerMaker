@@ -16,14 +16,15 @@
 		<mcVersion>1.20.2</mcVersion>
 		<mainVersion>1.2.6</mainVersion>
 		<apiVersion>1.2.0.5-SNAPSHOT</apiVersion>
+		<revision>1.4.2-SNAPSHOT</revision>
 	</properties>
 
 	<modules>
 		<module>main</module>
 		<module>common</module>
-		<module>v1_19_4</module>
-		<module>v1_18_2</module>
-		<module>v1_20_1</module>
+		<module>implementations/v1_18_2</module>
+		<module>implementations/v1_19_4</module>
+		<module>implementations/v1_20_1</module>
 	</modules>
 
 	<pluginRepositories>
@@ -76,6 +77,14 @@
 
 	<repositories>
 		<repository>
+			<id>central</id>
+			<url>https://repo1.maven.org/maven2/</url>
+		</repository>
+		<repository>
+			<id>papermc-repo</id>
+			<url>https://repo.papermc.io/repository/maven-public/</url>
+		</repository>
+		<repository>
 			<id>enginehub-maven</id>
 			<url>https://maven.enginehub.org/repo/</url>
 		</repository>
@@ -88,10 +97,6 @@
 			<url>https://repo.codemc.org/repository/maven-public/</url>
 		</repository>
 		<repository>
-			<id>papermc-repo</id>
-			<url>https://repo.papermc.io/repository/maven-public/</url>
-		</repository>
-		<repository>
 			<id>sonatype</id>
 			<url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
 		</repository>
@@ -101,8 +106,20 @@
 		<dependencies>
 			<dependency>
 				<groupId>io.github.linsminecraftstudio</groupId>
-				<artifactId>Polymer</artifactId>
-				<version>1.4.0-SNAPSHOT</version>
+				<artifactId>Polymer-Core</artifactId>
+				<version>1.4.2-SNAPSHOT</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>io.github.linsminecraftstudio</groupId>
+				<artifactId>Polymer-ObjectUtils</artifactId>
+				<version>1.4.2-SNAPSHOT</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>io.github.linsminecraftstudio</groupId>
+				<artifactId>Polymer-Scheduler</artifactId>
+				<version>1.4.2-SNAPSHOT</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>

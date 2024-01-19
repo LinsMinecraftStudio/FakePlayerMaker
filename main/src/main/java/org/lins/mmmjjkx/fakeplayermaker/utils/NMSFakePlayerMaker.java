@@ -4,6 +4,7 @@ import com.comphenix.protocol.injector.temporary.MinimalInjector;
 import com.comphenix.protocol.injector.temporary.TemporaryPlayerFactory;
 import com.destroystokyo.paper.profile.CraftPlayerProfile;
 import com.google.common.base.Strings;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.mojang.authlib.GameProfile;
 import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.ActionImpl;
 import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
@@ -122,11 +123,13 @@ public class NMSFakePlayerMaker{
     }
 
     @Nullable
+    @CanIgnoreReturnValue
     public static ServerPlayer spawnFakePlayer(Location loc, String name) {
         return spawnFakePlayer(loc, name, true);
     }
 
     @Nullable
+    @CanIgnoreReturnValue
     public static ServerPlayer spawnFakePlayer(Location loc, String name, boolean runCMD) {
         Pair<Location, ServerPlayer> player = createSimple(loc, name);
 

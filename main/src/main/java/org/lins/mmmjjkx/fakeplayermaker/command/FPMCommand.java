@@ -7,7 +7,7 @@ import io.github.linsminecraftstudio.fakeplayermaker.api.objects.WorldNotFoundEx
 import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
 import io.github.linsminecraftstudio.polymer.command.PolymerCommand;
 import io.github.linsminecraftstudio.polymer.command.presets.sub.SubReloadCommand;
-import io.github.linsminecraftstudio.polymer.objects.PolymerConstants;
+import io.github.linsminecraftstudio.polymer.objectutils.TuplePair;
 import io.github.linsminecraftstudio.polymer.utils.ObjectConverter;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
@@ -381,20 +381,20 @@ public class FPMCommand extends PolymerCommand {
                 switch (strings[0]) {
                     case "stress" -> {
                         if (hasCustomPermission(commandSender, "command.stress")) {
-                            int amount = (int) getArgAsDoubleOrInt(4, true, false);
+                            TuplePair<Boolean, Double> amount = getArgAsDoubleOrInt(4, true, false);
                             switch (strings[1]) {
                                 case "area" -> {
                                     if (strings[2].equals("create")) {
-                                        if (amount != PolymerConstants.ERROR_CODE) {
-                                            handleAreaCreate(commandSender, strings, amount);
+                                        if (amount.getA()) {
+                                            handleAreaCreate(commandSender, strings, amount.getB().intValue());
                                         }
                                     }
                                     sendPolymerMessage(commandSender, "Command.ArgError");
                                 }
                                 case "randomworld" -> {
                                     if (strings[2].equals("create")) {
-                                        if (amount != PolymerConstants.ERROR_CODE) {
-                                            FakePlayerMaker.stressTestSaver.newRandomWorldTester(strings[3], amount);
+                                        if (amount.getA()) {
+                                            FakePlayerMaker.stressTestSaver.newRandomWorldTester(strings[3], amount.getB().intValue());
                                             sendMessage(commandSender, "Stress.TesterCreated");
                                             return;
                                         }
@@ -407,15 +407,15 @@ public class FPMCommand extends PolymerCommand {
                     }
 
                     case "lookat" -> {
-                        double x, y, z;
+                        TuplePair<Boolean, Double> x, y, z;
                         String name = strings[1];
                         x = getArgAsDoubleOrInt(2, false, true);
                         y = getArgAsDoubleOrInt(3, false, true);
                         z = getArgAsDoubleOrInt(4, false, true);
-                        if (x != PolymerConstants.ERROR_CODE && y != PolymerConstants.ERROR_CODE && z != PolymerConstants.ERROR_CODE) {
+                        if (x.getA() && y.getA() && z.getA()) {
                             ServerPlayer player = NMSFakePlayerMaker.fakePlayerMap.get(name);
                             if (player != null) {
-                                ActionImpl.get().lookAtBlock(player, new Vec3(x, y, z));
+                                ActionImpl.get().lookAtBlock(player, new Vec3(x.getB(), y.getB(), z.getB()));
                             } else {
                                 sendMessage(commandSender, "PlayerNotFound");
                             }

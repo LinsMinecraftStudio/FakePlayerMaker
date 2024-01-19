@@ -5,7 +5,7 @@ import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
 import io.github.linsminecraftstudio.polymer.gui.InventoryActionType;
 import io.github.linsminecraftstudio.polymer.gui.SimpleInventoryHandler;
 import io.github.linsminecraftstudio.polymer.itemstack.ItemStackBuilder;
-import io.github.linsminecraftstudio.polymer.objects.array.ObjectArray;
+import io.github.linsminecraftstudio.polymer.objectutils.array.ObjectArray;
 import io.github.linsminecraftstudio.polymer.utils.UserInputGetter;
 import net.kyori.adventure.text.Component;
 import net.minecraft.server.level.ServerPlayer;

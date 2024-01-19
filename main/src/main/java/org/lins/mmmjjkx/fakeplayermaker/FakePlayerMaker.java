@@ -48,7 +48,7 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
                                                    |___/                                     \s
                                                                  
                  version %s by mmmjjkx
-                """.formatted(getDescription().getVersion()));
+                """.formatted(getPluginVersion()));
         suggestSpark();
         INSTANCE = this;
 
@@ -72,10 +72,10 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
         if (settings.getBoolean("checkUpdate")) {
             new OtherUtils.Updater(111767, (ver, success) -> {
                 if (success) {
-                    if (ver.equals(getDescription().getVersion())) {
+                    if (ver.equals(getPluginVersion())) {
                         getLogger().info("You are using the latest version!");
                     } else {
-                        getLogger().warning("There is a new version available! New version: " + ver + " Old version: " + getPluginMeta().getVersion());
+                        getLogger().warning("There is a new version available! New version: " + ver + " Old version: " + getPluginVersion());
                     }
                 } else {
                     getLogger().warning("Failed to check for updates!");
@@ -93,7 +93,6 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
             Implementations.register((Implementations) clazz.newInstance());
             ActionImpl.register((ActionImpl) clazz2.newInstance());
         } catch (Exception e) {
-            getLogger().warning("ver=" + ver + " pack=" + pack);
             throw new RuntimeException("FakePlayerMaker don't support this version of Minecraft!");
         }
     }
@@ -110,7 +109,7 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
 
     @Override
     public String requireVersion() {
-        return "1.4.1";
+        return "1.4.2";
     }
 
     @Override

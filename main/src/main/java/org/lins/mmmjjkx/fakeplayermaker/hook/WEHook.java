@@ -8,7 +8,7 @@ import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.session.SessionManager;
-import io.github.linsminecraftstudio.polymer.Polymer;
+import io.github.linsminecraftstudio.polymer.TempPolymer;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
@@ -64,7 +64,7 @@ public class WEHook {
         if (cs instanceof Player p){
             return p;
         }else {
-            Polymer.INSTANCE.getMessageHandler().sendMessage(cs, "Command.RunAsConsole");
+            TempPolymer.getInstance().getMessageHandler().sendMessage(cs, "Command.RunAsConsole");
             return null;
         }
     }
