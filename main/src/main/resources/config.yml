@@ -22,7 +22,7 @@ runCMDAfterJoin:
   - "chat:Hi, I am %player%"
 #Run commands after join (by console)
 runCMDConsoleAfterJoin:
-  - "broadcast Welcome\s%player%!!"
+  - "say a fake player comes"
 #Run commands after remove a fake player (by console)
 runCMDAfterRemove:
   - "authme unregister %player%"
