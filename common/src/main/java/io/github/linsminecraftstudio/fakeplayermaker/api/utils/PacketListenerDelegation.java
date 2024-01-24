@@ -16,7 +16,9 @@ public class PacketListenerDelegation {
     public Object delegate(@This ServerGamePacketListenerImpl o, @Origin Method method, @FieldValue("pl") ServerPlayer player,
                            @SuperMethod Method superMethod, @AllArguments Object... args) {
         try {
-            if (method.getName().equals("internalTeleport")) {
+            if (method.getName().equals("a")) {
+                return null;
+            } else if (method.getName().equals("internalTeleport")) {
                 superMethod.invoke(o, args);
                 if (player.serverLevel().getPlayerByUUID(Implementations.getUUID(player)) != null) {
                     ServerGamePacketListenerImpl.class.getMethod("d").invoke(o);
