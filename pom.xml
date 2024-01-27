@@ -13,7 +13,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<mcVersion>1.20.2</mcVersion>
+		<mcVersion>1.20.4</mcVersion>
 		<mainVersion>1.2.6</mainVersion>
 		<apiVersion>1.2.0.5-SNAPSHOT</apiVersion>
 		<revision>1.4.2-SNAPSHOT</revision>
@@ -22,8 +22,12 @@
 	<modules>
 		<module>main</module>
 		<module>common</module>
-		<module>implementations/v1_19_4</module>
-		<module>implementations/v1_20_1</module>
+
+		<!--implementations -->
+		<module>implementations/v1_19_R2</module>
+		<module>implementations/v1_19_R3</module>
+		<module>implementations/v1_20_R1</module>
+		<module>implementations/v1_20_R2</module>
 	</modules>
 
 	<pluginRepositories>

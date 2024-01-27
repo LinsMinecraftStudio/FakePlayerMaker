@@ -5,30 +5,21 @@ import io.github.linsminecraftstudio.polymer.objects.plugin.SimpleSettingsManage
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
-import org.bukkit.Bukkit;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public abstract class ActionImpl {
-    private static final Map<String, ActionImpl> map = new HashMap<>();
+    private static ActionImpl current;
 
     public ActionImpl() {
     }
 
     public static void register(ActionImpl impl) {
-        for (String version : impl.minecraftVersion()) {
-            if (!map.containsKey(version)) {
-                map.put(version, impl);
-            }
-        }
+        current = impl;
     }
 
     public static ActionImpl get() {
-        return map.get(Bukkit.getMinecraftVersion());
+        return current;
     }
 
-    public abstract String[] minecraftVersion();
     public abstract void lookAtBlock(ServerPlayer player, Vec3 v3);
     public abstract void look(ServerPlayer player, Direction direction);
     public abstract void look(ServerPlayer player, float yaw, float pitch);

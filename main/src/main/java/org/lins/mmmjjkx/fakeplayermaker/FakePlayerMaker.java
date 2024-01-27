@@ -85,11 +85,11 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
     }
 
     private void handleImplementations() {
-        String ver = Bukkit.getMinecraftVersion().replaceAll("\\.", "");
-        String pack = "org.lins.mmmjjkx.fakeplayermaker.impl_" + ver + ".";
+        String ver = Bukkit.getVersion().split("-")[1];
+        String pack = "org.lins.mmmjjkx.fakeplayermaker." + ver + ".";
         try {
-            Class<?> clazz = Class.forName(pack + "V" + ver + "Impl");
-            Class<?> clazz2 = Class.forName(pack + "V" + ver + "ActionImpl");
+            Class<?> clazz = Class.forName(pack + "Impl");
+            Class<?> clazz2 = Class.forName(pack + "ActionImpl");
             Implementations.register((Implementations) clazz.newInstance());
             ActionImpl.register((ActionImpl) clazz2.newInstance());
         } catch (Exception e) {

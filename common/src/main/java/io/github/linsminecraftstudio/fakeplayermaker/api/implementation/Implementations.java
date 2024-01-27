@@ -12,8 +12,6 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils.getCraftClass;
@@ -22,21 +20,17 @@ import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftU
  * Just an implementation in different versions of Minecraft.
  */
 public abstract class Implementations {
-    private static final Map<String,Implementations> map = new HashMap<>();
+    private static Implementations current;
 
     public Implementations() {
     }
 
     public static void register(Implementations implementations) {
-        for (String version : implementations.minecraftVersion()) {
-            if (!map.containsKey(version)) {
-                map.put(version, implementations);
-            }
-        }
+        current = implementations;
     }
 
     public static Implementations get() {
-        return map.get(Bukkit.getMinecraftVersion());
+        return current;
     }
 
     public static Player bukkitEntity(ServerPlayer player){
@@ -60,9 +54,9 @@ public abstract class Implementations {
 
     public abstract GameProfile profile(ServerPlayer player);
     public abstract void setConnection(ServerPlayer player, ServerGamePacketListenerImpl connection);
-    public abstract @NotNull String[] minecraftVersion();
     public abstract void placePlayer(Connection connection, ServerPlayer player);
 
     public abstract PlayerList getPlayerList();
-    public abstract ServerPlayer create(@NotNull ServerLevel level, @NotNull GameProfile profile);
+
+    public abstract ServerPlayer create(@NotNull ServerLevel level, GameProfile profile);
 }
