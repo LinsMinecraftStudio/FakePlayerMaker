@@ -11,6 +11,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerKickEvent;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 
 import java.net.InetSocketAddress;
@@ -33,7 +34,7 @@ public class FPMMinimalInjector implements MinimalInjector {
 
     @Override
     public void disconnect(String s) {
-        nmsPlayer().connection.disconnect(s);
+        nmsPlayer().connection.disconnect(s, PlayerKickEvent.Cause.PLUGIN);
     }
 
     @Override

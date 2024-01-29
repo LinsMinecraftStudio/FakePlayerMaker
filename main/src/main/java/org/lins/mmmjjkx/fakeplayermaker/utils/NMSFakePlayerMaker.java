@@ -23,11 +23,15 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.metadata.MetadataValue;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.Nullable;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.hook.protocol.FPMTempPlayerFactory;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.security.SecureRandom;
 import java.util.*;
@@ -74,10 +78,11 @@ public class NMSFakePlayerMaker{
         connection.setListener(listener);
 
         Player p = Implementations.bukkitEntity(player);
+
+        if (p == null) return;
+
         for (String cmd : FakePlayerMaker.settings.getStrList("runCMDAfterJoin")) {
-            if (p != null) {
-                cmd = cmd.replaceAll("%player%", p.getName());
-            }
+            cmd = cmd.replaceAll("%player%", p.getName());
             if (cmd.startsWith("chat:")) {
                 ActionImpl.get().chat(FakePlayerMaker.INSTANCE, player,  cmd.replace("chat:", ""));
                 continue;
@@ -146,7 +151,24 @@ public class NMSFakePlayerMaker{
 
     private static void playerJoin(ServerPlayer player, EmptyConnection connection, ServerGamePacketListenerImpl listener, boolean runCMD, @Nullable Location realLoc) {
         if (realLoc == null) {
-            realLoc = FakePlayerMaker.settings.getLocation("defaultSpawnLocation");
+            Location def = FakePlayerMaker.settings.getLocation("defaultSpawnLocation");
+            if (def == null) {
+                return;
+            }
+            realLoc = def;
+        }
+
+        Player bukkit = Implementations.bukkitEntity(player);
+        try {
+            Method getEntityMetadata = bukkit.getServer().getClass().getMethod("getEntityMetadata");
+            Object base = getEntityMetadata.invoke(bukkit.getServer());
+            Field map = base.getClass().getField("metadataMap");
+            map.setAccessible(true);
+            Map<String, Map<Plugin, MetadataValue>> realMap = (Map<String, Map<Plugin, MetadataValue>>) map.get(base);
+            realMap.remove("NPC");
+            map.set(base, realMap);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException |
+                 NoSuchFieldException ignored) {
         }
 
         ServerLevel level = (ServerLevel) Objects.requireNonNull(getHandle(MinecraftUtils.getCraftClass("CraftWorld"), realLoc.getWorld()));
