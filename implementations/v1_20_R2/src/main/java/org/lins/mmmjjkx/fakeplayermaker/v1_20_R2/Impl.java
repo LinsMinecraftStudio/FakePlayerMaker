@@ -53,4 +53,9 @@ public class Impl extends Implementations {
     public PlayerList getPlayerList() {
         return MinecraftUtils.getNMSServer().getPlayerList();
     }
+
+    @Override
+    public void removePlayer(ServerPlayer serverPlayer) {
+        getPlayerList().remove(serverPlayer);
+    }
 }

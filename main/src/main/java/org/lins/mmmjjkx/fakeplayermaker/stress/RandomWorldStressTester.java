@@ -4,7 +4,6 @@ import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implemen
 import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTester;
 import io.github.linsminecraftstudio.fakeplayermaker.api.objects.EmptyConnection;
 import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import org.apache.commons.lang3.tuple.Pair;
@@ -27,7 +26,6 @@ import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftU
 
 public class RandomWorldStressTester implements IStressTester {
     private final Map<String, ServerPlayer> tempPlayers = new HashMap<>();
-    private final MinecraftServer server = MinecraftServer.getServer();
     private int amount;
     private long lastStartTimestamp;
     private final boolean isAmountPerWorld;
@@ -98,7 +96,7 @@ public class RandomWorldStressTester implements IStressTester {
 
     @Override
     public void stop() {
-        tempPlayers.values().forEach(server.getPlayerList()::remove);
+        tempPlayers.values().forEach(Implementations.get()::removePlayer);
         tempPlayers.clear();
         HandlerList.unregisterAll(listener);
     }

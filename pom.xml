@@ -14,7 +14,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<mcVersion>1.20.4</mcVersion>
-		<mainVersion>1.2.6</mainVersion>
+		<mainVersion>1.2.7</mainVersion>
 		<apiVersion>1.2.0.5-SNAPSHOT</apiVersion>
 		<revision>1.4.2-SNAPSHOT</revision>
 	</properties>
@@ -110,7 +110,7 @@
 			<dependency>
 				<groupId>io.github.linsminecraftstudio</groupId>
 				<artifactId>Polymer-Core</artifactId>
-				<version>1.4.2-SNAPSHOT</version>
+				<version>1.4.3-SNAPSHOT</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>

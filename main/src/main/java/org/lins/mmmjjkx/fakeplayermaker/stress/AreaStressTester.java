@@ -8,7 +8,6 @@ import io.github.linsminecraftstudio.fakeplayermaker.api.interfaces.IStressTeste
 import io.github.linsminecraftstudio.fakeplayermaker.api.objects.EmptyConnection;
 import io.github.linsminecraftstudio.fakeplayermaker.api.objects.WorldNotFoundException;
 import io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import org.apache.commons.lang3.tuple.Pair;
@@ -31,7 +30,6 @@ public class AreaStressTester implements IStressTester {
     private final Map<String, ServerPlayer> tempPlayers = new HashMap<>();
     private final CuboidRegion spawnRegion;
     private final int amount;
-    private final MinecraftServer server = MinecraftServer.getServer();
     private long lastStartTimestamp;
     private final AutoRespawn listener;
     public AreaStressTester(CuboidRegion spawnRegion, int amount) {
@@ -90,7 +88,7 @@ public class AreaStressTester implements IStressTester {
 
     @Override
     public void stop() {
-        tempPlayers.values().forEach(server.getPlayerList()::remove);
+        tempPlayers.values().forEach(Implementations.get()::removePlayer);
         tempPlayers.clear();
         HandlerList.unregisterAll(listener);
     }

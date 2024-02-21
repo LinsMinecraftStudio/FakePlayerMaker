@@ -58,5 +58,7 @@ public abstract class Implementations {
 
     public abstract PlayerList getPlayerList();
 
+    public abstract void removePlayer(ServerPlayer serverPlayer);
+
     public abstract ServerPlayer create(@NotNull ServerLevel level, GameProfile profile);
 }

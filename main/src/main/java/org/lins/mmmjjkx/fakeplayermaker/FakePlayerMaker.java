@@ -62,7 +62,6 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
         randomNameLength = settings.getInt("randomNameLength");
         defaultSpawnLocation = settings.getLocation("defaultSpawnLocation");
 
-        fakePlayerSaver.reload(false);
         stressTestSaver.reload();
 
         getServer().getPluginManager().registerEvents(this, this);
@@ -75,7 +74,7 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
                     if (ver.equals(getPluginVersion())) {
                         getLogger().info("You are using the latest version!");
                     } else {
-                        getLogger().warning("There is a new version available! New version: " + ver + " Old version: " + getPluginVersion());
+                        getLogger().warning("There is a new version available! New version: " + ver + " | Your version: " + getPluginVersion());
                     }
                 } else {
                     getLogger().warning("Failed to check for updates!");
@@ -85,7 +84,7 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
     }
 
     private void handleImplementations() {
-        String ver = Bukkit.getVersion().split("-")[1];
+        String ver = Bukkit.getServer().getClass().getPackageName().replaceAll("org.bukkit.craftbukkit\\.", "").replaceAll("\\.CraftServer", "");
         String pack = "org.lins.mmmjjkx.fakeplayermaker." + ver + ".";
         try {
             Class<?> clazz = Class.forName(pack + "Impl");
@@ -109,7 +108,7 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
 
     @Override
     public String requireVersion() {
-        return "1.4.2";
+        return "1.4.3";
     }
 
     @Override

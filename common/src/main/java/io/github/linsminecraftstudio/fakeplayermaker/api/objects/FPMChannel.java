@@ -16,7 +16,6 @@ import java.util.concurrent.ExecutionException;
 public class FPMChannel extends AbstractChannel {
     private final static EventLoop EVENT_LOOP = new DefaultEventLoop();
     private final DefaultChannelConfig config = new DefaultChannelConfig(this);
-    private final ChannelMetadata metadata;
     private final Queue<Object> outbound;
     private final Queue<Object> inbound;
     private final FPMChannelPipeline pipeline;
@@ -29,18 +28,16 @@ public class FPMChannel extends AbstractChannel {
 
     public FPMChannel() {
         super(null);
-        setup();
         state = State.ACTIVE;
         outbound = new ArrayDeque<>();
         inbound = new ArrayDeque<>();
-        metadata = new ChannelMetadata(false);
         pipeline = new FPMChannelPipeline(this);
+        setup();
     }
 
     private void setup(final ChannelHandler... handlers) {
         ObjectUtil.checkNotNull(handlers, "handlers");
-        ChannelPipeline p = this.pipeline();
-        p.addLast(new ChannelInitializer<>() {
+        pipeline.addLast(new ChannelInitializer<>() {
             protected void initChannel(Channel ch) {
                 ChannelPipeline pipeline = ch.pipeline();
                 for (ChannelHandler h : handlers) {
@@ -71,14 +68,12 @@ public class FPMChannel extends AbstractChannel {
     }
 
     @Override
-    protected void doClose() throws ExecutionException, InterruptedException {
+    protected void doClose() {
         this.state = State.CLOSED;
-        ChannelFuture future = super.close(voidPromise());
-        future.get();
     }
 
     @Override
-    protected void doDisconnect() throws ExecutionException, InterruptedException {
+    protected void doDisconnect() {
         if (!metadata().hasDisconnect()) {
             this.doClose();
         }
@@ -132,7 +127,7 @@ public class FPMChannel extends AbstractChannel {
 
     @Override
     public ChannelMetadata metadata() {
-        return this.metadata;
+        return new ChannelMetadata(false);
     }
 
     @Override

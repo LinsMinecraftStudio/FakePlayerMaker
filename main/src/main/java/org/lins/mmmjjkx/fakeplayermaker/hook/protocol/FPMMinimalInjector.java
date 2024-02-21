@@ -12,19 +12,19 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerKickEvent;
-import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.util.Objects;
 
 import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils.getCraftClass;
 
 public class FPMMinimalInjector implements MinimalInjector {
     private final String name;
+    private final ServerLevel level;
 
-    public FPMMinimalInjector(String name) {
+    public FPMMinimalInjector(String name, ServerLevel level) {
         this.name = name;
+        this.level = level;
     }
 
     @Override
@@ -44,7 +44,6 @@ public class FPMMinimalInjector implements MinimalInjector {
 
     @Override
     public Player getPlayer() {
-        ServerLevel level = (ServerLevel) Objects.requireNonNull(MinecraftUtils.getHandle(getCraftClass("CraftWorld"), Objects.requireNonNull(FakePlayerMaker.settings.getLocation("defaultSpawnLocation")).getWorld()));
         ServerPlayer player = Implementations.get().create(level, new GameProfile(UUIDUtil.createOfflinePlayerUUID(name), name));
         Implementations.get().setConnection(player, MinecraftUtils.getGamePacketListener(new EmptyConnection(), player));
         return Implementations.bukkitEntity(player);

@@ -3,6 +3,7 @@ package io.github.linsminecraftstudio.fakeplayermaker.api.utils;
 import io.github.linsminecraftstudio.fakeplayermaker.api.implementation.Implementations;
 import net.bytebuddy.implementation.bind.annotation.*;
 import net.minecraft.server.level.ServerChunkCache;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 
@@ -20,9 +21,11 @@ public class PacketListenerDelegation {
                 return null;
             } else if (method.getName().equals("internalTeleport")) {
                 superMethod.invoke(o, args);
-                if (player.serverLevel().getPlayerByUUID(Implementations.getUUID(player)) != null) {
+                Method serverLevel = ServerPlayer.class.getMethod("x");
+                ServerLevel level = (ServerLevel) serverLevel.invoke(player);
+                if (level.getPlayerByUUID(Implementations.getUUID(player)) != null) {
                     ServerGamePacketListenerImpl.class.getMethod("d").invoke(o);
-                    ServerChunkCache source = player.serverLevel().getChunkSource();
+                    ServerChunkCache source = level.getChunkSource();
                     source.move(player);
                 }
                 return null;

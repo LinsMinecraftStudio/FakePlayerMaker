@@ -21,6 +21,7 @@ import net.bytebuddy.utility.nullability.AlwaysNull;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
@@ -206,9 +207,9 @@ public class FPMTempPlayerFactory {
      <li>{@link Player#getUniqueId()}</li>
      </ul>
      */
-    public static Player createPlayer(Server server, String name) throws InvocationTargetException, InstantiationException, IllegalAccessException {
+    public static Player createPlayer(Server server, String name, ServerLevel level) throws InvocationTargetException, InstantiationException, IllegalAccessException {
         Player p = CONSTRUCTOR.newInstance(server, name);
-        TemporaryPlayerFactory.setInjectorInPlayer(p, new FPMMinimalInjector(name));
+        TemporaryPlayerFactory.setInjectorInPlayer(p, new FPMMinimalInjector(name, level));
         return p;
     }
 }

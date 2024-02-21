@@ -132,17 +132,8 @@ public class MinecraftUtils {
         return null;
     }
 
-    public static void schedule(PolymerPlugin plugin, Runnable runnable, long delay, boolean async) {
-        BFScheduler scheduler = new BFScheduler(plugin);
-        if (async) {
-            scheduler.scheduleDelayAsync(runnable, delay, delay / 20L);
-        } else {
-            scheduler.scheduleDelay(runnable, delay);
-        }
-    }
-
     public static void scheduleNoDelay(PolymerPlugin plugin, Runnable runnable, boolean async) {
-        BFScheduler scheduler = new BFScheduler(plugin);
+        BFScheduler scheduler = plugin.getScheduler();
         if (async) {
             scheduler.scheduleAsync(runnable);
         } else {
@@ -173,16 +164,17 @@ public class MinecraftUtils {
         if (lpBukkitPlugin != null) {
             if (!LuckPermsProvider.get().getUserManager().isLoaded(p.getUniqueId())) {
                 try {
-                    Object lpBootStrap = lpBukkitPlugin.getClass().getMethod("getBootstrap").invoke(lpBukkitPlugin);
-                    Object storage = lpBukkitPlugin.getClass().getMethod("getStorage").invoke(lpBukkitPlugin);
-                    Method method = storage.getClass().getDeclaredMethod("saveUser");
-
                     //LuckPerms using different class loader
                     ClassLoader loader = lpBukkitPlugin.getClass().getClassLoader();
 
+                    Object lpBootStrap = lpBukkitPlugin.getClass().getMethod("getBootstrap").invoke(lpBukkitPlugin);
+                    Object storage = lpBukkitPlugin.getClass().getMethod("getStorage").invoke(lpBukkitPlugin);
+                    Class<?> userClass = loader.loadClass("me.lucko.luckperms.common.model.User");
+                    Method method = storage.getClass().getDeclaredMethod("saveUser", userClass);
+
                     //saveUser
-                    Object user = loader.loadClass("me.lucko.luckperms.common.model.User").getDeclaredConstructors()[0].newInstance(p.getUniqueId(), lpBukkitPlugin);
-                    method.invoke(storage, p.getUniqueId(), user);
+                    Object user = userClass.getDeclaredConstructors()[0].newInstance(p.getUniqueId(), lpBukkitPlugin);
+                    method.invoke(storage, user);
 
                     Field humanEntityPermissibleField = getCraftClass("entity.CraftHumanEntity").getDeclaredField("perm");
                     humanEntityPermissibleField.setAccessible(true);
@@ -195,7 +187,9 @@ public class MinecraftUtils {
                     Object pluginLogger = lpBootStrap.getClass().getMethod("getPluginLogger").invoke(lpBootStrap);
 
                     Class<?> PermissibleInjector = loader.loadClass("me.lucko.luckperms.bukkit.inject.permissible.PermissibleInjector");
-                    PermissibleInjector.getMethod("inject").invoke(null, p, permissible, pluginLogger);
+                    Class<?> PluginLogger = loader.loadClass("me.lucko.luckperms.common.plugin.logging.PluginLogger");
+
+                    PermissibleInjector.getMethod("inject", Player.class, LuckPermsPermissible, PluginLogger).invoke(null, p, permissible, pluginLogger);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }

@@ -40,6 +40,11 @@ public class Impl extends Implementations {
     }
 
     @Override
+    public void removePlayer(ServerPlayer serverPlayer) {
+        getPlayerList().remove(serverPlayer);
+    }
+
+    @Override
     public ServerPlayer create(@NotNull ServerLevel level, @NotNull GameProfile profile) {
         return new ServerPlayer(MinecraftUtils.getNMSServer(), level, profile);
     }

@@ -23,40 +23,38 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
-import org.bukkit.metadata.MetadataValue;
-import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.Nullable;
 import org.lins.mmmjjkx.fakeplayermaker.FakePlayerMaker;
 import org.lins.mmmjjkx.fakeplayermaker.hook.protocol.FPMTempPlayerFactory;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.security.SecureRandom;
 import java.util.*;
 
 import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils.getHandle;
 
-public class NMSFakePlayerMaker{
+public class NMSFakePlayerMaker {
     public static Map<String, ServerPlayer> fakePlayerMap = new HashMap<>();
     private static final FakePlayerSaver saver = FakePlayerMaker.fakePlayerSaver;
 
     static void reloadMap(boolean removeAll, Map<ServerPlayer, Location> players) {
-        MinecraftUtils.schedule(FakePlayerMaker.INSTANCE, () -> {
+        MinecraftUtils.scheduleNoDelay(FakePlayerMaker.INSTANCE, () -> {
             if (removeAll) {
                 for (ServerPlayer player : players.keySet()) {
-                    if (Implementations.get().getPlayerList().getPlayer(Implementations.getUUID(player)) != null) {
-                        Implementations.get().getPlayerList().remove(player);
+                    if (Bukkit.getPlayer(Implementations.getUUID(player)) == null) {
+                        Implementations.get().removePlayer(player);
                     }
                 }
                 fakePlayerMap.clear();
-                return;
             }
 
             fakePlayerMap.clear();
-            for (ServerPlayer player : players.keySet()) {
-                if (Implementations.get().getPlayerList().getPlayer(Implementations.getUUID(player)) == null) {
+            for (Map.Entry<ServerPlayer, Location> entry : players.entrySet()) {
+                ServerPlayer player = entry.getKey();
+                Location location = entry.getValue();
+
+                if (Bukkit.getPlayer(Implementations.getUUID(player)) == null) {
                     EmptyConnection connection = new EmptyConnection();
                     playerJoin(player, connection, MinecraftUtils.getGamePacketListener(connection, player), true, null);
                 }
@@ -67,11 +65,10 @@ public class NMSFakePlayerMaker{
 
                 MinecraftUtils.preventListen("su.nexmedia.engine.NexPlugin");
 
-                Location location = players.get(player);
                 ServerLevel level = (ServerLevel) Objects.requireNonNull(getHandle(MinecraftUtils.getCraftClass("CraftWorld"), location.getWorld()));
                 player.teleportTo(level, location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
             }
-        }, 5, false);
+        }, false);
     }
 
     private static void runCMDs(ServerPlayer player, EmptyConnection connection, ServerGamePacketListenerImpl listener) {
@@ -96,8 +93,10 @@ public class NMSFakePlayerMaker{
     }
 
     public static Pair<Location, ServerPlayer> createSimple(Location loc, String name) {
+        int finalRandomNameLength = FakePlayerMaker.randomNameLength < 1 ? 8 : FakePlayerMaker.randomNameLength;
+
         if (name == null || name.isBlank()) {
-            name = getRandomName(FakePlayerMaker.randomNameLength);
+            name = getRandomName(finalRandomNameLength);
         }
 
         if (!Strings.isNullOrEmpty(FakePlayerMaker.settings.getString("namePrefix"))) {
@@ -111,9 +110,11 @@ public class NMSFakePlayerMaker{
             return ImmutablePair.right(Implementations.get().create(MinecraftServer.getServer().overworld(), profile));
         }
 
+        ServerLevel level = (ServerLevel) Objects.requireNonNull(getHandle(MinecraftUtils.getCraftClass("CraftWorld"), realLoc.getWorld()));
+
         if (FakePlayerMaker.isProtocolLibLoaded()) {
             try {
-                Player temp = FPMTempPlayerFactory.createPlayer(Bukkit.getServer(), name);
+                Player temp = FPMTempPlayerFactory.createPlayer(Bukkit.getServer(), name, level);
                 MinimalInjector injector = TemporaryPlayerFactory.getInjectorFromPlayer(temp);
 
                 return new ImmutablePair<>(realLoc, (ServerPlayer) getHandle(MinecraftUtils.getCraftClass("entity.CraftPlayer"), injector.getPlayer()));
@@ -121,8 +122,6 @@ public class NMSFakePlayerMaker{
                 throw new RuntimeException(e);
             }
         } else {
-            ServerLevel level = (ServerLevel) Objects.requireNonNull(getHandle(MinecraftUtils.getCraftClass("CraftWorld"), realLoc.getWorld()));
-
             return new ImmutablePair<>(realLoc, Implementations.get().create(level, profile));
         }
     }
@@ -156,19 +155,6 @@ public class NMSFakePlayerMaker{
                 return;
             }
             realLoc = def;
-        }
-
-        Player bukkit = Implementations.bukkitEntity(player);
-        try {
-            Method getEntityMetadata = bukkit.getServer().getClass().getMethod("getEntityMetadata");
-            Object base = getEntityMetadata.invoke(bukkit.getServer());
-            Field map = base.getClass().getField("metadataMap");
-            map.setAccessible(true);
-            Map<String, Map<Plugin, MetadataValue>> realMap = (Map<String, Map<Plugin, MetadataValue>>) map.get(base);
-            realMap.remove("NPC");
-            map.set(base, realMap);
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException |
-                 NoSuchFieldException ignored) {
         }
 
         ServerLevel level = (ServerLevel) Objects.requireNonNull(getHandle(MinecraftUtils.getCraftClass("CraftWorld"), realLoc.getWorld()));
