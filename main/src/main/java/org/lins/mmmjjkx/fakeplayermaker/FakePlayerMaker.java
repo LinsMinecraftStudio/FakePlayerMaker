@@ -62,6 +62,7 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
         randomNameLength = settings.getInt("randomNameLength");
         defaultSpawnLocation = settings.getLocation("defaultSpawnLocation");
 
+        fakePlayerSaver.reload(false);
         stressTestSaver.reload();
 
         getServer().getPluginManager().registerEvents(this, this);
