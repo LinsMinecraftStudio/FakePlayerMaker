@@ -46,7 +46,10 @@ public class MinecraftUtils {
     }
 
     public static ServerGamePacketListenerImpl getGamePacketListener(Connection connection, ServerPlayer player) {
-        if (!Bukkit.getMinecraftVersion().equals("1.20.2")) {
+        int code = Integer.parseInt(Bukkit.getMinecraftVersion().replaceAll("\\.", ""));
+
+        //who needs 1.20?
+        if (code < 1202) {
             final MethodDelegation delegation = MethodDelegation.to(new PacketListenerDelegation());
 
             try (DynamicType.Unloaded<ServerGamePacketListenerImpl> unloaded = new ByteBuddy()

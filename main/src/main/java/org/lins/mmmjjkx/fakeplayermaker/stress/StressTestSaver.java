@@ -46,7 +46,7 @@ public class StressTestSaver extends SingleFileStorage {
             }
 
             if (type.equals("area")) {
-                if (!FakePlayerMaker.settings.getBoolean("areaStressTesters")) {
+                if (!FakePlayerMaker.settings.getBoolean("areaStressTesters", false)) {
                     continue;
                 }
                 Location loc1 = ObjectConverter.toLocation(section.getString("pos1", ""));

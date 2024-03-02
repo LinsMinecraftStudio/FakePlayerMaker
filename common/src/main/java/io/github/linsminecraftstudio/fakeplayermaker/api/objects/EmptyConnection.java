@@ -28,7 +28,9 @@ public final class EmptyConnection extends Connection {
 
         configSerialization(theChannel.pipeline());
 
-        if (Bukkit.getMinecraftVersion().equals("1.20.2")) {
+        int code = Integer.parseInt(Bukkit.getMinecraftVersion().replaceAll("\\.", ""));
+
+        if (code >= 1202) {
             setAttributes(theChannel);
 
             this.channel = theChannel;
@@ -54,7 +56,9 @@ public final class EmptyConnection extends Connection {
     }
 
     private void configSerialization(ChannelPipeline pipeline) {
-        if (Bukkit.getMinecraftVersion().equals("1.20.2")) {
+        int code = Integer.parseInt(Bukkit.getMinecraftVersion().replaceAll("\\.", ""));
+
+        if (code >= 1202) {
             configureSerialization(pipeline, PacketFlow.SERVERBOUND, new BandwidthDebugMonitor(new SampleLogger()));
         } else {
             try {

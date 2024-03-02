@@ -28,4 +28,5 @@ runCMDAfterRemove:
   - "authme unregister %player%"
 #Please install the WorldEdit or FastAsyncWorldEdit plugin before turn it on!
 #Recommended creating an open area to create a stress tester.
+#REQUIRE RESTART
 areaStressTesters: false

@@ -56,13 +56,15 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
 
         settings = new SimpleSettingsManager(this);
         fakePlayerSaver = new FakePlayerSaver();
-        stressTestSaver = new StressTestSaver();
+
 
         new Metrics(this, 19345);
         randomNameLength = settings.getInt("randomNameLength");
         defaultSpawnLocation = settings.getLocation("defaultSpawnLocation");
 
         fakePlayerSaver.reload(false);
+
+        stressTestSaver = new StressTestSaver();
         stressTestSaver.reload();
 
         getServer().getPluginManager().registerEvents(this, this);
@@ -125,6 +127,7 @@ public class FakePlayerMaker extends PolymerPlugin implements Listener {
         INSTANCE.reloadConfig();
         settings = new SimpleSettingsManager(FakePlayerMaker.INSTANCE);
         fakePlayerSaver.reload(false);
+
         stressTestSaver.reload();
 
         randomNameLength = settings.getInt("randomNameLength");

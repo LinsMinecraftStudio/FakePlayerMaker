@@ -67,8 +67,14 @@ public class FPMCommand extends PolymerCommand {
             };
         } else if (args.length == 4 && args[0].equals("stress") && !args[2].equals("create")) {
             if (args[1].equalsIgnoreCase("area")) {
+                if (!FakePlayerMaker.settings.getBoolean("areaStressTesters", false)) {
+                    return new ArrayList<>();
+                }
                 return copyPartialMatches(args[3], FakePlayerMaker.stressTestSaver.getAreaTesterNames());
             } else if (args[1].equalsIgnoreCase("randomworld")) {
+                if (!FakePlayerMaker.settings.getBoolean("areaStressTesters", false)) {
+                    return new ArrayList<>();
+                }
                 return copyPartialMatches(args[3], FakePlayerMaker.stressTestSaver.getRWTesterNames());
             }
         }
@@ -299,7 +305,7 @@ public class FPMCommand extends PolymerCommand {
                             Optional<AreaStressTester> tester = FakePlayerMaker.stressTestSaver.getStressTesterArea(strings[3]);
                             switch (strings[2]) {
                                 case "start" -> {
-                                    if (!FakePlayerMaker.settings.getBoolean("areaStressTesters")) {
+                                    if (!FakePlayerMaker.settings.getBoolean("areaStressTesters", false)) {
                                         sendMessage(commandSender, "Stress.AreaNotEnabled");
                                         return;
                                     }
@@ -318,7 +324,7 @@ public class FPMCommand extends PolymerCommand {
                                     }
                                 }
                                 case "stop" -> {
-                                    if (!FakePlayerMaker.settings.getBoolean("areaStressTesters")) {
+                                    if (!FakePlayerMaker.settings.getBoolean("areaStressTesters", false)) {
                                         sendMessage(commandSender, "Stress.AreaNotEnabled");
                                         return;
                                     }

@@ -1,7 +1,6 @@
 package io.github.linsminecraftstudio.fakeplayermaker.api.objects;
 
 import io.netty.channel.*;
-import io.netty.util.ReferenceCountUtil;
 import io.netty.util.internal.ObjectUtil;
 import io.netty.util.internal.SocketUtils;
 import org.jetbrains.annotations.NotNull;
@@ -10,13 +9,10 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayDeque;
 import java.util.Queue;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 public class FPMChannel extends AbstractChannel {
     private final static EventLoop EVENT_LOOP = new DefaultEventLoop();
     private final DefaultChannelConfig config = new DefaultChannelConfig(this);
-    private final Queue<Object> outbound;
     private final Queue<Object> inbound;
     private final FPMChannelPipeline pipeline;
     private State state;
@@ -29,7 +25,6 @@ public class FPMChannel extends AbstractChannel {
     public FPMChannel() {
         super(null);
         state = State.ACTIVE;
-        outbound = new ArrayDeque<>();
         inbound = new ArrayDeque<>();
         pipeline = new FPMChannelPipeline(this);
         setup();
@@ -84,21 +79,7 @@ public class FPMChannel extends AbstractChannel {
     }
 
     @Override
-    protected void doWrite(ChannelOutboundBuffer in) throws ExecutionException, InterruptedException {
-        if (!checkActive()) return;
-
-        CompletableFuture.runAsync(() -> {
-            while (in.current() != null) {
-                Object msg = in.current();
-                ReferenceCountUtil.retain(msg);
-                this.handleOutboundMessage(msg);
-                in.remove();
-            }
-        }).get();
-    }
-
-    protected void handleOutboundMessage(Object msg) {
-        this.outbound.add(msg);
+    protected void doWrite(ChannelOutboundBuffer in) {
     }
 
     protected void handleInboundMessage(Object msg) {

@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Set;
 
 /**
- * A packet listener on version 1.20.2
+ * A packet listener on version 1.20.2+
  */
 public class FPMPacketListener extends ServerGamePacketListenerImpl {
     public FPMPacketListener(Connection connection, ServerPlayer player) {
