@@ -26,11 +26,14 @@ public class Impl extends Implementations {
 
     @Override
     public void placePlayer(Connection connection, ServerPlayer player) {
-        try {
-            getPlayerList().placeNewPlayer(connection, player);
-            CompletableFuture.runAsync(() -> MinecraftUtils.handlePlugins(bukkitEntity(player))).get();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
+        boolean result = MinecraftUtils.removeTheSameUUIDEntity(getUUID(player));
+        if (result) {
+            try {
+                getPlayerList().placeNewPlayer(connection, player);
+                CompletableFuture.runAsync(() -> MinecraftUtils.handlePlugins(bukkitEntity(player))).get();
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

@@ -31,15 +31,16 @@ public class Impl extends Implementations {
 
     @Override
     public void placePlayer(Connection connection, ServerPlayer player) {
-        try {
-            CompletableFuture.runAsync(() -> {
-                PlayerList list = getPlayerList();
-                list.placeNewPlayer(connection, player, CommonListenerCookie.createInitial(this.profile(player)));
-            }).get();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
+        boolean result = MinecraftUtils.removeTheSameUUIDEntity(getUUID(player));
+        if (result) {
+            PlayerList list = getPlayerList();
+            list.placeNewPlayer(connection, player, CommonListenerCookie.createInitial(this.profile(player)));
+            try {
+                CompletableFuture.runAsync(() -> handlePlugins(bukkitEntity(player))).get();
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException(e);
+            }
         }
-        handlePlugins(bukkitEntity(player));
     }
 
     @Override

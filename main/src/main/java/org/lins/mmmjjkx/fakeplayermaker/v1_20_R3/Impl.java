@@ -16,8 +16,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import static io.github.linsminecraftstudio.fakeplayermaker.api.utils.MinecraftUtils.handlePlugins;
-
 public class Impl extends Implementations {
     @Override
     public @NotNull GameProfile profile(ServerPlayer player) {
@@ -31,15 +29,19 @@ public class Impl extends Implementations {
 
     @Override
     public void placePlayer(Connection connection, ServerPlayer player) {
-        try {
-            CompletableFuture.runAsync(() -> {
-                PlayerList list = getPlayerList();
-                list.placeNewPlayer(connection, player, CommonListenerCookie.createInitial(this.profile(player)));
-            }).get();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
+        boolean result = MinecraftUtils.removeTheSameUUIDEntity(getUUID(player));
+        if (result) {
+            PlayerList list = getPlayerList();
+            player.getBukkitEntity();
+
+            list.placeNewPlayer(connection, player, CommonListenerCookie.createInitial(this.profile(player)));
+
+            try {
+                CompletableFuture.runAsync(() -> MinecraftUtils.handlePlugins(bukkitEntity(player))).get();
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException(e);
+            }
         }
-        handlePlugins(bukkitEntity(player));
     }
 
 

@@ -22,6 +22,7 @@ import net.minecraft.network.Connection;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.world.entity.Entity;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
@@ -35,6 +36,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -130,7 +132,7 @@ public class MinecraftUtils {
         try {
             return craftClazz.getDeclaredMethod("getHandle").invoke(craftClazz.cast(obj));
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Could not get handle of " + obj + " the class is " + craftClazz.getName() + ",");
+            LOGGER.log(Level.SEVERE, "Could not get handle of " + obj + " the class is " + craftClazz.getName());
         }
         return null;
     }
@@ -159,6 +161,24 @@ public class MinecraftUtils {
 
         playerProfile.setProperty(new ProfileProperty("textures", value, signature));
         bukkit.setPlayerProfile(playerProfile);
+    }
+
+    public static boolean removeTheSameUUIDEntity(UUID uuid) {
+        org.bukkit.entity.Entity craftEntity = Bukkit.getEntity(uuid);
+        if (craftEntity != null) {
+            Entity nmsEntity = (Entity) getHandle(getCraftClass("entity.CraftEntity"), craftEntity);
+            if (nmsEntity instanceof ServerPlayer sp) {
+                LOGGER.warning("""
+                        There is a same UUID player(%1$s) in the server! So we can't create a fake player with the UUID.
+                        Please change the UUID of the fake player.
+                        """.formatted(sp.getName()));
+                return false;
+            } else {
+                nmsEntity.discard();
+                return true;
+            }
+        }
+        return true;
     }
 
     public static void handlePlugins(Player p) {

@@ -14,7 +14,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<mcVersion>1.20.4</mcVersion>
-		<mainVersion>1.2.7F1</mainVersion>
+		<mainVersion>1.2.8</mainVersion>
 		<apiVersion>1.2.0.5-SNAPSHOT</apiVersion>
 	</properties>
 
